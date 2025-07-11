@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: afero
+Bundle-SymbolicName: afero
+Bundle-Version: 1.0.0.qualifier
+Export-Package: afero.auxiliar,
+ afero.integracao.xprocess,
+ afero.integracao.xprocess.persistence,
+ afero.model,
+ afero.persistence,
+ afero.servlet,
+ afero.test,
+ afero.util,
+ aferopet.model,
+ aferopet.persistence
+Import-Package: javax.servlet

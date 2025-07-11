@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Unidade" %>
+<%@page import ="afero.persistence.UnidadeDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+
+<%
+	UnidadeDAO daoUnidade;
+	List listUnidade;
+	daoUnidade = new UnidadeDAO(conn);
+	String clausulaUnidade = "  WHERE status='A' ORDER BY dsUnidade";
+	listUnidade = daoUnidade.listarUnidade(clausulaUnidade);
+	Iterator itUnidade = listUnidade.iterator();
+    while (itUnidade.hasNext()) { 
+		Unidade unidade = (Unidade) itUnidade.next();
+%>
+<option value="<%=unidade.getIdUnidade()%>"><%=unidade.getDsUnidade()%></option>
+<%
+    }
+%>

@@ -1,0 +1,215 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.OrcamentoSub"%>
+<%@page import="afero.persistence.OrcamentoSubDAO"%>
+<%@ page import="afero.model.Entidade" %>
+<%@ page import="afero.persistence.EntidadeDAO" %>
+<%@ page import="afero.util.ConverteDate" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script language=JavaScript src="../js/abas.js" type=text/javascript></script>
+<script src="../js/common.js" /></script>
+<script>
+function salvar() {
+  if (document.all.idLoja.value == '0') {
+    window.alert("O campo Loja é obrigatório.");
+    document.all.idLoja.focus();
+   }else if (document.all.idColaborador.value == '0') {
+    window.alert("O campo Atendente é obrigatório.");
+    document.all.idColaborador.focus();
+   }else if (document.all.idEntrega.value == '0') {
+    window.alert("O campo Entrega é obrigatório.");
+    document.all.idEntrega.focus();
+   }else if (document.all.dsEntidade.value == '') {
+    window.alert("O campo Entidade é obrigatório.");
+    document.all.dsEntidade.focus();
+   }else {
+    document.forms[0].action="formCadastroItensOrcamento.jsp?acao=atu";
+  	document.forms[0].submit();
+  }
+}
+function cancelar() {
+  document.forms[0].action="editarFormOrcamento.jsp";
+  document.forms[0].submit();
+}
+function recarregar(acao) {
+  document.forms[0].action='editarFormOrcamento.jsp?acao='+acao;
+  document.forms[0].submit();
+}
+</script>
+</head>
+<%
+
+String acao = request.getParameter("acao");
+String idOrcamento = request.getParameter("idOrcamento");
+ConverteDate converte = new ConverteDate();
+String usuario = (String)session.getAttribute("Login");
+String idLoja = "";
+String idColaborador = "";
+String cdEntidade = "";
+String idEntrega = "";
+String dsEntidade = "";
+String observacao = "";
+String dtOrc ="";
+String dtEntrega = "";
+String status = "";
+String pessoaResponsavel = "";
+int prazoValidade = 0;
+int prazoEntrega = 0;
+int prazoGarantia = 0;
+if(acao.equalsIgnoreCase("atu")){
+	OrcamentoSubDAO daoOrcamentoUpdate = new OrcamentoSubDAO(conn);
+	OrcamentoSub orc = daoOrcamentoUpdate.procurarOrcamento(Integer.parseInt(idOrcamento));
+	int idColaboradorUpdate = orc.getIdColaborador();
+	if(request.getParameter("idColaborador") == null){
+		idColaborador = "".valueOf(idColaboradorUpdate);	
+	}else{
+		idColaborador = request.getParameter("idColaborador");
+	}
+	Colaborador colaborador = new Colaborador();
+	ColaboradorDAO daoColaboradorUpdate = new ColaboradorDAO(conn);
+	colaborador = daoColaboradorUpdate.procurarColaborador(idColaboradorUpdate);
+	String dsColaborador = colaborador.getNome();
+	int idLojaUpdate = orc.getIdLoja();
+	if(request.getParameter("idLoja") == null){
+		idLoja = "".valueOf(idLojaUpdate);	
+	}else{
+		idLoja = request.getParameter("idLoja");
+	}
+	
+	Loja lojaListar = new Loja();
+	LojaDAO daoLojaUpdate = new LojaDAO(conn);
+	lojaListar = daoLojaUpdate.procurarLoja(idLojaUpdate);
+	String dsLoja = lojaListar.getApelido() +" / "+ lojaListar.getRazaoSocial(); 
+	int idEntregaUpdate = orc.getIdEntrega();
+	if(request.getParameter("idEntrega") == null){
+		idEntrega = "".valueOf(idEntregaUpdate);	
+	}else{
+		idEntrega = request.getParameter("idEntrega");
+	}
+	Entrega entrega = new Entrega();
+	EntregaDAO daoEntregaUpdate = new EntregaDAO(conn);
+	entrega = daoEntregaUpdate.procurarEntrega(idEntregaUpdate);
+	String dsEntrega = entrega.getDsEntrega();
+	float valorEntrega = entrega.getTxEntrega();
+	int cdEntidadeUpdate = orc.getCdEntidade();
+	cdEntidade = "".valueOf(cdEntidadeUpdate);
+	Entidade entidade = new Entidade();
+	EntidadeDAO daoEntidadeUpdate = new EntidadeDAO(conn);
+	entidade = daoEntidadeUpdate.procurarEntidade(cdEntidadeUpdate);
+	String dsEntidadeUpdate = entidade.getNome();
+	dsEntidade = dsEntidadeUpdate;
+	prazoValidade = orc.getPrazoValidade();
+	prazoEntrega = orc.getPrazoEntrega();
+	prazoGarantia = orc.getPrazoGarantia();
+	status=orc.getStatus();
+	pessoaResponsavel=orc.getPessoaResponsavel();
+	dtOrc =converte.dateToString(orc.getDtOrc());
+	if(request.getParameter("dtCasamento") == null){
+		dtEntrega = converte.dateToString(orc.getDtEntrega());	
+	}else{
+		dtEntrega = request.getParameter("dtCasamento");
+	}
+	
+	observacao = orc.getObservacao();
+	acao="atu";
+}
+%>
+<body onload="document.forms[0].elements[2].focus();" >
+<h1 class="cabecalho_pagina">Orçamento</h1>
+<form method="post" action="editarFormOrcamento.jsp?acao=<%=acao%>">
+<input type="hidden" name="acao" value="<%=acao%>"/>
+<input type="hidden" name="idOrcamento" value="<%=idOrcamento%>"/>
+<input type="hidden" name="usuario" value="<%=usuario%>"/>
+<input type="hidden" name="dtOrc" value="<%=dtOrc%>"/>
+<input type="hidden" name="cdEntidade" value="<%=cdEntidade%>"/>
+<input type="hidden" name="dsEntidade" value="<%=dsEntidade%>"/>
+<iframe width=174 height=189 name="gToday:normal:"../js/calendar/agenda.js"
+            id="gToday:normal:"../js/calendar/agenda.js" src="../js/calendar/ipopeng.htm"
+            scrolling="no" frameborder="0" style="visibility:visible; z-index:999; 
+    position:absolute; top:-500px; left:-500px;">
+    </iframe>
+
+<table border="0" width="100%">
+  <tr>
+      <th class="label">Loja*</th>
+      <td><select name="idLoja" onchange="recarregar('<%=acao%>');" required="true">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboLoja.jspf"%></select>
+          <script>comboSelect(document.forms[0].idLoja, '<%= idLoja %>');</script>
+      </td>
+  </tr>
+    <tr>
+      <th class="label">Atendente*</th>
+      <td><select name="idColaborador" onchange="recarregar('<%=acao%>');" required="true">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboColaborador.jspf"%></select>
+          <script>comboSelect(document.forms[0].idColaborador, '<%= idColaborador %>');</script>
+      </td>
+  </tr>
+  <tr>
+      <th class="label">Taxa de Entrega*</th>
+      <td><select name="idEntrega" onchange="recarregar('<%=acao%>');" required="true">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboEntrega.jspf"%></select>
+          <script>comboSelect(document.forms[0].idEntrega, '<%= idEntrega%>');</script>
+      </td>
+  </tr>
+    
+    <tr>
+      <th class="label" style="height: 22px">Cliente*</th>
+            <td style="height: 15px"><input disabled type="text" name="dsEntidade" <%if (dsEntidade != null) { %>value="<%=dsEntidade%>"<% }%>  size="60" maxlength="60"> </td>
+       		
+  </tr>
+    <tr>
+    <th class="label">Pessoa Responsável</th>
+    <td><input type="text" name="pessoaResponsavel" <%if (pessoaResponsavel != null) { %>value="<%=pessoaResponsavel%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+  <tr>
+		<th class="label">Data de Entrega</th>
+     <td>
+	               	<input type="text" name="dtCasamento" size="15" value="<%= dtEntrega %>" onblur="chkData(this,'dd/MM/yyyy')" maxlength="10" class="inputs">
+		               	<a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dtCasamento);return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+            		</td>
+ </tr>
+   <tr>
+    <th class="label">Data do Orçamento</th>
+    <td><input disabled type="text" name="dtOrc" <%if (dtOrc != null) { %>value="<%=dtOrc%>"<% }%>  size="10" maxlength="10"></td>
+  </tr>
+   <tr>
+    <th class="label">Prazo de Validade</th>
+    <td><input type="text" name="prazoValidade" value="<%=prazoValidade%>"  size="10"  maxlength="10"></td>
+  </tr>
+     <tr>
+    <th class="label">Prazo de Entrega</th>
+    <td><input type="text" name="prazoEntrega" value="<%=prazoEntrega%>"  size="10"  maxlength="10"></td>
+  </tr>
+  <tr>
+    <th class="label">Prazo de Garantia</th>
+    <td><input type="text" name="prazoGarantia" value="<%=prazoGarantia%>"  size="10"  maxlength="10"></td>
+  </tr>
+  <tr>
+      <th class="label">Observação</th>
+      <td><textarea name="observacao" cols="60" rows="5"><%=observacao %></textarea></td>
+  </tr>
+  <tr>
+    <th class="label">Status</th>
+    <td class="label_radio">
+      <input disabled type="radio" class="radio" name="status" value="A" <%= (status.equals("A")? "checked": "") %>>Aprovado
+      <input type="radio" class="radio" name="status" value="R" <%= (status.equals("R")? "checked": "") %>>Recusado<br>
+      <input type="radio" class="radio" name="status" value="NA" <%= (status.equals("NA")? "checked": "") %>>Não Avaliado</td>
+  </tr>
+</table><hr>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Próximo" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" />
+	<td class="campo_obrigatorio">* Campos Obrigatórios</td>
+</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

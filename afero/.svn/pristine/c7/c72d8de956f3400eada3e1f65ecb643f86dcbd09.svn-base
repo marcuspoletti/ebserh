@@ -1,0 +1,381 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Date;
+
+import afero.model.OrdemServico;
+import afero.util.ConverteDate;
+
+public class OrdemServicoDAO {
+	
+	public Connection conn;
+
+	public OrdemServicoDAO(Connection conn) {
+		this.conn = conn;
+	}
+	
+	// INSERIR	
+	public void incluir(OrdemServico ordemServico) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (ordemServico == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+		
+		try {
+			String sql = "INSERT INTO tbOrdemServico (idLoja, cdEntidade, idColaborador, idEntrega, cdTipoAtendimento, tipo, dtOrc, dtOS, dtAprov, dtEntrega," +
+						" dtConclusao, pessoaResponsavel, dtInicio, dtEntRealizada, cdCondPagto, prazoEntrega, prazoValidade, prazoGarantia, cmpOS1," +
+						" cmpOS2, cmpOS3, cmpOS4, observacao, vlServ, vlProd, vlFrete, vlDesc, status, dtMod, usuario )" +
+						"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?)";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, ordemServico.getIdLoja());
+			ps.setInt(2, ordemServico.getCdEntidade());
+			ps.setInt(3, ordemServico.getIdColaborador());
+			ps.setInt(4, ordemServico.getIdEntrega());
+			ps.setInt(5, ordemServico.getCdTipoAtendimento());
+			ps.setString(6, ordemServico.getTipo());
+			if (ordemServico.getDtOrc() != null){
+				ps.setDate(7, ConverteDate.DateToDateSql(ordemServico.getDtOrc()));				
+			}else{
+				ps.setDate(7, null);
+			}
+			if (ordemServico.getDtOS() != null){
+				ps.setDate(8, ConverteDate.DateToDateSql(ordemServico.getDtOS()));				
+			}else{
+				ps.setDate(8, null);
+			}
+			if (ordemServico.getDtAprov() != null){
+				ps.setDate(9, ConverteDate.DateToDateSql(ordemServico.getDtAprov()));				
+			}else{
+				ps.setDate(9, null);
+			}			
+			if (ordemServico.getDtEntrega() != null){
+				ps.setDate(10, ConverteDate.DateToDateSql(ordemServico.getDtEntrega()));				
+			}else{
+				ps.setDate(10, null);
+			}
+			if (ordemServico.getDtConclusao() != null){
+				ps.setDate(11, ConverteDate.DateToDateSql(ordemServico.getDtConclusao()));				
+			}else{
+				ps.setDate(11, null);
+			}
+			
+			ps.setString(12, ordemServico.getPessoaResponsavel());
+			
+			if (ordemServico.getDtInicio() != null){
+				ps.setDate(13, ConverteDate.DateToDateSql(ordemServico.getDtInicio()));				
+			}else{
+				ps.setDate(13, null);
+			}
+			if (ordemServico.getDtEntRealizada() != null){
+				ps.setDate(14, ConverteDate.DateToDateSql(ordemServico.getDtEntRealizada()));				
+			}else{
+				ps.setDate(14, null);
+			}
+			
+			ps.setInt(15, ordemServico.getCdCondPagto());
+			ps.setInt(16, ordemServico.getPrazoEntrega());
+			ps.setInt(17, ordemServico.getPrazoValidade());
+			ps.setInt(18, ordemServico.getPrazoGarantia());
+			ps.setString(19, ordemServico.getCmpOS1());
+			ps.setString(20, ordemServico.getCmpOS2());
+			ps.setString(21, ordemServico.getCmpOS3());
+			ps.setString(22, ordemServico.getCmpOS4());
+			ps.setString(23, ordemServico.getObservacao());
+			ps.setDouble(24, ordemServico.getVlServ());
+			ps.setDouble(25, ordemServico.getVlProd());
+			ps.setDouble(26, ordemServico.getVlFrete());
+			ps.setDouble(27, ordemServico.getVlDesc());
+			ps.setString(28, ordemServico.getStatus());
+			ps.setString(29, ordemServico.getUsuario());
+			
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+
+	// ATUALIZAR 
+	public void atualiza(OrdemServico ordemServico) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (ordemServico == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+		
+		try {
+			String sql = "UPDATE tbOrdemServico SET idLoja = ?, cdEntidade = ?, idColaborador = ?, idEntrega = ?, cdTipoAtendimento = ?, tipo = ?," +
+						" dtOrc = ?, dtOS = ?, dtAprov = ?, dtEntrega = ?, dtConclusao = ?, pessoaResponsavel = ?, dtInicio = ?, dtEntRealizada = ?," +
+						" cdCondPagto = ?, prazoEntrega = ?, prazoValidade = ?, prazoGarantia = ?, cmpOS1 = ?, cmpOS2 = ?, cmpOS3 = ?, cmpOS4 = ?," +
+						" observacao = ?, vlServ = ?, vlProd = ?, vlFrete = ?, vlDesc = ?, status = ?, dtMod = now(), usuario = ? " +
+						" WHERE idOrdemServico = ?";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, ordemServico.getIdLoja());
+			ps.setInt(2, ordemServico.getCdEntidade());
+			ps.setInt(3, ordemServico.getIdColaborador());
+			ps.setInt(4, ordemServico.getIdEntrega());
+			ps.setInt(5, ordemServico.getCdTipoAtendimento());
+			ps.setString(6, ordemServico.getTipo());
+			if (ordemServico.getDtOrc() != null){
+				ps.setDate(7, ConverteDate.DateToDateSql(ordemServico.getDtOrc()));				
+			}else{
+				ps.setDate(7, null);
+			}
+			if (ordemServico.getDtOS() != null){
+				ps.setDate(8, ConverteDate.DateToDateSql(ordemServico.getDtOS()));				
+			}else{
+				ps.setDate(8, null);
+			}
+			if (ordemServico.getDtAprov() != null){
+				ps.setDate(9, ConverteDate.DateToDateSql(ordemServico.getDtAprov()));				
+			}else{
+				ps.setDate(9, null);
+			}			
+			if (ordemServico.getDtEntrega() != null){
+				ps.setDate(10, ConverteDate.DateToDateSql(ordemServico.getDtEntrega()));				
+			}else{
+				ps.setDate(10, null);
+			}
+			if (ordemServico.getDtConclusao() != null){
+				ps.setDate(11, ConverteDate.DateToDateSql(ordemServico.getDtConclusao()));				
+			}else{
+				ps.setDate(11, null);
+			}
+			
+			ps.setString(12, ordemServico.getPessoaResponsavel());
+			
+			if (ordemServico.getDtInicio() != null){
+				ps.setDate(13, ConverteDate.DateToDateSql(ordemServico.getDtInicio()));				
+			}else{
+				ps.setDate(13, null);
+			}
+			if (ordemServico.getDtEntRealizada() != null){
+				ps.setDate(14, ConverteDate.DateToDateSql(ordemServico.getDtEntRealizada()));				
+			}else{
+				ps.setDate(14, null);
+			}
+			
+			ps.setInt(15, ordemServico.getCdCondPagto());
+			ps.setInt(16, ordemServico.getPrazoEntrega());
+			ps.setInt(17, ordemServico.getPrazoValidade());
+			ps.setInt(18, ordemServico.getPrazoGarantia());
+			ps.setString(19, ordemServico.getCmpOS1());
+			ps.setString(20, ordemServico.getCmpOS2());
+			ps.setString(21, ordemServico.getCmpOS3());
+			ps.setString(22, ordemServico.getCmpOS4());
+			ps.setString(23, ordemServico.getObservacao());
+			ps.setDouble(24, ordemServico.getVlServ());
+			ps.setDouble(25, ordemServico.getVlProd());
+			ps.setDouble(26, ordemServico.getVlFrete());
+			ps.setDouble(27, ordemServico.getVlDesc());
+			ps.setString(28, ordemServico.getStatus());
+			ps.setString(29, ordemServico.getUsuario());
+			ps.setInt(30, ordemServico.getIdOrdemServico());
+
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+	
+	// EXCLUIR	
+	public void excluir(OrdemServico ordemServico) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (ordemServico == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbOrdemServico WHERE idOrdemServico = ?");
+			ps.setInt(1, ordemServico.getIdOrdemServico());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+	
+	// BUSCAR	
+	public OrdemServico procurarOrdemServico (String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		OrdemServico ordemServico = null;
+		
+		try {
+			String sql = "SELECT idOrdemServico, idLoja, cdEntidade, idColaborador, idEntrega, cdTipoAtendimento, tipo, dtOrc, dtOS, dtAprov, dtEntrega," +
+						" dtConclusao, pessoaResponsavel, dtInicio, dtEntRealizada, cdCondPagto, prazoEntrega, prazoValidade, prazoGarantia, cmpOS1," +
+						" cmpOS2, cmpOS3, cmpOS4, observacao, vlServ, vlProd, vlFrete, vlDesc, status, dtMod, usuario " +
+						" FROM tbOrdemServico";
+			
+			if(clausula != null)
+				sql += clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				
+				int idOS = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				int cdEntidade = rs.getInt(3);
+				int idColaborador = rs.getInt(4);
+				int idEntrega = rs.getInt(5);
+				int cdTipoAtendimento = rs.getInt(6);
+				String tipo = rs.getString(7);
+				Date dtOrc = rs.getDate(8);
+				Date dtOS = rs.getDate(9);
+				Date dtAprov = rs.getDate(10);
+				Date dtEntrega = rs.getDate(11);
+				Date dtConclusao = rs.getDate(12);
+				String pessoaResponsavel = rs.getString(13);
+				Date dtInicio = rs.getDate(14);
+				Date dtEntRealizada = rs.getDate(15);
+				int cdCondPagto = rs.getInt(16);
+				int prazoEntrega = rs.getInt(17);
+				int prazoValidade = rs.getInt(18);
+				int prazoGarantia = rs.getInt(19);
+				String cmpOS1 = rs.getString(20);
+				String cmpOS2 = rs.getString(21);
+				String cmpOS3 = rs.getString(22);
+				String cmpOS4 = rs.getString(23);
+				String observacao = rs.getString(24);
+				double vlServ = rs.getDouble(25);
+				double vlProd = rs.getDouble(26);
+				float vlFrete = rs.getFloat(27);
+				float vlDesc = rs.getFloat(28);
+				String status = rs.getString(29);
+				Date dtMod = rs.getDate(30);
+				String usuario = rs.getString(31);
+				
+				ordemServico = new OrdemServico( idOS, idLoja, cdEntidade, idColaborador, idEntrega, cdTipoAtendimento, tipo, dtOrc, 
+						dtOS, dtAprov, dtEntrega, pessoaResponsavel, dtInicio, dtConclusao, dtEntRealizada, cdCondPagto, prazoEntrega, prazoValidade,
+						prazoGarantia, cmpOS1, cmpOS2, cmpOS3, cmpOS4, observacao, vlServ, vlProd, vlFrete, vlDesc, status, dtMod, usuario);
+				
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao procurar dados:" + sqle);
+		}catch (Exception e){
+			throw new AferoDAOException ("Erro ao procurar dados:" + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+		return ordemServico;
+	}
+	
+	// LISTAR	
+	public List<OrdemServico> listar(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<OrdemServico> list = null;
+
+		try {
+			String sql = " SELECT idOrdemServico, idLoja, cdEntidade, idColaborador, idEntrega, cdTipoAtendimento, tipo, dtOrc, dtOS, dtAprov, " +
+						" dtEntrega, dtConclusao, pessoaResponsavel, dtInicio, dtEntRealizada, cdCondPagto, prazoEntrega, prazoValidade, " +
+						" prazoGarantia, cmpOS1, cmpOS2, cmpOS3, cmpOS4, observacao, vlServ, vlProd, vlFrete, vlDesc, status, dtMod, usuario "+ 
+						" FROM tbOrdemServico";
+			
+			if (clausula != null)
+				sql += clausula;
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<OrdemServico>();
+			
+			while (rs.next()){
+				
+				int idOS = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				int cdEntidade = rs.getInt(3);
+				int idColaborador = rs.getInt(4);
+				int idEntrega = rs.getInt(5);
+				int cdTipoAtendimento = rs.getInt(6);
+				String tipo = rs.getString(7);
+				Date dtOrc = rs.getDate(8);
+				Date dtOS = rs.getDate(9);
+				Date dtAprov = rs.getDate(10);
+				Date dtEntrega = rs.getDate(11);
+				Date dtConclusao = rs.getDate(12);
+				String pessoaResponsavel = rs.getString(13);
+				Date dtInicio = rs.getDate(14);
+				Date dtEntRealizada = rs.getDate(15);
+				int cdCondPagto = rs.getInt(16);
+				int prazoEntrega = rs.getInt(17);
+				int prazoValidade = rs.getInt(18);
+				int prazoGarantia = rs.getInt(19);
+				String cmpOS1 = rs.getString(20);
+				String cmpOS2 = rs.getString(21);
+				String cmpOS3 = rs.getString(22);
+				String cmpOS4 = rs.getString(23);
+				String observacao = rs.getString(24);
+				double vlServ = rs.getDouble(25);
+				double vlProd = rs.getDouble(26);
+				float vlFrete = rs.getFloat(27);
+				float vlDesc = rs.getFloat(28);
+				String status = rs.getString(29);
+				Date dtMod = rs.getDate(30);
+				String usuario = rs.getString(31);
+				
+				list.add( new OrdemServico( idOS, idLoja, cdEntidade, idColaborador, idEntrega, cdTipoAtendimento, tipo, dtOrc, 
+						dtOS, dtAprov, dtEntrega, pessoaResponsavel, dtInicio, dtConclusao, dtEntRealizada, cdCondPagto, prazoEntrega, prazoValidade,
+						prazoGarantia, cmpOS1, cmpOS2, cmpOS3, cmpOS4, observacao, vlServ, vlProd, vlFrete, vlDesc, status, dtMod, usuario));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao listar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao listar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+		return list;
+	}
+	
+	
+	//PEGAR ULTIMA ID LANÇADA
+	
+	public int ultimoInsert() throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int idUltimo = 0;
+
+		try {
+			String sql = " SELECT MAX(idOrdemServico) FROM tbOrdemServico ORDER BY idOrdemServico DESC ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				idUltimo = rs.getInt(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return idUltimo;
+	}
+}

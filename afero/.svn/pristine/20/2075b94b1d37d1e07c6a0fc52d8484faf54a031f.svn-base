@@ -1,0 +1,20 @@
+<%@page import="afero.model.EntidadeTelefone"%>
+<%@page import ="afero.persistence.EntidadeTelefoneDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EntidadeTelefoneDAO daoEntidadeTelefone;
+List listEntidadeTelefone;
+daoEntidadeTelefone = new EntidadeTelefoneDAO(conn);
+String clausulaEntidadeEndereco = "  WHERE et.padrao='S' ORDER BY et.nroTelefone";
+listEntidadeTelefone = daoEntidadeTelefone.listarEntidadeTelefone(clausulaEntidadeEndereco);
+Iterator itEntidadeTelefone = listEntidadeTelefone.iterator();
+while (itEntidadeTelefone.hasNext()) { 
+	EntidadeTelefone entidadeTelefone = (EntidadeTelefone) itEntidadeTelefone.next();
+%>
+
+
+<option value="<%=entidadeTelefone.getIdEntidadeTelefone()%>"><%=entidadeTelefone.getNroTelefone()%> - <%=entidadeTelefone.getRamTelefone()%></option>
+<%
+}
+%>

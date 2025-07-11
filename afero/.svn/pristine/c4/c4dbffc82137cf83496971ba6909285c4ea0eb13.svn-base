@@ -1,0 +1,19 @@
+<%@page import="afero.model.TipoDependente"%>
+<%@page import ="afero.persistence.TipoDependenteDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoDependenteDAO daoTipoDependente;
+List listTipoDependente;
+daoTipoDependente = new TipoDependenteDAO(conn);
+String clausulaTipoDependente = "  WHERE status='A' ";
+listTipoDependente = daoTipoDependente.listarTipoDependente(clausulaTipoDependente);
+Iterator itTipoDependente = listTipoDependente.iterator();
+while (itTipoDependente.hasNext()) { 
+	TipoDependente tipoDependente = (TipoDependente) itTipoDependente.next();
+%>
+
+<option value="<%=tipoDependente.getIdTipoDependente()%>"><%=tipoDependente.getDsTipoDependente()%></option>
+<%
+}
+%>

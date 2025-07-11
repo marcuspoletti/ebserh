@@ -1,0 +1,18 @@
+<%@page import ="model.ComboTipoProduto" %>
+<%@page import ="persistence.ComboProdutoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+ComboProdutoDAO daoTipo;
+List listTipo;
+daoTipo = new ComboProdutoDAO(conn);
+listTipo = daoTipo.getTipoProduto();
+Iterator itTipo = listTipo.iterator();
+while (itTipo.hasNext()) { 
+	ComboTipoProduto comboTipoProduto = (ComboTipoProduto) itTipo.next();
+%>
+
+<option value="<%=comboTipoProduto.getTipoProduto()%>"><%=comboTipoProduto.getTipoProduto()%></option>
+<%
+}
+%>

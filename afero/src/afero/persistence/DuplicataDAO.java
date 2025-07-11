@@ -1,0 +1,457 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import afero.model.Duplicata;
+import afero.util.ConverteDate;
+
+public class DuplicataDAO implements IDuplicataDAO {
+	private Connection conn;
+
+	public DuplicataDAO(Connection conn) {
+		this.conn = conn;
+	}
+
+	public void incluir(Duplicata duplicata) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		String sql = "";
+		if (duplicata == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			sql = "INSERT INTO tbduplicata(idLoja, cdEntidade, dc, dtEmissao, dtComp, nrDoc, idTipoDocumento, idPlanoConta, " +
+					"idCentroCusto, historico, nrDiasPag, quantParcelas, valorTotal, geraBoleto, observacao, tipoLancamento," +
+					"txMulta, txJuros, tipoJuros, status, dtCad, dtMod, usuario)VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), now(), ?);";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, duplicata.getIdLoja());
+			ps.setInt(2, duplicata.getCdEntidade());
+			ps.setString(3, duplicata.getDc());
+			ps.setDate(4, ConverteDate.DateToDateSql(duplicata.getDtEmissao()));
+			if(duplicata.getDtComp() != null){
+				ps.setDate(5, ConverteDate.DateToDateSql(duplicata.getDtComp()));
+			}else{
+				ps.setDate(5, null);
+			}
+			ps.setString(6, duplicata.getNrDoc());
+			ps.setInt(7, duplicata.getIdTipoDocumento());
+			ps.setInt(8, duplicata.getIdPlanoConta());
+			ps.setInt(9, duplicata.getIdCentroCusto());
+			ps.setString(10, duplicata.getHistorico());
+			ps.setInt(11, duplicata.getNrDiasPag());
+			ps.setInt(12, duplicata.getQuantParcelas());
+			ps.setDouble(13, duplicata.getValorTotal());
+			ps.setString(14, duplicata.getGerarBoleto());
+			ps.setString(15, duplicata.getObservacao());
+			ps.setString(16, duplicata.getTipoLancamento());
+			ps.setFloat(17, duplicata.getTxMulta());
+			ps.setFloat(18, duplicata.getTxJuros());
+			ps.setString(19, duplicata.getTipoJuros());
+			ps.setString(20, duplicata.getStatus());
+			ps.setString(21, duplicata.getUsuario());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados:" + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados:" + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public void atualizar(Duplicata duplicata) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (duplicata == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+
+			String sql = "UPDATE tbduplicata set idLoja = ?, cdEntidade = ?, dc = ?, dtEmissao = ?, dtComp = ?, nrDoc = ?, idTipoDocumento = ?, idPlanoConta = ?, idCentroCusto = ?, historico = ?, nrDiasPag = ?, quantParcelas = ?, "+
+			             "valorTotal = ?, geraBoleto = ?, observacao = ?, tipoLancamento = ?, txMulta = ?, txJuros = ?, tipoJuros = ?, status = ?, dtMod = now(), usuario = ? " +
+			             "WHERE idDuplicata = ? ;";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, duplicata.getIdLoja());
+			ps.setInt(2, duplicata.getCdEntidade());
+			ps.setString(3, duplicata.getDc());
+			ps.setDate(4, ConverteDate.DateToDateSql(duplicata.getDtEmissao()));
+			if(duplicata.getDtComp() != null){
+				ps.setDate(5, ConverteDate.DateToDateSql(duplicata.getDtComp()));
+			}else{
+				ps.setDate(5, null);
+			}
+			ps.setString(6, duplicata.getNrDoc());
+			ps.setInt(7, duplicata.getIdTipoDocumento());
+			ps.setInt(8, duplicata.getIdPlanoConta());
+			ps.setInt(9, duplicata.getIdCentroCusto());
+			ps.setString(10, duplicata.getHistorico());
+			ps.setInt(11, duplicata.getNrDiasPag());
+			ps.setInt(12, duplicata.getQuantParcelas());
+			ps.setDouble(13, duplicata.getValorTotal());
+			ps.setString(14, duplicata.getGerarBoleto());
+			ps.setString(15, duplicata.getObservacao());
+			ps.setString(16, duplicata.getTipoLancamento());
+			ps.setFloat(17, duplicata.getTxMulta());
+			ps.setFloat(18, duplicata.getTxJuros());
+			ps.setString(19, duplicata.getTipoJuros());
+			ps.setString(20, duplicata.getStatus());
+			ps.setString(21, duplicata.getUsuario());
+			ps.setInt(22, duplicata.getIdDuplicata());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public void excluir(Duplicata duplicata) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (duplicata == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbduplicata WHERE idDuplicata = ? ");
+			ps.setInt(1, duplicata.getIdDuplicata());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+
+	}
+
+	public Duplicata procurarDuplicata(int idDuplicata)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Duplicata duplicata = null;
+
+		try {
+			String sql = "SELECT idDuplicata, idLoja, cdEntidade, dc, dtEmissao, dtComp, nrDoc, idTipoDocumento, idPlanoConta, idCentroCusto, historico, nrDiasPag, quantParcelas, "+
+			             "valorTotal, geraBoleto, observacao, tipoLancamento, txMulta, txJuros, tipoJuros, status, dtCad, dtMod, usuario "+
+					     "from tbduplicata Where idDuplicata = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idDuplicata);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o código: " + idDuplicata);
+			}
+			idDuplicata = rs.getInt(1);
+			int idLoja = rs.getInt(2);
+			int cdEntidade = rs.getInt(3);
+			String dc = rs.getString(4);
+			Date dtEmissao = rs.getDate(5);
+			Date dtComp = rs.getDate(6);
+			String nrDoc = rs.getString(7);
+			int idTipoDocumento = rs.getInt(8);
+			int idPlanoConta = rs.getInt(9);
+			int idCentroCusto = rs.getInt(10);
+			String historico = rs.getString(11);
+			int nrDiasPag = rs.getInt(12);
+			int quantParcelas = rs.getInt(13);
+			double valorTotal = rs.getDouble(14);
+			String gerarBoleto = rs.getString(15);
+			String observacao = rs.getString(16);
+			String tipoLancamento = rs.getString(17);
+			float txMulta = rs.getFloat(18);
+			float txJuros = rs.getFloat(19);
+			String tipoJuros = rs.getString(20);
+			String status = rs.getString(21);
+			Date dtCad = rs.getDate(22);
+			Date dtMod = rs.getDate(23);
+			String usuario = rs.getString(24);
+			duplicata = new Duplicata(idDuplicata, idLoja, cdEntidade, dc,
+					dtEmissao,dtComp, nrDoc, idTipoDocumento,
+					idPlanoConta, idCentroCusto, historico,
+					nrDiasPag, quantParcelas, valorTotal,
+					gerarBoleto, observacao, tipoLancamento,
+					txMulta, txJuros, tipoJuros, status,
+					dtCad, dtMod, usuario);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return duplicata;
+	}
+
+	public List listarDuplicata(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Duplicata> list = null;
+
+		try {
+			String sql = "SELECT d.idDuplicata, d.idLoja, d.cdEntidade, d.dc, d.dtEmissao, d.dtComp, d.nrDoc, d.idTipoDocumento, d.idPlanoConta, d.idCentroCusto, d.historico, d.nrDiasPag, d.quantParcelas, "+
+			             "d.valorTotal, d.geraBoleto, d.observacao, d.tipoLancamento, d.txMulta, d.txJuros, d.tipoJuros, d.status, d.dtCad, d.dtMod, d.usuario "+
+					     "from tbduplicata d "+
+					     "Join tbentidade e on d.cdEntidade = e.cdEntidade ";
+			if (clausula != null){
+				sql += clausula;
+			}
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<Duplicata>();
+			while (rs.next()) {
+				int idDuplicata = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				int cdEntidade = rs.getInt(3);
+				String dc = rs.getString(4);
+				Date dtEmissao = rs.getDate(5);
+				Date dtComp = rs.getDate(6);
+				String nrDoc = rs.getString(7);
+				int idTipoDocumento = rs.getInt(8);
+				int idPlanoConta = rs.getInt(9);
+				int idCentroCusto = rs.getInt(10);
+				String historico = rs.getString(11);
+				int nrDiasPag = rs.getInt(12);
+				int quantParcelas = rs.getInt(13);
+				double valorTotal = rs.getDouble(14);
+				String gerarBoleto = rs.getString(15);
+				String observacao = rs.getString(16);
+				String tipoLancamento = rs.getString(17);
+				float txMulta = rs.getFloat(18);
+				float txJuros = rs.getFloat(19);
+				String tipoJuros = rs.getString(20);
+				String status = rs.getString(21);
+				Date dtCad = rs.getDate(22);
+				Date dtMod = rs.getDate(23);
+				String usuario = rs.getString(24);
+				list.add(new Duplicata(idDuplicata, idLoja, cdEntidade, dc,
+						dtEmissao,dtComp, nrDoc, idTipoDocumento,
+						idPlanoConta, idCentroCusto, historico,
+						nrDiasPag, quantParcelas, valorTotal,
+						gerarBoleto, observacao, tipoLancamento,
+						txMulta, txJuros, tipoJuros, status,
+						dtCad, dtMod, usuario));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+
+	public boolean exclusaoIdDuplicata(int idDuplicata)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+		try {
+			String sql = "select d.idDuplicata from tbduplicata d "
+					+ "join tbduplicataparcela dd on d.idDuplicata = dd.idDuplicata "
+					+ "where d.idDuplicata = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idDuplicata);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				ok = true;
+			} else {
+				ok = false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+
+	}
+	
+	public int idDuplicataMax() throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int numDuplicata = 0;
+
+		try {
+			String sql = "Select max(idDuplicata) from tbduplicata order by idDuplicata DESC LIMIT 1";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				numDuplicata = rs.getInt(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return numDuplicata;
+	}
+
+	public void atualizarValorTotal(int idDuplicata) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (idDuplicata == 0)
+			throw new AferoDAOException("O código passado não pode ser 0");
+
+		try {
+			String sql = "UPDATE tbduplicata " +
+							"set valorTotal = (SELECT sum(valor) FROM tbduplicataparcela t WHERE idDuplicata = ?) " +
+							"WHERE idDuplicata = ?;";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idDuplicata);
+			ps.setInt(2, idDuplicata);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public void atualizarStatus(int idDuplicata) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (idDuplicata == 0)
+			throw new AferoDAOException("O código passado não pode ser 0");
+
+		try {
+			String sql = "UPDATE tbduplicata " +
+							"set status = IF((SELECT count(idDuplicata) FROM tbduplicataparcela t WHERE idDuplicata = ? AND status = 'C') = quantParcelas, 'C', "+
+						                 "IF((SELECT count(idDuplicata) FROM tbduplicataparcela t WHERE idDuplicata = ? AND status = 'A') = 0, 'Q', 'A')) " +
+							"WHERE idDuplicata = ?;";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idDuplicata);
+			ps.setInt(2, idDuplicata);
+			ps.setInt(3, idDuplicata);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+	
+	public boolean verificarDuplicata(int idPedidoSaida)throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+		try {
+			String sql = "select nrDoc from tbduplicata "
+			+ "where nrDoc = ? ";
+		conn = this.conn;
+		ps = conn.prepareStatement(sql);
+		ps.setInt(1, idPedidoSaida);
+		rs = ps.executeQuery();
+		if (rs.next()) {
+			ok = true;
+		} else {
+			ok = false;
+		}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return ok;
+		}
+	public void incluirDuplicataPedidoSaida(Duplicata duplicata) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		String sql = "";
+		if (duplicata == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			sql = "INSERT INTO tbduplicata(idLoja, cdEntidade, dc, dtEmissao, nrDoc, valorTotal, status, observacao, usuario)" +
+					                       "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, duplicata.getIdLoja());
+			ps.setInt(2, duplicata.getCdEntidade());
+			ps.setString(3, duplicata.getDc());
+			ps.setDate(4, ConverteDate.DateToDateSql(duplicata.getDtEmissao()));
+			ps.setString(5, duplicata.getNrDoc());
+			ps.setDouble(6, duplicata.getValorTotal());
+			ps.setString(7, duplicata.getStatus());
+			ps.setString(8, duplicata.getObservacao());
+			ps.setString(9, duplicata.getUsuario());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados:" + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados:" + e);
+		}
+	}
+	
+	public void atualizarPedidoSaida(Duplicata duplicata) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (duplicata == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+
+			String sql = "UPDATE tbduplicata set geraBoleto = ?, tipoLancamento = ?, tipoJuros = ?, quantParcelas = ?, historico = ?, dtMod = now() " +
+			             "WHERE idDuplicata = ? ;";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, duplicata.getGerarBoleto());
+			ps.setString(2, duplicata.getTipoLancamento());
+			ps.setString(3, duplicata.getTipoJuros());
+			ps.setInt(4, duplicata.getQuantParcelas());
+			ps.setString(5, "Integração Automática");
+			ps.setInt(6, duplicata.getIdDuplicata());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+	
+	
+	
+
+}

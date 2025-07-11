@@ -1,0 +1,77 @@
+<%@page import="afero.model.PedidoSaida"%>
+<%@page import="afero.model.Loja"%>
+<%@page import="afero.model.Cidade"%>
+<%@page import="afero.model.Crt"%>
+<%@page import="afero.model.Cnae"%>
+<%@page import="afero.model.Entidade"%>
+<%@page import="afero.auxiliar.emitente"%>
+<%@page import="afero.auxiliar.enderEmit"%>
+<%@page import="afero.persistence.LojaDAO"%>
+<%@page import="afero.persistence.CidadeDAO"%>
+<%@page import="afero.persistence.CrtDAO"%>
+<%@page import="afero.persistence.CnaeDAO"%>
+<%@page import="afero.persistence.PedidoSaidaDAO"%>
+<%@page import="com.thoughtworks.xstream.XStream"%>
+<%@page import="java.io.File"%>
+<%@page import="java.io.FileOutputStream"%>
+<%@page import="java.io.IOException"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+
+
+<%
+String idLoja = "7";//(String)session.getAttribute("idLoja");
+String idPedidoSaida = request.getParameter("idPedidoSaida");
+String mensagem = "";
+LojaDAO daoLoja = new LojaDAO(conn);
+Loja loja = daoLoja.procurarLoja(Integer.parseInt(idLoja));
+try{
+	enderEmit ender = new enderEmit();
+	emitente emi = new emitente();
+	emi.setCNPJ(loja.getCnpj());
+	emi.setIE(loja.getInscEstadual());
+	emi.setxFant(loja.getApelido());
+	emi.setxNome(loja.getRazaoSocial());
+	
+	//----------------------------------
+	CrtDAO daoCrt = new CrtDAO(conn);
+	Crt crt = daoCrt.procurarCrt(loja.getIdCrt());
+	emi.setCRT("".valueOf(crt.getCodigo()));
+	//----------------------------------
+	CnaeDAO daoCnae = new CnaeDAO(conn);
+	Cnae cnae = daoCnae.procurarCnae(loja.getIdCnae());
+	emi.setCNAE("".valueOf(cnae.getSubclasse()));
+	//----------------------------------
+	ender.setCEP(loja.getCep());
+	ender.setFone(loja.getNroTelefone());
+	//ender.setNro(loja.get)
+	ender.setxBairro(loja.getBairro());
+	ender.setxCpl(loja.getCmpEndereco());
+	ender.setxLgr(loja.getEndereco());
+	//----------------------------------
+	CidadeDAO daoCidade = new CidadeDAO(conn);
+	//Cidade cidade = daoCidade.procurarCidade();
+	ender.setxPais("Brasil");
+	ender.setcPais("1058");
+	emi.setEnder(ender);
+	mensagem = emi.toString();
+	XStream xstream = new XStream();
+	File arquivo = new File("c:\\teste.xml");
+    FileOutputStream gravar;
+	   try {
+		   xstream.alias("emitente", emitente.class);
+           gravar = new FileOutputStream(arquivo);
+           gravar.write(xstream.toXML(emi).getBytes());
+           gravar.close();
+       } catch (IOException ex) {
+           ex.printStackTrace();
+       }
+	
+	
+}catch(Exception e ){
+	mensagem = e.getMessage();
+}
+
+%>
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<%@include file="../fimConexao.jsp"%>

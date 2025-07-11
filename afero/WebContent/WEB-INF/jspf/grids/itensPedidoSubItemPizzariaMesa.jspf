@@ -1,0 +1,344 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.Produto" %>
+<%@ page import="afero.model.Mesa" %>
+<%@ page import="afero.model.Unidade" %>
+<%@ page import="afero.model.Estoque" %>
+<%@ page import="afero.model.Preco" %>
+<%@page import="afero.model.PedidoSaidaSubItem"%>
+<%@ page import="afero.model.Loja" %>
+<%@ page import="afero.persistence.ProdutoDAO" %>
+<%@ page import="afero.persistence.UnidadeDAO" %>
+<%@ page import="afero.persistence.EstoqueDAO" %>
+<%@ page import="afero.persistence.LojaDAO" %>
+<%@ page import="afero.persistence.MesaDAO" %>
+<%@ page import="afero.persistence.PrecoDAO" %>
+<%@page import="afero.persistence.PedidoSaidaSubItemDAO"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@page import="afero.util.Utilitaria"%>
+
+<link type="text/css" rel="Stylesheet" href="../../css/afero.css" />
+<script src="../../js/common.js"/></script>
+
+<script language="JavaScript">
+function selecionar_todo(){ 
+	   for (i=0;i<document.f1.elements.length;i++) 
+	      if(document.f1.elements[i].type == "checkbox")	
+	         document.f1.elements[i].checked=1;
+} 
+function deselecionar_todo(){ 
+	   for (i=0;i<document.f1.elements.length;i++) 
+	      if(document.f1.elements[i].type == "checkbox")	
+	         document.f1.elements[i].checked=0; 
+	} 
+function limitarTamanho(tamanho) {
+	//ta = TextArea
+	//tamanho = maximo de caracteres permitidos
+    var ta = document.getElementById("texto");
+    if(ta.value.length > tamanho)
+        ta.value = ta.value.substring(0, tamanho);
+    timer = setTimeout("limitarTamanho(" + tamanho + ")", 100);
+    return;
+}
+
+function pararLimitacao() {
+      clearTimeout(timer);
+      return;
+}
+function localizar() {
+  document.forms[0].action="formCadastroItensPedidoSubItem.jsp?acao=listar";
+  document.forms[0].submit();
+}  
+function novaPesquisa() {
+  document.all.nomeProduto.value = '';
+  document.all.status.value = ''; //não está limpando
+  document.forms[0].submit();
+} 
+function salvar() {
+  if (document.all.quantidade == '0') {
+      window.alert("Quantidade tem que ser maior que 0.");
+      document.all.quantidade.focus();
+  }
+  document.forms[0].action="formCadastroItensPedidoSubItem.jsp?acao=gravar";
+  document.forms[0].submit();
+  
+}
+function cancelar() {
+  document.forms[0].action="formCadastroItensPedidoSubItem.jsp?acao=listar";
+  document.forms[0].submit();
+}
+
+function CheckContent(evt){
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        return (charCode>=48 && charCode<=57 || charCode<20);
+}
+function atualizaQuant(I) {
+    var comp = document.getElementById('compPedido_'+I).value;
+    var larg = document.getElementById('largPedido_'+I).value; 
+    var preco = document.getElementById('preco_'+I).value;
+    var quant =comp.replace(",",".") * larg.replace(",",".");
+    document.getElementById('quantidadePedido_'+I).value= quant.toFixed(2);
+    //function FormataValor(campo,tecla, dec, fl_neg) 
+    
+}
+function formatReal( int )  
+{  
+        var tmp = int+'';  
+        tmp = tmp.replace(/([0-9]{2})$/g, ",$1");  
+        if( tmp.length > 6 )  
+                tmp = tmp.replace(/([0-9]{3}),([0-9]{2}$)/g, ".$1,$2");  
+  
+        return tmp;  
+}  
+function atualizaQuantidadeValor(I) {
+    var preco = document.getElementById('preco_'+I).value;
+    var quant = document.getElementById('quantidadePedido_'+I).value;
+    var desc = document.getElementById('pDescPedido_'+I).value;
+    var valor = quant;
+    var total = valor.replace(",",".")*preco.replace(",",".");
+    document.getElementById('valorTotalSubItem_'+I).value=total.toFixed(2);
+    var calc = (desc.replace(",",".")*total)/100;
+    var calctotal = (total-calc);
+    document.getElementById('valorTotalSubItem_'+I).value=calctotal.toFixed(2);
+    
+}
+function atualizaDesc(I) {
+    var preco = document.getElementById('preco_'+I).value;
+    var quant = document.getElementById('quantidadePedido_'+I).value;
+    var desc = document.getElementById('pDescPedido_'+I).value;
+    var valor = quant;
+    var total = valor.replace(",",".")*preco.replace(",",".");
+    document.getElementById('valorTotalSubItem_'+I).value=total.toFixed(2);
+    var calc = (desc*total)/100;
+    var calctotal = (total-calc);
+    document.getElementById('valorTotalSubItem_'+I).value=calctotal.toFixed(2);
+    
+}
+      
+</script>
+<%
+String idLojaUsuario = (String)session.getAttribute("idLoja");
+List list = null;
+List listarEstoque = null;
+ProdutoDAO dao;
+EstoqueDAO daoEstoque;
+Produto prod = null;
+Estoque estoque =null;
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null)mensagem = "";
+String nomeProduto = request.getParameter("nomeProduto");
+if(nomeProduto == null)nomeProduto = "";
+String clausula = "";
+int cont = 0;
+String preco = "0";
+int quantidadePedido = 1;
+//-----------------------------
+float largPedido = 0;
+float compPedido = 0;
+int idAgrupamento = 0;
+String dsCompProduto = "";
+float valorTotalSubItem = 0;
+//-----------------------------
+//Comanda
+String impProducao = "N";
+int id = 0;
+//Comanda
+float pDescPedido = 0;
+float vlUniPedido = 0;
+if(acao.equalsIgnoreCase("gravar")){
+	String[] idProduto = request.getParameterValues("produto");
+	PedidoSaidaSubItem pedidoSaidaItem = new PedidoSaidaSubItem();
+	PedidoSaidaSubItemDAO daoPedidoSaidaItemDAO = new PedidoSaidaSubItemDAO(conn);
+	daoMesa = new MesaDAO(conn);
+	for(int I=0;I<idProduto.length;I++){
+	  if(request.getParameter("idProduto_"+idProduto[I])!= null){
+		  float quant = Float.parseFloat(request.getParameter("quantidadePedido_"+idProduto[I]));
+		  //if((quant > 0.0) || (quant > 0)){
+		   if((quant > -1)){
+			  float precoInsert = Utilitaria.toNumber(request.getParameter("preco_"+idProduto[I])).floatValue();
+			  float pDescInsert = Utilitaria.toNumber(request.getParameter("pDescPedido_"+idProduto[I])).floatValue();
+			  //float vlUniInsert = Utilitaria.toNumber(request.getParameter("vlUniPedido_"+idProduto[I])).floatValue();
+			  if(request.getParameter("impProducao_"+idProduto[I]) != null){
+				  pedidoSaidaItem.setImpProducao("S");
+			  }else{
+				  pedidoSaidaItem.setImpProducao("N");  
+			  }
+			  
+			  pedidoSaidaItem.setIdPedidoSaida(Integer.parseInt(idPedidoSaida));
+			  pedidoSaidaItem.setIdProduto(Integer.parseInt(request.getParameter("idProduto_"+idProduto[I])));
+			  pedidoSaidaItem.setDsCompProduto(request.getParameter("dsCompProduto_"+idProduto[I]));
+			  pedidoSaidaItem.setIdUnidade(Integer.parseInt(request.getParameter("idUnidade_"+idProduto[I])));
+			  pedidoSaidaItem.setIdAgrupamento(Integer.parseInt(request.getParameter("idAgrupamento_"+idProduto[I])));
+			  pedidoSaidaItem.setComp(Utilitaria.toNumber(request.getParameter("compPedido_"+idProduto[I])).floatValue());
+			  pedidoSaidaItem.setLarg(Utilitaria.toNumber(request.getParameter("largPedido_"+idProduto[I])).floatValue());
+			  pedidoSaidaItem.setQuant(quant);
+			  pedidoSaidaItem.setValor(precoInsert);
+			  pedidoSaidaItem.setpDesc(pDescInsert);
+			  pedidoSaidaItem.setVlUni(precoInsert - pedidoSaidaItem.getVDesc());
+			  pedidoSaidaItem.setUsuario(usuario);
+			  daoPedidoSaidaItemDAO.incluir(pedidoSaidaItem);
+			  if(!idMesa.equalsIgnoreCase("0")){	
+					daoMesa.atualizarStatus(Integer.parseInt(idMesa), "C");	
+				}
+			  id = daoPedidoSaidaItemDAO.idPedidoSaidaItem();
+			  daoPedidoSaidaItemDAO.atualizarImpProducao(pedidoSaidaItem.getImpProducao(), id);
+		  }else{
+			  response.sendRedirect("formCadastroItensPedidoSubItem.jsp?acao=listar&mensagem=Quantidade tem que ser maior que 0 !!!&idPedidoSaida="+idPedidoSaida+"&idLoja="+idLoja+"&idEntrega="+idEntrega+"&idColaborador="+idColaborador+"&usuario="+usuario+"&status="+status+"&operacao="+operacao);
+		  }
+		  
+		  
+	  }
+	}
+}
+%>
+<body onload="document.forms[0].elements[0].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<form name="f1" method="post" action="formCadastroItensPedidoSubItem.jsp?acao=listar">
+<input type="hidden" name="cont" value="<%=cont%>"/>
+<input type="hidden" name="idPedidoSaida" value="<%=idPedidoSaida%>"/>
+<input type="hidden" name="idLoja" value="<%=idLoja%>"/>
+<input type="hidden" name="idMesa" value="<%=idMesa%>"/>
+<input type="hidden" name="dsMesa" value="<%=dsMesa%>"/>
+<input type="hidden" name="idEntrega" value="<%=idEntrega%>"/>
+<input type="hidden" name="idColaborador" value="<%=idColaborador%>"/>
+<input type="hidden" name="cdCondPagto" value="<%=cdCondPagto%>"/>
+<input type="hidden" name="usuario" value="<%=usuario%>"/>
+<input type="hidden" name="status" value="<%=status%>"/>
+<input type="hidden" name="operacao" value="<%=operacao%>"/>
+<input type="hidden" name="quantPessoas" value="<%=quantPessoas%>"/>
+
+<table colspan="2" width="50%">
+  <tr>
+    <th class='label'>Desc. Prod.</th>
+    <td><input type="text" name="nomeProduto" <%if (nomeProduto != null) { %>value="<%=nomeProduto%>"<% }%>  size="40" maxlength="40"></td>
+    <td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+    <td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+  <tr>
+    <th class="label">Status</th>
+    <td class="label_radio">
+      <input type="radio" class="radio" name="statusConsulta" value="" <%= (statusConsulta.equals("")? "checked": "") %>>Todos
+      <input type="radio" class="radio" name="statusConsulta" value="A" <%= (statusConsulta.equals("A")? "checked": "") %>>Ativo
+      <input type="radio" class="radio" name="statusConsulta" value="I" <%= (statusConsulta.equals("I")? "checked": "") %>>Inativo</td>
+  </tr>
+</table>
+<hr>
+<%-- mostra todos os registros do banco de dados --%>
+ 
+<%--<a href="javascript:selecionar_todo()">Marcar todos</a> | 
+<a href="javascript:deselecionar_todo()">Marcar nenhum</a> --%>
+<table border="0" width="100%">
+    <tr>
+      
+      <th class="grid"><center></center></th>
+       <th class="grid">Selecionar</th>
+       <th class="grid">Código</th>
+       <th class="grid"><center>Descrição do Produto</center></th>
+      <th class="grid">Compl.Prod.</th>
+      <%--<th class="grid">Agrup.</th> --%>
+      <th class="grid">Preço</th>
+      <%--<th class="grid">Estoque</th> --%>
+     <%--<th class="grid">Comp.</th> --%> 
+     <%--<th class="grid">Larg.</th> --%>
+     <th class="grid">Imp.Prod</th>
+      <th class="grid">Quant.</th>
+      <th class="grid">% Desc.</th>
+      <th class="grid">Vl.Total</th>
+      <th class="grid">Unidade</th>
+    </tr>
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+  if (nomeProduto!= null) {
+ 	     clausula = " WHERE p.dsProduto LIKE '"+nomeProduto+"%' OR p.cdBarra LIKE '"+nomeProduto+"%' ";
+  } 
+  if (!statusConsulta.isEmpty()) {
+  if (clausula.isEmpty()) {
+  	    clausula = " WHERE p.status='"+statusConsulta+"'";
+  } else {
+   		   clausula = clausula+" AND p.status='"+statusConsulta+"'";
+  }
+ }	
+
+dao = new ProdutoDAO(conn);
+
+clausula = clausula+" ORDER BY p.dsProduto ";
+if(nomeProduto != ""){
+list = dao.listarProdutoPrecoLoja(clausula, Integer.parseInt(idLojaUsuario));
+ for ( Iterator it = list.iterator(); it.hasNext();) {
+	prod = (Produto) it.next();
+	daoEstoque = new EstoqueDAO(conn);
+	listarEstoque = daoEstoque.procurarEstoquePreco(prod.getIdProduto(), Integer.parseInt(idLojaUsuario));
+	if(listarEstoque != null){
+	for (Iterator itListar = listarEstoque.iterator(); itListar.hasNext();){
+		cont++;
+		estoque = (Estoque) itListar.next();
+		LojaDAO lojaPreco = new LojaDAO(conn);
+		Loja lojaEstoque = lojaPreco.procurarLoja(estoque.getIdLoja());
+		PrecoDAO daoPrecoListar = new PrecoDAO(conn);
+		Preco precoListar = daoPrecoListar.procurarPrecoEstoqueLoja(estoque.getIdEstoque(), Integer.parseInt(idLojaUsuario));
+		if(precoListar!=null){
+			preco = Utilitaria.formatarNumero(precoListar.getPreco(), 2).toString();
+			UnidadeDAO daoUnidade = new UnidadeDAO(conn);
+			Unidade unidadeListar = daoUnidade.procurarUnidade(precoListar.getIdUnidade());
+			if(dao.getImpProducao(prod.getIdProduto())!= null){
+				impProducao = dao.getImpProducao(prod.getIdProduto());
+			}else{
+				impProducao = "N";
+			}
+			
+%>
+    <tr>
+      <td class = "grid" width="1%"><center><%=cont%></center></td>
+      <td class = "grid" width="3%"><input checked type="checkbox" name="idProduto_<%=prod.getIdProduto()%>" value="<%=prod.getIdProduto()%>"></td>
+      <td class = "grid" width="5%"><center><%=prod.getCdBarra() %></center></td>
+      <td class = "grid" width="10%"><center><%=prod.getDsProduto() %></center></td>
+      <td class = "grid" width="10%"><textarea name="dsCompProduto_<%=prod.getIdProduto()%>" cols="30" rows="2" id="texto" onfocus="limitarTamanho(40)" onblur="pararLimitacao()"><%=dsCompProduto %></textarea></td>
+      <%--
+        <td class = "grid" width="3%"><select name="idAgrupamento_<%=prod.getIdProduto()%>" onchange="recarregar('<%=acao%>');" required="true">
+          <option value='0'>Selecione...</option>
+          <%@include file="../combo/comboAgrupamentoSub.jspf"%></select>
+          <script>comboSelect(document.forms[0].idAgrupamento, '<%= idAgrupamento%>');</script>
+      </td>
+       --%>
+       
+      <td class = "grid" width="2%"><input type="text" name="preco_<%=prod.getIdProduto()%>" value="<%=preco%>" size="7" maxlength="7" onkeyup="FormataValor(this,event)" ></td>
+   
+       <td class = "grid" width="3%"><input <%if(impProducao.equalsIgnoreCase("S")){%>checked<%} %> type="checkbox" name="impProducao_<%=prod.getIdProduto()%>" value="<%=impProducao%>"></td>
+      
+      <%--
+      <%if(estoque.getQtEstoque()<=estoque.getQtMinimo()){ %>
+      	 <td class = "grid" width="3%" title="ESTOQUE ESTÁ COM A QUANTIDADE MINIMA NO LIMITE OU ULTRAPASSOU."><center><font color="red"><b><i><%=Utilitaria.formatarNumero(estoque.getQtEstoque(),2)%></i></b></font></center></td>
+      <%}else{%>
+      	 <td class = "grid" width="3%" ><center><%=Utilitaria.formatarNumero(estoque.getQtEstoque(),2)%></center></td>
+      <%}%>
+       --%>
+     <%-- <td class = "grid" width="3%"><input type="text" name="compPedido_<%=prod.getIdProduto()%>" value="<%=compPedido%>" size="7" maxlength="7" onkeyup="FormataValor(this,event)"></td> --%>
+      <%--<td class = "grid" width="3%"><input type="text" name="largPedido_<%=prod.getIdProduto()%>" value="<%=largPedido%>" size="7" maxlength="7" onkeyup="FormataValor(this,event)" onblur="atualizaQuant(<%=prod.getIdProduto()%>)"></td>--%>
+      <td class = "grid" width="3%"><input type="text" id="quantidade" name="quantidadePedido_<%=prod.getIdProduto()%>" value="<%=quantidadePedido%>"  size="7" maxlength="7"  onblur="atualizaQuantidadeValor(<%=prod.getIdProduto()%>)"></td>
+      <td class = "grid" width="3%"><input type="text" name="pDescPedido_<%=prod.getIdProduto()%>" value="<%=pDescPedido%>" size="7" maxlength="7" onblur="atualizaQuantidadeValor(<%=prod.getIdProduto()%>)" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="2%"><input type="text" name="valorTotalSubItem_<%=prod.getIdProduto()%>" size="7" maxlength="7" value="<%=valorTotalSubItem%>"></td>
+      <td class = "grid" width="2%"><center><%=unidadeListar.getDsUnidade()%></center></td>
+  </tr>
+<input type="hidden" name="idAgrupamento_<%=prod.getIdProduto()%>" value="<%=idAgrupamento%>"/>
+  <input type="hidden" name="produto" value="<%=prod.getIdProduto()%>"/>
+  <input type="hidden" name="compPedido_<%=prod.getIdProduto()%>" value="<%=compPedido%>"/>
+  <input type="hidden" name="largPedido_<%=prod.getIdProduto()%>" value="<%=largPedido %>"/>
+  <input type="hidden" name="idUnidade_<%=prod.getIdProduto()%>" value="<%=unidadeListar.getIdUnidade()%>"/>
+
+<%
+		}
+	}
+	}
+}
+ }
+ %>
+ </table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+    <br>
+	<td><input class="button" type="button" value="Adicionar" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" /></td>
+</tr>
+</table>
+<hr>
+</form>

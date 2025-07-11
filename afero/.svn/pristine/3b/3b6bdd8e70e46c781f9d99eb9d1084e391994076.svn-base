@@ -1,0 +1,18 @@
+<%@ page import ="afero.model.ListaTarefa" %>
+<%@ page import ="afero.persistence.ListaTarefaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+ListaTarefaDAO daoListaTarefa;
+List listListaTarefa;
+daoListaTarefa = new ListaTarefaDAO(conn);
+String clausulaListaTarefa = " ORDER BY dsListaTarefa ";
+listListaTarefa = daoListaTarefa.listarTarefa(clausulaListaTarefa);
+Iterator itListaTarefa = listListaTarefa.iterator();
+while (itListaTarefa.hasNext()) { 
+	ListaTarefa listaTarefa = (ListaTarefa) itListaTarefa.next();
+%>
+<option value="<%=listaTarefa.getIdListaTarefa()%>"><%=listaTarefa.getDsListaTarefa() %></option>
+<%
+}
+%>

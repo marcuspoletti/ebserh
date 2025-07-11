@@ -1,0 +1,361 @@
+<%@page import="afero.util.ConverteDate"%>
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.OrdemServico" %>
+<%@ page import="afero.model.Loja" %>
+<%@ page import="afero.model.Entidade" %>
+<%@ page import="afero.persistence.OrdemServicoDAO" %>
+<%@ page import="afero.persistence.LojaDAO" %>
+<%@ page import="afero.persistence.EntidadeDAO" %>
+<%@ page import="afero.util.Utilitaria" %>
+
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+
+<script>
+function confirmaExcluir(cont, id) {  
+  if (confirm("Deseja mesmo apagar o registro [" + cont + "]?")) {  
+       location.href = 'listarOrdemServico.jsp?acao=exc&idOrdemServico=' + id;   
+  }  
+}
+
+function localizar() {
+  document.forms[0].submit();
+}  
+
+function novaPesquisa() {
+  document.all.dsPesquisaObjeto.value = '';
+  document.all.status.value = ''; //não está limpando
+  document.forms[0].submit();
+}  
+</script>
+<%
+OrdemServicoDAO dao;
+OrdemServicoDAO daoExclusao;
+LojaDAO lojaDAO;
+Loja buscaLoja;
+EntidadeDAO entidadeDAO;
+Entidade entidade;
+
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null)mensagem = "";
+String acao = request.getParameter("acao");
+if (acao == null) acao = "listar";
+
+int idLojaPesquisa = Integer.parseInt((String)session.getAttribute("idLoja"));
+
+String clausula = "";
+
+String idOrdemServico = "0";
+int idLoja = Integer.parseInt((String)session.getAttribute("idLoja"));
+String cdEntidade = "0";
+String idColaborador = "0";
+String idEntrega = "0";
+String cdTipoAtendimento = "0";
+String tipo = "";
+String dtOrc = null;
+String dtOS = null;
+String dtAprov = null;
+String dtEntrega = null;
+String pessoaResponsavel = "";
+String dtInicio = null;
+String dtConclusao = null;
+String dtEntRealizada = null;
+String cdCondPagto = "0";
+String prazoEntrega = "0";
+String prazoValidade = "0";
+String prazoGarantia = "0";
+String cmpOS1 = "";
+String cmpOS2 = "";
+String cmpOS3 = "";
+String cmpOS4 = "";
+String observacao = "";
+String vlServ = "0";
+String vlProd = "0";
+String vlFrete = "0";
+String vlDesc = "0";
+String status = "A";
+String dtMod = null;
+String usuario = (String)session.getAttribute("Login");
+
+if (acao.equalsIgnoreCase("inc") || acao.equalsIgnoreCase("atu") || acao.equalsIgnoreCase("exc")) {
+	
+	idOrdemServico = request.getParameter("idOrdemServico");
+	cdEntidade = request.getParameter("cdEntidade");
+	idColaborador = request.getParameter("idColaborador");
+	idEntrega = request.getParameter("idEntrega");
+	cdTipoAtendimento = request.getParameter("cdTipoAtendimento");
+	tipo = request.getParameter("tipo");
+	
+	if(request.getParameter("dtOrc") != null){
+		dtOrc = request.getParameter("dtOrc");
+	}
+	if(request.getParameter("dtOS") != null){
+		dtOS = request.getParameter("dtOS");
+	}
+	if(request.getParameter("dtAprov") != null){
+		dtAprov = request.getParameter("dtAprov");
+	}
+	if(request.getParameter("dtEntrega") != null){
+		dtEntrega = request.getParameter("dtEntrega");
+	}
+	
+	pessoaResponsavel = request.getParameter("pessoaResponsavel");
+	
+	if(request.getParameter("dtInicio") != null){
+		dtInicio = request.getParameter("dtInicio");
+	}
+	if(request.getParameter("dtConclusao") != null){
+		dtConclusao = request.getParameter("dtConclusao");
+	}
+	if(request.getParameter("dtEntRealizada") != null){
+		dtEntRealizada = request.getParameter("dtEntRealizada");
+	}
+	
+	cdCondPagto = request.getParameter("cdCondPagto");
+	prazoEntrega = request.getParameter("prazoEntrega");
+	prazoValidade = request.getParameter("prazoEntrega");
+	prazoGarantia = request.getParameter("prazoGarantia");
+	cmpOS1 = request.getParameter("cmpOS1");
+	cmpOS2 = request.getParameter("cmpOS2");
+	cmpOS3 = request.getParameter("cmpOS3");
+	cmpOS4 = request.getParameter("cmpOS4");
+	observacao = request.getParameter("observacao");
+	vlServ = request.getParameter("vlServ");
+	vlProd = request.getParameter("vlProd");
+	vlFrete = request.getParameter("vlFrete");
+	vlDesc = request.getParameter("vlDesc");
+	status = request.getParameter("status");
+	
+	if(request.getParameter("dtMod") != null){
+		dtMod = request.getParameter("dtMod");
+	}
+	usuario = request.getParameter("usuario");
+
+	
+	if(cdEntidade == null) cdEntidade = "0";
+	if(idColaborador == null) idColaborador = "0";
+	if(idEntrega == null) idEntrega = "0";
+	if(cdTipoAtendimento == null) cdTipoAtendimento = "0";
+	if(tipo == null) tipo = "";
+
+	if(pessoaResponsavel == null) pessoaResponsavel = "";
+
+	if(cdCondPagto == null) cdCondPagto = "0";
+	if(prazoEntrega == null) prazoEntrega = "0";
+	if(prazoValidade == null) prazoValidade = "0";
+	if(prazoGarantia == null) prazoGarantia = "0";
+	if(cmpOS1 == null) cmpOS1 = "";
+	if(cmpOS2 == null) cmpOS2 = "";
+	if(cmpOS3 == null) cmpOS3 = "";
+	if(cmpOS4 == null) cmpOS4 = "";
+	if(observacao == null) observacao = "";
+	if(vlServ == null) vlServ = "0";
+	if(vlProd == null) vlProd = "0";
+	if(vlFrete == null) vlFrete = "0";
+	if(vlDesc == null) vlDesc = "0";
+	if(status == null) status = "A";
+
+	OrdemServico ordemServico = new OrdemServico();
+  
+	try {
+	  if (!acao.equalsIgnoreCase("inc")){
+		ordemServico.setIdOrdemServico(Integer.parseInt(idOrdemServico));
+	  }
+	  ordemServico.setIdLoja(idLoja);
+	  ordemServico.setCdEntidade(Integer.parseInt(cdEntidade));
+	  ordemServico.setIdColaborador(Integer.parseInt(idColaborador));
+	  ordemServico.setIdEntrega(Integer.parseInt(idEntrega));
+	  ordemServico.setCdTipoAtendimento(Integer.parseInt(cdTipoAtendimento));
+	  ordemServico.setTipo(tipo);
+	  
+	  if(dtOrc != null && dtOrc != ""){
+		  ordemServico.setDtOrc(ConverteDate.stringToDate(dtOrc));
+	  }
+	  if(dtOS != null && dtOS != ""){
+		  ordemServico.setDtOS(ConverteDate.stringToDate(dtOS));
+	  }
+	  if(dtAprov != null && dtAprov != ""){
+		  ordemServico.setDtAprov(ConverteDate.stringToDate(dtAprov));
+	  }
+	  if(dtEntrega != null && dtEntrega != ""){
+		  ordemServico.setDtEntrega(ConverteDate.stringToDate(dtEntrega));
+	  }
+	  
+	  ordemServico.setPessoaResponsavel(pessoaResponsavel);
+	  
+	  if(dtInicio != null && dtInicio != ""){
+		  ordemServico.setDtInicio(ConverteDate.stringToDate(dtInicio));
+	  }
+	  if(dtConclusao != null && dtConclusao != ""){
+		  ordemServico.setDtConclusao(ConverteDate.stringToDate(dtConclusao));
+	  }
+	  if(dtEntRealizada != null && dtEntRealizada != ""){
+		  ordemServico.setDtEntRealizada(ConverteDate.stringToDate(dtEntRealizada));
+	  }
+	  
+	  ordemServico.setCdCondPagto(Integer.parseInt(cdCondPagto));
+	  ordemServico.setPrazoEntrega(Integer.parseInt(prazoEntrega));
+	  ordemServico.setPrazoValidade(Integer.parseInt(prazoValidade));
+	  ordemServico.setPrazoGarantia(Integer.parseInt(prazoGarantia));
+	  ordemServico.setCmpOS1(cmpOS1);
+	  ordemServico.setCmpOS2(cmpOS2);
+	  ordemServico.setCmpOS3(cmpOS3);
+	  ordemServico.setCmpOS4(cmpOS4);
+	  ordemServico.setObservacao(observacao);
+	  ordemServico.setVlServ(Utilitaria.toNumber(vlServ).doubleValue());
+	  ordemServico.setVlProd(Utilitaria.toNumber(vlProd).doubleValue());
+	  ordemServico.setVlFrete(Utilitaria.toNumber(vlFrete).floatValue());
+	  ordemServico.setVlDesc(Utilitaria.toNumber(vlDesc).floatValue());
+	  ordemServico.setStatus(status);
+	  if(dtOrc != null){
+		  ordemServico.setDtMod(ConverteDate.stringToDate(dtMod));
+	  }
+	  ordemServico.setUsuario(usuario);
+
+	  	
+      if (!acao.equalsIgnoreCase("exc")){
+  		ordemServico.setIdOrdemServico(Integer.parseInt(idOrdemServico));
+      }      
+      
+	} catch (NumberFormatException nfe) {
+		throw new Exception("Código inválido");
+	}
+
+	dao = new OrdemServicoDAO(conn);
+	daoExclusao = new OrdemServicoDAO(conn);
+
+  if (acao.equalsIgnoreCase("inc")) {  
+	  //inclui no banco de dados
+	  dao.incluir(ordemServico);
+	  
+	  // Pegar ultimo idOrdemServico;
+	  int idOS = dao.ultimoInsert();
+	  %>
+	  	<script language="JavaScript">location.href='formAddObjetosOS.jsp?acao=inc&idOrdemServico=<%=idOS %>'</script>
+	 <%
+  } else if (acao.equalsIgnoreCase("atu")) {
+	  //atualiza no banco de dados
+    	 dao.atualiza(ordemServico);
+	  
+  }else if (acao.equalsIgnoreCase("exc")){
+	  //exclui no banco de dados
+		  dao.excluir(ordemServico);
+  }
+  
+}else{
+ if (!acao.equalsIgnoreCase("voltar")) {
+    status = request.getParameter("status");
+    if (status == null) status = "";
+  }
+ 
+ if(idLojaPesquisa != 0){
+	 clausula += " WHERE idLoja  = "+idLojaPesquisa;
+ }
+ if (!status.isEmpty()) {
+    if (clausula.isEmpty()) {
+      clausula = " WHERE status='"+status+"'";
+    } else {
+      clausula = clausula+" AND status='"+status+"'";
+    }
+  }
+}
+%>
+<h1 class="cabecalho_pagina">Ordem de Serviço</h1>
+
+|<a class="button" href="formOrdemServico.jsp?acao=inc">Novo Cadastro</a>|<br>
+
+<body onload="document.forms[0].elements[0].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<form action="listarOrdemServico.jsp">
+<table colspan="2">
+  <tr>
+  	<th class="label">Status</th>
+  	<td class="label_radio">
+  		<input type="radio" class="radio" name="status" value="" <%= (status.equals("")? "checked": "") %>>Todos
+  		<input type="radio" class="radio" name="status" value="A" <%= (status.equals("A")? "checked": "") %>>Ativo
+  		<input type="radio" class="radio" name="status" value="I" <%= (status.equals("I")? "checked": "") %>>Inativo
+  	</td>
+  	<td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+  	<td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+</table>
+<hr>
+<%-- mostra todos os registros do banco de dados --%>
+<%
+List list;
+dao = new OrdemServicoDAO(conn);
+clausula = clausula +" ORDER BY idOrdemServico ";
+list = dao.listar(clausula);
+int cont = 0;
+%>
+<table border="0" width="100%">
+	<tr>
+		<th class="grid">&nbsp;</th>
+		<th class="grid"><center>Loja</center></th>
+		<th class="grid"><center>Entidade</center></th>
+		<th class="grid"><center>Data do Orçamento</center></th>
+		<th class="grid"><center>Responsável</center></th>
+		<th class="grid">Status</th>
+		<th class="grid">Excluir</th>
+	</tr>
+<%
+//seleciona todos os registros do banco de dados
+String msgStatus = "";
+lojaDAO = new LojaDAO(conn);
+buscaLoja = new Loja();
+String nomeLoja = "";
+
+entidadeDAO = new EntidadeDAO(conn);
+entidade = new Entidade();
+String nomeEntidade = "";
+
+for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	
+	OrdemServico ordemServico = (OrdemServico) it.next();
+	if(ordemServico.getStatus().equalsIgnoreCase("I")){
+		msgStatus = "Incompleta";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("NA")){
+		msgStatus = "Não Avaliada";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("R")){
+		msgStatus = "Recusada";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("A")){
+		msgStatus = "Aberta";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("TB")){
+		msgStatus = "Em Trabalho";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("AG")){
+		msgStatus = "Aguardando";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("AT")){
+		msgStatus = "Atrasada";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("P")){
+		msgStatus = "Pronta";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("E")){
+		msgStatus = "Entregue";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("F")){
+		msgStatus = "Faturada";
+	}else if(ordemServico.getStatus().equalsIgnoreCase("C")){
+		msgStatus = "Cancelada";
+	}
+	cont++;
+		//buscar nomeloja e nomeEntidade
+		buscaLoja = lojaDAO.procurarLoja(ordemServico.getIdLoja());
+		nomeLoja = buscaLoja.getApelido()+" / "+buscaLoja.getRazaoSocial();
+		
+		entidade = entidadeDAO.procurarEntidade(ordemServico.getCdEntidade());
+		nomeEntidade = entidade.getNome();
+	%>
+	<tr>
+		<td class = "grid" width="2%"><center><%=cont%></center></td>
+		<td class="grid"><center><a href="formOrdemServico.jsp?acao=atu&idOrdemServico=<%=ordemServico.getIdOrdemServico() %>" ><%=nomeLoja%></a></center></td>
+		<td class="grid"><center><%=nomeEntidade %></center></td>
+		<td class="grid"><center><%=ConverteDate.dateToString(ordemServico.getDtOrc()) %></center></td>
+		<td class="grid"><center><%=ordemServico.getPessoaResponsavel() %></center></td>
+		<td class = "grid" width="5%"><center><%=msgStatus%></center></td>
+		<td class = "grid" width="3%"><center><a href="javascript: confirmaExcluir(<%=cont%>,<%=ordemServico.getIdOrdemServico() %>);"><img border = "0" src="../images/delete.gif"></a></center></td>
+	</tr>
+<%} %>
+</table>
+</form>
+<p align="right">|<a class="button" href="formOrdemServico.jsp?acao=inc">Novo Cadastro</a>|

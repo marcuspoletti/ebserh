@@ -1,0 +1,107 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.Usuario"%>
+<%@ page import="afero.auxiliar.Seguranca" %>
+<%@page import="afero.util.ConverteDate"%>
+<%@page import="afero.persistence.UsuarioDAO"%>
+<%@page import ="java.util.*" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/>"></script>
+
+<script>
+function salvar() {
+   if(document.all.novaSenha.value == '') {
+    	window.alert("O campo Nova Senha é obrigatório.");
+    	document.all.novaSenha.focus();
+   }if(document.all.confSenha.value == '') {
+   		window.alert("O campo Confirmar Senha é obrigatório.");
+    	document.all.confSenha.focus();
+   }if (document.all.novaSenha.value != document.all.confSenha.value ) {
+   	    window.alert("O campo Nova Senha e Confirmar Senha tem que ser igual.");
+        document.all.confSenha.focus();
+   }else {
+  	document.forms[0].submit();
+  }
+}
+
+function cancelar(id) {
+  document.forms[0].action="atualizacaoLogin.jsp?acao=inc&idUsuario="+id;
+  document.forms[0].submit();
+}
+ 
+</script>
+</head>
+<%
+//variáveis capturadas da página listarTipoEntidae.jsp
+String acao = request.getParameter("acao");
+String idUsuario = (String)session.getAttribute("idUsuario");
+Seguranca seguranca = new Seguranca();
+
+if (acao == null) acao = "inc";
+String login = "";
+String senha = "";
+String novaSenha = "";
+String confSenha = "";
+Usuario usuario = null;
+UsuarioDAO dao = new UsuarioDAO(conn);
+if(acao.equals("inc")){
+    
+	usuario = dao.procurarUsuario(Integer.parseInt(idUsuario));
+	senha = usuario.getSenha();
+	login = usuario.getLogin();
+}
+//verifica se acao foi atualizar
+if (acao.equals("atu")){
+	usuario = dao.procurarUsuario(Integer.parseInt(idUsuario));
+	login = request.getParameter("login");
+	senha = request.getParameter("novaSenha");
+	  //seguranca
+	  seguranca.setUsuario(login);
+	  seguranca.setSenha(senha);
+	  String senhaCode = seguranca.md5(seguranca.getUsuario()+seguranca.getSenha());
+	  //fim seguranca
+	UsuarioDAO daoAtu = new UsuarioDAO(conn);  
+	usuario.setLogin(login);
+	usuario.setSenha(senhaCode);
+	daoAtu.atualizar(usuario);
+	acao = "inc";
+}
+%>
+<body onload="document.forms[0].elements[2].focus();" >
+<h1 class="cabecalho_pagina">Cadastro de Login</h1>
+<form method="post" action="atualizacaoLogin.jsp?acao=atu">
+<input type="hidden" name="acao" value="<%="atu"%>"/>
+<input type="hidden" name="login" value="<%=login%>"/>
+
+<table border="0" width="100%">
+  <tr>
+    <th class="label">Login*</th>
+    <td><input disabled type="text" id="login" name="login" <%if (login != null) { %>value="<%=login%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+  <tr>
+    <th class="label">Senha*</th>
+    <td><input type="password" id="senha" name="senha" <%if (senha != null) { %>value="<%=senha%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+   <tr>
+    <th class="label">Nova Senha*</th>
+    <td><input type="password" id="novaSenha" name="novaSenha" <%if (novaSenha != null) { %>value="<%=novaSenha%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+  <tr>
+    <th class="label">Confirmar Senha*</th>
+    <td><input type="password" id="confSenha" name="confSenha" <%if (confSenha != null) { %>value="<%=confSenha%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+</table><hr>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Salvar" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar(<%=idUsuario%>);" />
+	<td class="campo_obrigatorio">* Campos Obrigatórios</td>
+</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

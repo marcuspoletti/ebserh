@@ -1,0 +1,29 @@
+<%@page import="afero.model.CentroCusto"%>
+<%@page import ="afero.persistence.CentroCustoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+String nmCentroCusto = "";
+CentroCustoDAO daoCentroCusto;
+CentroCustoDAO daoCentroCustoPai;
+List listCentroCusto;
+daoCentroCusto = new CentroCustoDAO(conn);
+daoCentroCustoPai = new CentroCustoDAO(conn);
+String clausulaCentroCusto = "  WHERE status='A' ORDER BY cdCentroCusto ";
+listCentroCusto = daoCentroCusto.listarCentroCusto(clausulaCentroCusto);
+Iterator itCentroCusto = listCentroCusto.iterator();
+while (itCentroCusto.hasNext()) { 
+	CentroCusto centroCusto = (CentroCusto) itCentroCusto.next();
+	if(centroCusto.getIdCentroCustoPai()>0){
+		CentroCusto centroCustoPai = daoCentroCustoPai.procurarCentroCusto(centroCusto.getIdCentroCustoPai());
+		nmCentroCusto = centroCustoPai.getNmCentroCusto()+":";	
+	}else{
+		nmCentroCusto = "";
+	}
+%>
+
+
+<option value="<%=centroCusto.getIdCentroCusto()%>"><%=nmCentroCusto+centroCusto.getNmCentroCusto()%></option>
+<%
+}
+%>

@@ -1,0 +1,69 @@
+package afero.util;
+
+
+
+import java.util.*;
+import afero.model.PedidoSaida;
+import afero.model.PedidoSaidaSubItem;
+import afero.persistence.AferoDAOException;
+import afero.persistence.PedidoSaidaDAO;
+import afero.persistence.PedidoSaidaSubItemDAO;
+import afero.model.Orcamento;
+import afero.model.OrcamentoItem;
+import afero.model.OrcamentoPedidoSaida;
+import afero.persistence.OrcamentoDAO;
+import afero.persistence.OrcamentoItemDAO;
+import afero.persistence.OrcamentoPedidoSaidaDAO;
+
+
+public class ExclusaoPedido {
+	public static void main(String[] args) throws AferoDAOException {
+		List listItem;
+		OrcamentoItem orcamentoItem;
+		OrcamentoPedidoSaida orcPedidoSaida = new OrcamentoPedidoSaida(); 
+		OrcamentoPedidoSaidaDAO daoOrcamentoPedidoSaida = new OrcamentoPedidoSaidaDAO(ConnectionFactory.getConnection()); 
+		OrcamentoDAO daoOrcamento = new OrcamentoDAO(ConnectionFactory.getConnection()); 
+		OrcamentoItemDAO daoOrcamentoItem = new OrcamentoItemDAO(ConnectionFactory.getConnection());
+		PedidoSaidaSubItem pedidoSaidaItem  = new PedidoSaidaSubItem();
+		PedidoSaidaDAO dao = new PedidoSaidaDAO(ConnectionFactory.getConnection());
+		List listOrc;
+		PedidoSaidaSubItemDAO daoPedidoSaidaItem = new PedidoSaidaSubItemDAO(ConnectionFactory.getConnection());
+		String clausula = " WHERE ps.status in ('P', 'C', 'A') AND ps.tipoPedido in ('P', 'R', 'T') AND ps.operacao='S' AND ps.dtEntrega < '2012-12-31 23:59:59' OR ps.dtEntrega is null AND ps.idLoja ="+2;
+		List list = dao.listarPedidoSaida(clausula);
+		int numOrcamento = 0;
+		try{
+			for (Iterator it = list.iterator(); it.hasNext();) {
+				PedidoSaida pedidoSaida = (PedidoSaida) it.next();
+				numOrcamento = dao.getIdOrcamento(pedidoSaida.getIdPedidoSaida());
+				if(numOrcamento != 0){
+					Orcamento orc = daoOrcamento.procurarOrcamento(numOrcamento);
+					listOrc = daoOrcamentoItem.procurarOrcamentoItem(numOrcamento);
+					if(listOrc != null){
+						for ( Iterator itOrcItem = listOrc.iterator(); itOrcItem.hasNext(); ) {
+							orcamentoItem = (OrcamentoItem) itOrcItem.next();
+							daoOrcamentoItem.excluir(orcamentoItem);
+					      }
+						
+					}
+					orcPedidoSaida = daoOrcamentoPedidoSaida.procurarOrcamentoPedidoSaida(numOrcamento);
+					if(orcPedidoSaida != null){
+						daoOrcamentoPedidoSaida.excluir(orcPedidoSaida);
+					}
+					daoOrcamento.excluir(orc);
+				}
+				listItem = daoPedidoSaidaItem.procurarPedidoSaidaItem(pedidoSaida.getIdPedidoSaida());
+				 if(listItem != null){
+				  for ( Iterator itItem = listItem.iterator(); itItem.hasNext(); ) {
+					pedidoSaidaItem = (PedidoSaidaSubItem) itItem.next();
+					daoPedidoSaidaItem.excluir(pedidoSaidaItem);
+			      }
+				 }
+				 dao.excluir(pedidoSaida);
+			}
+			System.out.println("Sucesso....");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+}

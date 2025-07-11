@@ -1,0 +1,59 @@
+package afero.util;
+
+
+import afero.model.Loja;
+import afero.persistence.AferoDAOException;
+import afero.persistence.LojaDAO;
+
+public class DadosLoja {
+	
+	
+	private String nomeLoja = "";
+	private String apelidoLoja = "";
+	private String cnpj = "";
+	
+	
+	
+	public DadosLoja(String nomeLoja, String apelidoLoja, String cnpj) {
+		
+		this.nomeLoja = nomeLoja;
+		this.apelidoLoja = apelidoLoja;
+		this.cnpj = cnpj;
+	}
+	public String getNomeLoja() {
+		return nomeLoja;
+	}
+	public void setNomeLoja(String nomeLoja) {
+		this.nomeLoja = nomeLoja;
+	}
+	public String getApelidoLoja() {
+		return apelidoLoja;
+	}
+	public void setApelidoLoja(String apelidoLoja) {
+		this.apelidoLoja = apelidoLoja;
+	}
+	public String getCnpj() {
+		return cnpj;
+	}
+	public void setCnpj(String cnpj) {
+		this.cnpj = cnpj;
+	}
+	
+	public static String getApelidoLoja(int idLoja) throws AferoDAOException{
+		
+		String apelido = "";
+		try{
+			LojaDAO daoLoja = new LojaDAO(ConnectionFactory.getConnection());
+			Loja loja = daoLoja.procurarLoja(idLoja);
+			apelido = loja.getApelido();
+		}catch(Exception e){
+			e.getStackTrace();
+		}
+		
+		
+		return apelido;
+		
+	}
+	
+
+}

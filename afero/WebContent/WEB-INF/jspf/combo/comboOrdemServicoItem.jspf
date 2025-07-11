@@ -1,0 +1,18 @@
+<%@page import ="afero.model.OrdemServicoItem" %>
+<%@page import ="afero.persistence.OrdemServicoItemDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+OrdemServicoItemDAO daoOrdemServicoItem;
+List listOrdemServicoItem;
+daoOrdemServicoItem = new OrdemServicoItemDAO(conn);
+String clausulaOrdemServicoItem = " ORDER BY dsCompServico ";
+listOrdemServicoItem = daoOrdemServicoItem.listar(clausulaOrdemServicoItem);
+Iterator itOrdemServicoItem = listOrdemServicoItem.iterator();
+while (itOrdemServicoItem.hasNext()) { 
+	OrdemServicoItem ordemServicoItem = (OrdemServicoItem) itOrdemServicoItem.next();
+%>
+<option value="<%=ordemServicoItem.getIdOrdemServicoItem()%>"><%=ordemServicoItem.getIdOrdemServicoItem() +"-" + ordemServicoItem.getDsCompServico() %></option>
+<%
+}
+%>

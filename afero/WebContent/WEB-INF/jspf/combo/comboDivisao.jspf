@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Divisao" %>
+<%@page import ="afero.persistence.DivisaoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+DivisaoDAO daoDivisao;
+List listDivisao;
+daoDivisao = new DivisaoDAO(conn);
+String clausulaDivisao = "  WHERE status='A' ORDER BY dsDivisao";
+listDivisao = daoDivisao.listarDivisao(clausulaDivisao);
+Iterator itDivisao = listDivisao.iterator();
+while (itDivisao.hasNext()) { 
+	Divisao divisao = (Divisao) itDivisao.next();
+%>
+
+<option value="<%=divisao.getIdDivisao()%>"><%=divisao.getDsDivisao()%></option>
+<%
+}
+%>

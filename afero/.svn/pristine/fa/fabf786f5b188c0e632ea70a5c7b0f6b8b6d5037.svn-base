@@ -1,0 +1,19 @@
+<%@page import="afero.model.TipoTelefone"%>
+<%@page import ="afero.persistence.TipoTelefoneDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoTelefoneDAO daoTipoTelefone;
+List listTipoTelefone;
+daoTipoTelefone = new TipoTelefoneDAO(conn);
+String clausulaTipoTelefone = "  WHERE status='A' ";
+listTipoTelefone = daoTipoTelefone.listarTipoTelefone(clausulaTipoTelefone);
+Iterator itTipoTelefone = listTipoTelefone.iterator();
+while (itTipoTelefone.hasNext()) { 
+	TipoTelefone tipoTelefone = (TipoTelefone) itTipoTelefone.next();
+%>
+
+<option value="<%=tipoTelefone.getCdTipoTelefone()%>"><%=tipoTelefone.getDsTipoTelefone()%></option>
+<%
+}
+%>

@@ -1,0 +1,19 @@
+<%@page import ="afero.model.TipoEmail" %>
+<%@page import ="afero.persistence.TipoEmailDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoEmailDAO daoTipoEmail;
+List listTipoEmail;
+daoTipoEmail = new TipoEmailDAO(conn);
+String clausulaTipoEmail = "  WHERE status='A' ";
+listTipoEmail = daoTipoEmail.listarTipoEmail(clausulaTipoEmail);
+Iterator itTipoEmail = listTipoEmail.iterator();
+while (itTipoEmail.hasNext()) { 
+	TipoEmail tipoEmail = (TipoEmail) itTipoEmail.next();
+%>
+
+<option value="<%=tipoEmail.getCdTipoEmail()%>"><%=tipoEmail.getDsTipoEmail()%></option>
+<%
+}
+%>

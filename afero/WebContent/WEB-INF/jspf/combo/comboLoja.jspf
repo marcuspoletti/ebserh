@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Loja" %>
+<%@page import ="afero.persistence.LojaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+LojaDAO daoLoja;
+List listLoja;
+daoLoja = new LojaDAO(conn);
+String clausulaLoja = "  WHERE status ='A' ORDER BY apelido";
+listLoja = daoLoja.listarLoja(clausulaLoja);
+Iterator itLoja = listLoja.iterator();
+while (itLoja.hasNext()) { 
+	Loja loja = (Loja) itLoja.next();
+%>
+
+<option value="<%=loja.getIdLoja()%>"><%=loja.getApelido()%>/<%=loja.getRazaoSocial()%></option>
+<%
+}
+%>

@@ -1,0 +1,21 @@
+<%@page import="afero.model.FormacaoPreco"%>
+<%@page import ="afero.persistence.FormacaoPrecoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+FormacaoPrecoDAO daoFormacaoPreco;
+List listFormacaoPreco;
+daoFormacaoPreco = new FormacaoPrecoDAO(conn);
+String clausulaFormacaoPreco = " WHERE status='A' ORDER BY dsFormacaoPreco ";
+listFormacaoPreco = daoFormacaoPreco.listarFormacaoPreco(clausulaFormacaoPreco);
+Iterator itFormacaoPreco = listFormacaoPreco.iterator();
+while (itFormacaoPreco.hasNext()) { 
+	FormacaoPreco formacaoPreco = (FormacaoPreco) itFormacaoPreco.next();
+%>
+
+
+
+<option value="<%=formacaoPreco.getIdFormacaoPreco()%>"><%=formacaoPreco.getDsFormacapPreco()%></option>
+<%
+}
+%>

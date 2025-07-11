@@ -1,0 +1,19 @@
+<%@page import ="afero.model.CstIpi" %>
+<%@page import ="afero.persistence.CstIpiDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CstIpiDAO daoCstIpi;
+List listCstIpi;
+daoCstIpi = new CstIpiDAO(conn);
+String clausulaCstIpi = " ORDER BY dsCstIpi";
+listCstIpi = daoCstIpi.listarCstIpi(clausulaCstIpi);
+Iterator itCstIpi = listCstIpi.iterator();
+while (itCstIpi.hasNext()) { 
+	CstIpi cstIpi = (CstIpi) itCstIpi.next();
+%>
+
+<option value="<%=cstIpi.getCdCstIpi()%>"><%=cstIpi.getCdCstIpi()+"/"%><%=cstIpi.getDsCstIpi()%></option>
+<%
+}
+%>

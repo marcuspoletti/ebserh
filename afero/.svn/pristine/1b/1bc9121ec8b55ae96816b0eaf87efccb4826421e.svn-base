@@ -1,0 +1,334 @@
+package afero.model;
+
+import java.util.Date;
+
+public class OrdemServico {
+	
+	private int idOrdemServico;
+	private int idLoja;
+	private int cdEntidade;
+	private int idColaborador;
+	private int idEntrega;
+	private int cdTipoAtendimento;
+	private String tipo;
+	private Date dtOrc;
+	private Date dtOS;
+	private Date dtAprov;
+	private Date dtEntrega;
+	private String pessoaResponsavel;
+	private Date dtInicio;
+	private Date dtConclusao;
+	private Date dtEntRealizada;
+	private int cdCondPagto;
+	private int prazoEntrega;
+	private int prazoValidade;
+	private int prazoGarantia;
+	private String cmpOS1;
+	private String cmpOS2;
+	private String cmpOS3;
+	private String cmpOS4;
+	private String observacao;
+	private double vlServ;
+	private double vlProd;
+	private float vlFrete;
+	private float vlDesc;
+	private String status;
+	private Date dtMod;
+	private String usuario;
+
+	public OrdemServico() {
+	}
+	
+	public OrdemServico(int idOrdemServico, int idLoja, int cdEntidade,
+			int idColaborador, int idEntrega, int cdTipoAtendimento,
+			String tipo, Date dtOrc, Date dtOS, Date dtAprov, Date dtEntrega,
+			String pessoaResponsavel, Date dtInicio, Date dtConclusao,
+			Date dtEntRealizada, int cdCondPagto, int prazoEntrega,
+			int prazoValidade, int prazoGarantia, String cmpOS1, String cmpOS2,
+			String cmpOS3, String cmpOS4, String observacao, double vlServ,
+			double vlProd, float vlFrete, float vlDesc, String status,
+			Date dtMod, String usuario) {
+		super();
+		this.idOrdemServico = idOrdemServico;
+		this.idLoja = idLoja;
+		this.cdEntidade = cdEntidade;
+		this.idColaborador = idColaborador;
+		this.idEntrega = idEntrega;
+		this.cdTipoAtendimento = cdTipoAtendimento;
+		this.tipo = tipo;
+		this.dtOrc = dtOrc;
+		this.dtOS = dtOS;
+		this.dtAprov = dtAprov;
+		this.dtEntrega = dtEntrega;
+		this.pessoaResponsavel = pessoaResponsavel;
+		this.dtInicio = dtInicio;
+		this.dtConclusao = dtConclusao;
+		this.dtEntRealizada = dtEntRealizada;
+		this.cdCondPagto = cdCondPagto;
+		this.prazoEntrega = prazoEntrega;
+		this.prazoValidade = prazoValidade;
+		this.prazoGarantia = prazoGarantia;
+		this.cmpOS1 = cmpOS1;
+		this.cmpOS2 = cmpOS2;
+		this.cmpOS3 = cmpOS3;
+		this.cmpOS4 = cmpOS4;
+		this.observacao = observacao;
+		this.vlServ = vlServ;
+		this.vlProd = vlProd;
+		this.vlFrete = vlFrete;
+		this.vlDesc = vlDesc;
+		this.status = status;
+		this.dtMod = dtMod;
+		this.usuario = usuario;
+	}
+
+	public int getIdOrdemServico() {
+		return idOrdemServico;
+	}
+
+	public void setIdOrdemServico(int idOrdemServico) {
+		this.idOrdemServico = idOrdemServico;
+	}
+
+	public int getIdLoja() {
+		return idLoja;
+	}
+
+	public void setIdLoja(int idLoja) {
+		this.idLoja = idLoja;
+	}
+
+	public int getCdEntidade() {
+		return cdEntidade;
+	}
+
+	public void setCdEntidade(int cdEntidade) {
+		this.cdEntidade = cdEntidade;
+	}
+
+	public int getIdColaborador() {
+		return idColaborador;
+	}
+
+	public void setIdColaborador(int idColaborador) {
+		this.idColaborador = idColaborador;
+	}
+
+	public int getIdEntrega() {
+		return idEntrega;
+	}
+
+	public void setIdEntrega(int idEntrega) {
+		this.idEntrega = idEntrega;
+	}
+
+	public int getCdTipoAtendimento() {
+		return cdTipoAtendimento;
+	}
+
+	public void setCdTipoAtendimento(int cdTipoAtendimento) {
+		this.cdTipoAtendimento = cdTipoAtendimento;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public Date getDtOrc() {
+		return dtOrc;
+	}
+
+	public void setDtOrc(Date dtOrc) {
+		this.dtOrc = dtOrc;
+	}
+
+	public Date getDtOS() {
+		return dtOS;
+	}
+
+	public void setDtOS(Date dtOS) {
+		this.dtOS = dtOS;
+	}
+
+	public Date getDtAprov() {
+		return dtAprov;
+	}
+
+	public void setDtAprov(Date dtAprov) {
+		this.dtAprov = dtAprov;
+	}
+
+	public Date getDtEntrega() {
+		return dtEntrega;
+	}
+
+	public void setDtEntrega(Date dtEntrega) {
+		this.dtEntrega = dtEntrega;
+	}
+
+	public String getPessoaResponsavel() {
+		return pessoaResponsavel;
+	}
+
+	public void setPessoaResponsavel(String pessoaResponsavel) {
+		this.pessoaResponsavel = pessoaResponsavel;
+	}
+
+	public Date getDtInicio() {
+		return dtInicio;
+	}
+
+	public void setDtInicio(Date dtInicio) {
+		this.dtInicio = dtInicio;
+	}
+
+	public Date getDtConclusao() {
+		return dtConclusao;
+	}
+
+	public void setDtConclusao(Date dtConclusao) {
+		this.dtConclusao = dtConclusao;
+	}
+
+	public Date getDtEntRealizada() {
+		return dtEntRealizada;
+	}
+
+	public void setDtEntRealizada(Date dtEntRealizada) {
+		this.dtEntRealizada = dtEntRealizada;
+	}
+
+	public int getCdCondPagto() {
+		return cdCondPagto;
+	}
+
+	public void setCdCondPagto(int cdCondPagto) {
+		this.cdCondPagto = cdCondPagto;
+	}
+
+	public int getPrazoEntrega() {
+		return prazoEntrega;
+	}
+
+	public void setPrazoEntrega(int prazoEntrega) {
+		this.prazoEntrega = prazoEntrega;
+	}
+
+	public int getPrazoValidade() {
+		return prazoValidade;
+	}
+
+	public void setPrazoValidade(int prazoValidade) {
+		this.prazoValidade = prazoValidade;
+	}
+
+	public int getPrazoGarantia() {
+		return prazoGarantia;
+	}
+
+	public void setPrazoGarantia(int prazoGarantia) {
+		this.prazoGarantia = prazoGarantia;
+	}
+
+	public String getCmpOS1() {
+		return cmpOS1;
+	}
+
+	public void setCmpOS1(String cmpOS1) {
+		this.cmpOS1 = cmpOS1;
+	}
+
+	public String getCmpOS2() {
+		return cmpOS2;
+	}
+
+	public void setCmpOS2(String cmpOS2) {
+		this.cmpOS2 = cmpOS2;
+	}
+
+	public String getCmpOS3() {
+		return cmpOS3;
+	}
+
+	public void setCmpOS3(String cmpOS3) {
+		this.cmpOS3 = cmpOS3;
+	}
+
+	public String getCmpOS4() {
+		return cmpOS4;
+	}
+
+	public void setCmpOS4(String cmpOS4) {
+		this.cmpOS4 = cmpOS4;
+	}
+
+	public String getObservacao() {
+		return observacao;
+	}
+
+	public void setObservacao(String observacao) {
+		this.observacao = observacao;
+	}
+
+	public double getVlServ() {
+		return vlServ;
+	}
+
+	public void setVlServ(double vlServ) {
+		this.vlServ = vlServ;
+	}
+
+	public double getVlProd() {
+		return vlProd;
+	}
+
+	public void setVlProd(double vlProd) {
+		this.vlProd = vlProd;
+	}
+
+	public float getVlFrete() {
+		return vlFrete;
+	}
+
+	public void setVlFrete(float vlFrete) {
+		this.vlFrete = vlFrete;
+	}
+
+	public float getVlDesc() {
+		return vlDesc;
+	}
+
+	public void setVlDesc(float vlDesc) {
+		this.vlDesc = vlDesc;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Date getDtMod() {
+		return dtMod;
+	}
+
+	public void setDtMod(Date dtMod) {
+		this.dtMod = dtMod;
+	}
+
+	public String getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(String usuario) {
+		this.usuario = usuario;
+	}
+
+			
+}

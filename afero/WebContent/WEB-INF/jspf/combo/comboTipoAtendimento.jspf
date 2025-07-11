@@ -1,0 +1,21 @@
+<%@page import="afero.model.TipoAtendimento"%>
+<%@page import ="afero.persistence.TipoAtendimentoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoAtendimentoDAO daoTipoAtendimento;
+List listTipoAtendimento;
+daoTipoAtendimento = new TipoAtendimentoDAO(conn);
+String clausulaTipoAtendimento = "  WHERE status ='A' ORDER BY dsTipoAtendimento ";
+listTipoAtendimento = daoTipoAtendimento.listarTipoAtendimento(clausulaTipoAtendimento);
+Iterator itTipoAtendimento = listTipoAtendimento.iterator();
+while (itTipoAtendimento.hasNext()) { 
+	TipoAtendimento tipoAtendimento = (TipoAtendimento) itTipoAtendimento.next();
+	tipoAtendimento.getCdTipoAtendimento();
+%>
+
+
+<option value="<%=tipoAtendimento.getCdTipoAtendimento()%>"><%=tipoAtendimento.getDsTipoAtendimento()%></option>
+<%
+}
+%>

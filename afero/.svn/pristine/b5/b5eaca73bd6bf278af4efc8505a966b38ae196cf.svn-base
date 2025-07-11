@@ -1,0 +1,20 @@
+<%@page import="afero.model.EntidadeEmail"%>
+<%@page import ="afero.persistence.EntidadeEmailDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EntidadeEmailDAO daoEntidadeEmail;
+List listEntidadeEmail;
+daoEntidadeEmail = new EntidadeEmailDAO(conn);
+String clausulaEntidadeEmail = "  WHERE en.padrao='S' ORDER BY en.dsEmail";
+listEntidadeEmail = daoEntidadeEmail.listarEntidadeEmail(clausulaEntidadeEmail);
+Iterator itEntidadeEmail = listEntidadeEmail.iterator();
+while (itEntidadeEmail.hasNext()) { 
+	EntidadeEmail entidadeEmail = (EntidadeEmail) itEntidadeEmail.next();
+%>
+
+
+<option value="<%=entidadeEmail.getIdEntidadeEmail()%>"><%=entidadeEmail.getDsEmail()%></option>
+<%
+}
+%>

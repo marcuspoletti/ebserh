@@ -1,0 +1,144 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.Unidade" %>
+<%@ page import="afero.model.Estoque" %>
+<%@ page import="afero.model.Preco" %>
+<%@ page import="afero.model.Loja" %>
+<%@ page import="afero.persistence.ProdutoDAO" %>
+<%@ page import="afero.persistence.UnidadeDAO" %>
+<%@ page import="afero.util.ConverteDate" %>
+<%@ page import="afero.persistence.EstoqueDAO" %>
+<%@ page import="afero.persistence.LojaDAO" %>
+<%@ page import="afero.persistence.PedidoEntradaDAO" %>
+<%@ page import="afero.persistence.PedidoSaidaDAO" %>
+<%@ page import="afero.persistence.PedidoEntradaItemDAO" %>
+<%@ page import="afero.persistence.PrecoDAO" %>
+<%@ page import="afero.model.PedidoEntrada" %>
+<%@ page import="afero.model.PedidoEntradaItem" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@page import="afero.util.Utilitaria"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/></script>
+
+<script>
+
+function atualizar() {
+ document.forms[0].action='apagarRegistrosEntradasPorLoja.jsp';
+ document.forms[0].submit();
+}  
+
+
+</script>
+
+<%
+String acao = "";
+if(request.getParameter("acao") != null){
+  acao = request.getParameter("acao");
+}else{
+  acao="not";	
+}
+
+
+
+String mensagem = "";
+int idLoja = 0;
+if (request.getParameter("idLoja") == null) {
+	idLoja = Integer.parseInt((String)session.getAttribute("idLoja"));
+} else {
+	idLoja = Integer.parseInt(request.getParameter("idLoja"));
+}
+PedidoSaidaDAO daoPedidoSaida = new PedidoSaidaDAO(conn);
+String dataIni = request.getParameter("dataIni");
+String dataFim = request.getParameter("dataFim");
+
+if (dataIni == null) {
+ dataIni = daoPedidoSaida.dataAtualPedido();
+}
+if (dataFim == null) {
+  dataFim = daoPedidoSaida.dataAtualPedido();
+}
+ConverteDate converte = new ConverteDate();
+if(acao.equals("ok")){
+	PedidoEntradaItemDAO daoPedEntradaItem = new PedidoEntradaItemDAO(conn);
+	PedidoEntradaDAO daoPedEntrada = new PedidoEntradaDAO(conn);
+	String clausula = " Where pe.status in ('A', 'C', 'P') AND pe.operacao in ('E', 'T', 'ES', 'AE') AND pe.dtPed BETWEEN '"+converte.DMYToYMDI(dataIni)+" 00:00:00' AND '"+converte.DMYToYMDI(dataFim)+" 23:59:59' AND pe.idLoja="+idLoja;
+	List listEntrada;
+	List listEntradaItem;
+	listEntrada = daoPedEntrada.listarPedidoEntrada(clausula);
+	try{
+		if(listEntrada != null){
+			for (Iterator it = listEntrada.iterator(); it.hasNext();) {
+				PedidoEntrada pedidoEntrada = (PedidoEntrada) it.next();
+				listEntradaItem = daoPedEntradaItem.listarProcurarPedidoEntradaItem(pedidoEntrada.getIdPedidoEntrada());
+				if(listEntradaItem != null){
+					for (Iterator itEntradaItem = listEntradaItem.iterator(); itEntradaItem.hasNext();) {
+						PedidoEntradaItem pedidoEntradaItem = (PedidoEntradaItem) itEntradaItem.next();
+						daoPedEntradaItem.excluir(pedidoEntradaItem);
+					}
+				}
+				daoPedEntrada.excluir(pedidoEntrada);
+			}
+		}
+		
+		System.out.println("Sucesso");
+		mensagem = "SUCESSO....";
+   }catch(Exception e){
+	   mensagem = "ERRO :"+e.getMessage();
+	  
+   }
+   
+}
+%>
+
+<h1 class="cabecalho_pagina">Apagar Registro de Entradas Por Loja</h1>
+
+<hr>
+
+<body onload="document.forms[0].elements[0].focus();" >
+<form method="get" action="apagarRegistrosEntradasPorLoja.jsp">
+<iframe width=174 height=189 name="gToday:normal:"../js/calendar/agenda.js"
+            id="gToday:normal:"../js/calendar/agenda.js" src="../js/calendar/ipopeng.htm"
+            scrolling="no" frameborder="0" style="visibility:visible; z-index:999; 
+    position:absolute; top:-500px; left:-500px;">
+    </iframe>
+<table colspan="2">
+  <tr>
+      <th class="label">Loja</th>
+      <td><select name="idLoja" >
+          <%@include file="../WEB-INF/jspf/combo/comboLoja.jspf" %></select>
+          <script>comboSelect(document.forms[0].idLoja, '<%= idLoja %>');</script>
+      </td>
+  </tr>
+  </table>
+  <table border="0" width="100%">
+    <tr>
+      <td class='grid'>Data Ini.(a partir de:)
+	<input type="text" name="dataIni" size="15" value="<%= dataIni %>" onblur="chkData(this,'dd/MM/yyyy')" maxlength="10" class="inputs"><a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dataIni);return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+      </td>
+      <td class='grid'>Data Final(até a:) 
+	<input type="text"  name="dataFim" size="15" value="<%= dataFim %>" maxlength="10" onblur="chkData(this,'dd/MM/yyyy')" class="inputs"><a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dataFim);return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+      </td>
+
+     
+    <td align="center">
+        <input type="button" value="Atualizar" class="botao" onclick="atualizar();">
+        <input type="hidden" name="acao" value="<%="ok"%>">
+    </td>
+    </tr>
+    </table>
+    <br>
+    <br>
+    <br>
+    <table border="0" width="100%" align="center">
+    <tr colspan = "5">
+		<td  align="center" class="grid_erro"><font size="5" ><center><%="Todos os Pedidos de Entrada serão apagados, ou seja, os que estão com os status: Atendido, Pendente e Cancelado."%></center></font></td>
+    </tr>
+    <tr colspan = "5">
+		<td  align="center" class="grid_erro"><font size="5" ><center><%=mensagem%></center></font></td>
+    </tr>
+    </table>
+<hr>
+</form>
+<%@include file="../fimConexao.jsp"%>

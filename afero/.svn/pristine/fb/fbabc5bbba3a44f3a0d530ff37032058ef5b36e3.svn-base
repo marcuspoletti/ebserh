@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Entrega" %>
+<%@page import ="afero.persistence.EntregaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EntregaDAO daoEntregaCombo;
+List listEntregaCombo;
+daoEntregaCombo = new EntregaDAO(conn);
+String clausulaEntregaCombo = " ORDER BY dsEntrega";
+listEntregaCombo = daoEntregaCombo.listarEntrega(clausulaEntregaCombo);
+Iterator itEntregaCombo = listEntregaCombo.iterator();
+while (itEntregaCombo.hasNext()) { 
+	Entrega entregaCombo = (Entrega) itEntregaCombo.next();
+%>
+
+<option value="<%=entregaCombo.getIdEntrega()%>"><%=entregaCombo.getDsEntrega()%></option>
+<%
+}
+%>

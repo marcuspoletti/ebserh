@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ordemServico_subservicoitem" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4bee19e6-be82-4ff6-8f00-4bee345d4476">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="itensServico" class="java.util.List">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+	</parameter>
+	<field name="dsCompServico" class="java.lang.String"/>
+	<field name="quant" class="java.lang.Float"/>
+	<field name="vlUni" class="java.lang.Float"/>
+	<field name="valor" class="java.lang.Float"/>
+	<field name="dsServico" class="java.lang.String"/>
+	<field name="codigo" class="java.lang.Integer"/>
+	<field name="desconto" class="java.lang.Float"/>
+	<variable name="valor_1" class="java.lang.Float" calculation="Sum">
+		<variableExpression><![CDATA[$F{valor}]]></variableExpression>
+	</variable>
+	<pageHeader>
+		<band height="17">
+			<staticText>
+				<reportElement x="231" y="0" width="100" height="17" uuid="b61d7fb7-0c3e-4e24-9bd5-fba65ed9ba2a"/>
+				<textElement textAlignment="Center">
+					<font fontName="Verdana" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Serviços]]></text>
+			</staticText>
+			<line>
+				<reportElement x="4" y="16" width="548" height="1" uuid="72576e6a-1fca-49cd-9ab8-ea316a6e7a8e"/>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="3" y="0" width="51" height="20" uuid="0c2932e7-dede-4b83-bc43-959d09d83b26"/>
+				<textElement>
+					<font fontName="Verdana" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Código Serviço]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="78" y="0" width="100" height="20" uuid="39e63484-f254-41df-a911-738d0bf31c50"/>
+				<textElement>
+					<font fontName="Verdana" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Descrição]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="271" y="0" width="100" height="20" uuid="31b54d2e-aa32-4b2a-9467-9aebdebcd23f"/>
+				<textElement>
+					<font fontName="Verdana" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Quant.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="315" y="0" width="80" height="20" uuid="2cc0af33-4941-4b49-ad8e-f4a97ac9ad6d"/>
+				<textElement>
+					<font fontName="Verdana" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Valor (R$)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="382" y="0" width="62" height="20" uuid="918e44af-3ec2-4017-ab9d-d1ae96edcf53"/>
+				<textElement>
+					<font fontName="Verdana" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Desc.(%)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="446" y="0" width="109" height="20" uuid="a8a073d8-c91f-482f-8999-6a65115a6c83"/>
+				<textElement>
+					<font fontName="Verdana" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Valor Total (R$)]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="45" splitType="Stretch">
+			<line>
+				<reportElement x="4" y="0" width="548" height="1" uuid="02ee04fc-6340-480d-a21d-cee109f3b12d"/>
+			</line>
+			<textField pattern="###0;-###0">
+				<reportElement x="3" y="3" width="75" height="20" uuid="cb6bdb05-d563-4b18-942b-4b20cac91c46"/>
+				<textElement>
+					<font fontName="Verdana" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{codigo}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="78" y="23" width="448" height="20" uuid="a325acb0-73ed-41ae-a6bb-7b7effd19f3a"/>
+				<textElement>
+					<font fontName="Verdana" size="11"/>
+					<paragraph tabStopWidth="40"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dsCompServico}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0;-###0">
+				<reportElement x="271" y="3" width="100" height="20" uuid="27e6515f-df90-4230-8e33-7c19d0ed6c41"/>
+				<textElement>
+					<font fontName="Verdana" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quant}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00">
+				<reportElement x="318" y="3" width="100" height="20" uuid="aedf1380-0ee8-4edc-8343-ba9d04e3712d"/>
+				<textElement>
+					<font fontName="Verdana" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vlUni}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;-#,##0.00">
+				<reportElement x="464" y="3" width="100" height="20" uuid="737f0e52-21a5-4c1f-b071-9c8de9218373"/>
+				<textElement>
+					<font fontName="Verdana" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{valor}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="78" y="3" width="212" height="20" uuid="0b7fbac7-000f-476c-87cb-834d705ea1c2"/>
+				<textElement>
+					<font fontName="Verdana" size="10"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dsServico}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="4" y="43" width="548" height="1" uuid="43978141-6670-49b4-91ec-fee4598b82a3"/>
+			</line>
+			<textField>
+				<reportElement x="389" y="3" width="100" height="20" uuid="88afcecc-24d7-49c4-b433-db92392c754f"/>
+				<textElement>
+					<font fontName="Verdana"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{desconto}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="22" splitType="Stretch">
+			<staticText>
+				<reportElement x="413" y="0" width="100" height="20" uuid="870524ba-1992-4770-9fc4-a0032e1db21f"/>
+				<textElement>
+					<font fontName="Verdana" size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total :R$]]></text>
+			</staticText>
+			<textField pattern="#,##0.00;-#,##0.00">
+				<reportElement x="475" y="0" width="100" height="20" uuid="12c49b4d-fc23-47ba-96e1-160940d3b20f"/>
+				<textElement>
+					<font fontName="Verdana" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{valor_1}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,291 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.Produto" %>
+<%@ page import="afero.model.Unidade" %>
+<%@ page import="afero.model.Estoque" %>
+<%@ page import="afero.model.Preco" %>
+<%@ page import="afero.model.Divisao" %>
+<%@page import="afero.model.PedidoEntradaItem"%>
+<%@ page import="afero.model.Loja" %>
+<%@ page import="afero.persistence.ProdutoDAO" %>
+<%@ page import="afero.persistence.UnidadeDAO" %>
+<%@ page import="afero.persistence.EstoqueDAO" %>
+<%@ page import="afero.persistence.LojaDAO" %>
+<%@ page import="afero.persistence.DivisaoDAO" %>
+<%@ page import="afero.persistence.PrecoDAO" %>
+<%@page import="afero.persistence.PedidoEntradaItemDAO"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@page import="afero.util.Utilitaria"%>
+<%@page import="afero.util.ConverteDate"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/></script>
+
+
+<script>
+function localizar() {
+  document.forms[0].action="formCadastroItensCompras.jsp?acao=listar";
+  document.forms[0].submit();
+}  
+function novaPesquisa() {
+  document.forms[0].action="formCadastroItensCompras.jsp?acao=listar";
+  document.all.nomeProduto.value = '';
+  document.all.status.value = ''; //não está limpando
+  document.forms[0].submit();
+} 
+function salvar() {
+  if (document.all.produto.value == '') {
+	    window.alert("Nenhum item para ser inserido.");
+  }else{
+	   document.forms[0].action="formCadastroItensCompras.jsp?acao=gravar";
+	   document.forms[0].submit();
+  }
+}
+function cancelar() {
+  document.forms[0].action="formCadastroItensCompras.jsp?acao=listar";
+  document.forms[0].submit();
+}
+
+function CheckContent(evt){
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        return (charCode>=48 && charCode<=57 || charCode<20);
+      }
+
+</script>
+<%
+
+String idLojaUsuario = (String)session.getAttribute("idLoja");
+List list = null;
+List listarEstoque = null;
+ProdutoDAO dao;
+PrecoDAO daoPrecoEntrada = new PrecoDAO(conn);
+EstoqueDAO daoEstoque;
+Produto prod = null;
+Estoque estoque =null;
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null)mensagem = "";
+String nomeProduto = request.getParameter("nomeProduto");
+if(nomeProduto == null)nomeProduto = "";
+String clausula = "";
+int cont = 0;
+String preco = "0";
+String precoCompra = "0";
+String ultimoPrecoCompra = "0";
+Preco precoInserir = new Preco();
+int quantidadePedido = 0;
+String dtVal = daoPedidoEntrada.dataAtualPedido();
+String loteFab = "";
+int idEstoque = 0;
+int idUnidade = 0;
+int idPreco = 0;
+if(acao.equalsIgnoreCase("gravar")){
+	String[] idProduto = request.getParameterValues("produto");
+	PedidoEntradaItem pedidoEntradaItem = new PedidoEntradaItem();
+	PedidoEntradaItemDAO pedidoEntradaItemDAO = new PedidoEntradaItemDAO(conn);
+	if(idProduto.length > 0){
+		for(int I=0;I<idProduto.length;I++){
+	  		if(request.getParameter("idProduto_"+idProduto[I])!= null){
+		  		float quant = Utilitaria.toNumber(request.getParameter("quantidadePedido_"+idProduto[I])).floatValue();
+		  		if(quant >0){
+			  		float precoInsert = Utilitaria.toNumber(request.getParameter("preco_compra"+idProduto[I])).floatValue();
+			  		pedidoEntradaItem.setIdProduto(Integer.parseInt(request.getParameter("idProduto_"+idProduto[I])));
+			  		pedidoEntradaItem.setIdUnidade(Integer.parseInt(request.getParameter("idUnidade_"+idProduto[I])));
+			 		pedidoEntradaItem.setQuant(quant);
+			  		pedidoEntradaItem.setValor(precoInsert);
+			  		pedidoEntradaItem.setQuantPedida(quant);
+			  		pedidoEntradaItem.setIdPedidoEntrada(Integer.parseInt(idPedidoEntrada));
+			  		pedidoEntradaItem.setUsuario(usuario);
+			  		//Fiscal
+			  		pedidoEntradaItem.setNfICFOP(request.getParameter("cfop_"+idProduto[I]));
+			  		pedidoEntradaItem.setNfNCST(request.getParameter("cst_"+idProduto[I]));
+			  		pedidoEntradaItem.setNfNvBC(Utilitaria.toNumber(request.getParameter("bcIcms_"+idProduto[I])).floatValue());
+			  		pedidoEntradaItem.setNfNvICMS(Utilitaria.toNumber(request.getParameter("vIcms_"+idProduto[I])).floatValue());
+			  		pedidoEntradaItem.setNfNvBCST(Utilitaria.toNumber(request.getParameter("bcIcmsSt_"+idProduto[I])).floatValue());
+			  		pedidoEntradaItem.setNfNvICMSST(Utilitaria.toNumber(request.getParameter("vlIcmsSt_"+idProduto[I])).floatValue());
+			  		pedidoEntradaItem.setNfNpICMS(Utilitaria.toNumber(request.getParameter("icms_"+idProduto[I])).floatValue());
+			  		pedidoEntradaItem.setNfOvIPI(Utilitaria.toNumber(request.getParameter("ipi_"+idProduto[I])).floatValue());
+			  		// Fim Fiscal
+			  		
+			  		if(request.getParameter("dtVal_"+idProduto[I]) != ""){
+			  			pedidoEntradaItem.setDtVal(ConverteDate.stringToDate(request.getParameter("dtVal_"+idProduto[I])));
+			  		}
+			  		pedidoEntradaItem.setLoteFab(request.getParameter("loteFab_"+idProduto[I]));  
+			  		idEstoque = Integer.parseInt(request.getParameter("idEstoque_"+idProduto[I]));
+			  		idUnidade = Integer.parseInt(request.getParameter("idUnidade_"+idProduto[I]));
+			  		idPreco = Integer.parseInt(request.getParameter("idPreco_"+idProduto[I]));
+			  		pedidoEntradaItemDAO.incluir(pedidoEntradaItem);
+			  		int idEntradaItem = pedidoEntradaItemDAO.getIdEntradaItem();
+			  	         //Atualizando Preços
+			  		float ultimoPrecoCompraInsert = Utilitaria.toNumber(request.getParameter("ultPrecoCusto_"+idProduto[I])).floatValue();
+			  		float precoVendaInsert = Utilitaria.toNumber(request.getParameter("preco_venda"+idProduto[I])).floatValue();
+			  		PrecoDAO daoUpdatePreco = new PrecoDAO(conn);
+			  		
+			  		daoUpdatePreco.atualizarPrecoUltimoCusto(precoInsert, usuario, idPreco);
+			  		daoUpdatePreco.atualizarPrecoCustoDireto(precoInsert, usuario, idPreco);
+			  		
+			  		if(precoVendaInsert > 0){
+			  			daoUpdatePreco.atualizarPrecoVenda(precoVendaInsert, usuario, idPreco);
+			  		}
+			  		pedidoEntradaItemDAO.updateItensFiscaisItem(idEntradaItem, pedidoEntradaItem);
+		  		}else{
+		  			response.sendRedirect("formCadastroItensCompras.jsp?acao=listar&mensagem=Quantidade tem que ser maior que 0 !!!&idPedidoEntrada="+idPedidoEntrada+"&idLoja="+idLoja+"&idColaborador="+idColaborador+"&usuario="+usuario+"&status="+status+"&operacao="+operacao);
+		  		}
+		  
+	  	  }
+		}
+	}
+}
+%>
+<body onload="document.forms[0].elements[0].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<form method="post" action="formCadastroItensCompras.jsp?acao=listar">
+<input type="hidden" name="cont" value="<%=cont%>"/>
+<input type="hidden" name="idPedidoEntrada" value="<%=idPedidoEntrada%>"/>
+<input type="hidden" name="idLoja" value="<%=idLoja%>"/>
+<input type="hidden" name="idColaborador" value="<%=idColaborador%>"/>
+<input type="hidden" name="usuario" value="<%=usuario%>"/>
+<input type="hidden" name="status" value="<%=status%>"/>
+<input type="hidden" name="operacao" value="<%=operacao%>"/>
+
+<table colspan="2">
+  <tr>
+    <th class='label'>Descrição do Produto</th>
+    <td><input type="text" name="nomeProduto" <%if (nomeProduto != null) { %>value="<%=nomeProduto%>"<% }%>  size="40" maxlength="40"></td>
+    <td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+    <td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+  <%--
+  <tr>
+    <th class="label">Status</th>
+    <td class="label_radio">
+      <input disabled type="radio" class="radio" name="statusConsulta" value="" <%= (statusConsulta.equals("")? "checked": "") %>>Todos
+      <input type="radio" class="radio" name="statusConsulta" value="A" <%= (statusConsulta.equals("A")? "checked": "") %>>Ativo
+      <input disabled type="radio" class="radio" name="statusConsulta" value="I" <%= (statusConsulta.equals("I")? "checked": "") %>>Inativo</td>
+  </tr>
+   --%>
+</table>
+<hr>
+<%-- mostra todos os registros do banco de dados --%>
+<table border="0" width="100%">
+    <tr>
+      
+      <th class="grid"><center></center></th>
+       <th class="grid">Selecionar</th>
+      <th class="grid"><center>Desc. do Prod.</center></th>
+      <th class="grid">Divisão</th>
+      <th class="grid" width="5%">Ul.Ct Compra</th>
+      <th class="grid" width="5%">Pr. Compra</th>
+      <th class="grid" width="5%">Pr. Venda</th>
+      <th class="grid">C.S.T.</th>
+      <th class="grid">CFOP</th>
+      <th class="grid">Un.</th>
+      <th class="grid">Est.</th>
+      <th class="grid">Quant.</th>
+      <th class="grid">BC.ICMS</th>
+      <th class="grid">V.ICMS</th>
+      <th class="grid">BC. ICMS ST</th>
+      <th class="grid">VL. ICMS ST</th>
+      <th class="grid">ICMS</th>
+      <th class="grid">IPI</th>
+      <th class="grid">Dt. de Val.</th>
+      <th class="grid">Lt. de Fab.</th>
+     
+    </tr>
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+  if (nomeProduto!= null) {
+ 	     clausula = " WHERE p.dsProduto LIKE '"+nomeProduto+"%' OR p.cdBarra LIKE '"+nomeProduto+"%' ";
+  } 
+  if (!statusConsulta.isEmpty()) {
+  if (clausula.isEmpty()) {
+  	    clausula = " WHERE p.status='"+statusConsulta+"'";
+  } else {
+   		   clausula = clausula+" AND p.status='"+statusConsulta+"'";
+  }
+ }	
+  
+ dao = new ProdutoDAO(conn);
+
+	 
+ clausula = clausula+" ORDER BY p.dsProduto ";
+
+ 
+
+String cst = "0";
+String cfop = "0";
+String bcIcms = "0";
+String vIcms = "0";
+String bcIcmsSt = "0";
+String vlIcmsSt = "0";
+String icms = "0";
+String ipi = "0";
+if(nomeProduto != ""){
+	list = dao.listarProdutoPrecoLoja(clausula, Integer.parseInt(idLojaUsuario));
+  for ( Iterator it = list.iterator(); it.hasNext();) {
+	prod = (Produto) it.next();
+	daoEstoque = new EstoqueDAO(conn);
+	listarEstoque = daoEstoque.procurarEstoquePreco(prod.getIdProduto(), Integer.parseInt(idLojaUsuario));
+	DivisaoDAO dao1 = new DivisaoDAO(conn);
+	Divisao divisao = dao1.procurarDivisao(prod.getIdDivisao());
+	if(listarEstoque != null){
+	for (Iterator itListar = listarEstoque.iterator(); itListar.hasNext();){
+		cont++;
+		estoque = (Estoque) itListar.next();
+		LojaDAO lojaPreco = new LojaDAO(conn);
+		Loja lojaEstoque = lojaPreco.procurarLoja(estoque.getIdLoja());
+		PrecoDAO daoPrecoListar = new PrecoDAO(conn);
+		Preco precoListar = daoPrecoListar.procurarPrecoEstoqueLoja(estoque.getIdEstoque(), Integer.parseInt(idLojaUsuario));
+		if(precoListar!=null){
+			preco = Utilitaria.formatarNumero(precoListar.getPreco(), 2).toString();
+			ultimoPrecoCompra = Utilitaria.formatarNumero(precoListar.getUltimoCustoCompra(), 2).toString();
+			UnidadeDAO daoUnidade = new UnidadeDAO(conn);
+			Unidade unidadeListar = daoUnidade.procurarUnidade(precoListar.getIdUnidade());
+%>
+    <tr>
+      <td class = "grid" width="1%"><center><%=cont%></center></td>
+      <td class = "grid" width="3%"><input type="checkbox" name="idProduto_<%=prod.getIdProduto()%>" value="<%=prod.getIdProduto()%>"></td>
+      <td class = "grid" width="10%"><center><%=prod.getDsProduto() %></center></td>
+      <td class = "grid" width="1%"><center><%=divisao.getDsDivisao()%></center></td>
+      <td class = "grid" width="3%"><input type="text" name="ultPrecoCusto_<%=prod.getIdProduto()%>" value="<%=ultimoPrecoCompra%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="preco_compra<%=prod.getIdProduto()%>" value="<%=precoCompra%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="preco_venda<%=prod.getIdProduto()%>" value="<%=preco%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="cst_<%=prod.getIdProduto()%>" value="<%=cst%>"></td>
+      <td class = "grid" width="3%"><input type="text" name="cfop_<%=prod.getIdProduto()%>" value="<%=cfop%>"></td>
+      <td class = "grid" width="2%"><center><%=unidadeListar.getDsUnidade()%></center></td>
+      <%if (estoque.getQtEstoque()<=estoque.getQtMinimo()){ %>
+      	 <td class = "grid" width="3%" title="ESTOQUE ESTÁ COM A QUANTIDADE MINIMA NO LIMITE OU ULTRAPASSOU."><center><font color="red"><b><i><%=Utilitaria.formatarNumero(estoque.getQtEstoque(),2)%></i></b></font></center></td>
+      <%}else{ %>
+      	 <td class = "grid" width="3%" ><center><%=Utilitaria.formatarNumero(estoque.getQtEstoque(),2)%></center></td>
+      <%} %>
+      <td class = "grid" width="3%"><input type="text" name="quantidadePedido_<%=prod.getIdProduto()%>" value="<%=quantidadePedido%>" ></td>
+      <td class = "grid" width="3%"><input type="text" name="bcIcms_<%=prod.getIdProduto()%>" value="<%=bcIcms%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="vIcms_<%=prod.getIdProduto()%>" value="<%=vIcms%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="bcIcmsSt_<%=prod.getIdProduto()%>" value="<%=bcIcmsSt%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="vlIcmsSt_<%=prod.getIdProduto()%>" value="<%=vlIcmsSt%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="icms_<%=prod.getIdProduto()%>" value="<%=icms%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="ipi_<%=prod.getIdProduto()%>" value="<%=ipi%>" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="dtVal_<%=prod.getIdProduto()%>" value="<%=dtVal%>" onblur="chkData(this,'dd/MM/yyyy')"></td>
+      <td class = "grid" width="3%"><input type="text" name="loteFab_<%=prod.getIdProduto()%>" value="<%=loteFab%>"></td>
+      
+  </tr>
+   <input type="hidden" name="produto" value="<%=prod.getIdProduto()%>"/>
+   <input type="hidden" name="idUnidade_<%=prod.getIdProduto()%>" value="<%=unidadeListar.getIdUnidade()%>"/>
+   <input type="hidden" name="idEstoque_<%=prod.getIdProduto()%>" value="<%=estoque.getIdEstoque()%>"/>
+   <input type="hidden" name="idPreco_<%=prod.getIdProduto()%>" value="<%=precoListar.getIdPreco()%>" > 
+
+<%
+		}
+	}
+	}
+}
+}
+%>
+  
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+    <br>
+	<td><input class="button" type="button" value="Adicionar" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" /></td>
+</tr>
+</table>
+</form>

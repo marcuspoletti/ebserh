@@ -1,0 +1,48 @@
+package afero.util;
+
+
+
+
+import afero.model.PedidoEntrada;
+import afero.model.PedidoEntradaItem;
+import afero.persistence.AferoDAOException;
+import afero.persistence.PedidoEntradaDAO;
+import afero.persistence.PedidoEntradaItemDAO;
+
+import java.util.Iterator;
+import java.util.List;
+
+
+public class ExclusaoEntrada {
+	
+	public static void main(String[] args) throws AferoDAOException {
+		PedidoEntradaItemDAO daoPedEntradaItem = new PedidoEntradaItemDAO(ConnectionFactory.getConnection());
+		PedidoEntradaDAO daoPedEntrada = new PedidoEntradaDAO(ConnectionFactory.getConnection());
+		String clausula = " Where pe.status in ('A', 'C') AND pe.operacao in ('E', 'T', 'ES', 'AE') AND pe.dtPed < '2012-12-31 23:59:59' AND pe.idLoja="+2;
+		List listEntrada;
+		List listEntradaItem;
+		listEntrada = daoPedEntrada.listarPedidoEntrada(clausula);
+		try{
+			if(listEntrada != null){
+				for (Iterator it = listEntrada.iterator(); it.hasNext();) {
+					PedidoEntrada pedidoEntrada = (PedidoEntrada) it.next();
+					listEntradaItem = daoPedEntradaItem.listarProcurarPedidoEntradaItem(pedidoEntrada.getIdPedidoEntrada());
+					if(listEntradaItem != null){
+						for (Iterator itEntradaItem = listEntradaItem.iterator(); itEntradaItem.hasNext();) {
+							PedidoEntradaItem pedidoEntradaItem = (PedidoEntradaItem) itEntradaItem.next();
+							daoPedEntradaItem.excluir(pedidoEntradaItem);
+						}
+					}
+					daoPedEntrada.excluir(pedidoEntrada);
+				}
+			}
+			
+			System.out.println("Sucesso");
+	   }catch(Exception e){
+		   e.printStackTrace();
+	   }
+	   
+	}
+	
+
+}

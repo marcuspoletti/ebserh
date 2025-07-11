@@ -1,0 +1,181 @@
+package afero.auxiliar;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.List;
+
+import afero.model.Entidade;
+import afero.model.EntidadeFisica;
+import afero.model.EntidadeJuridica;
+import afero.model.EntidadeEndereco;
+import afero.model.EntidadeTelefone;
+import afero.model.EntidadeEmail;
+import afero.model.TipoLogradouro;
+import afero.model.Cidade;
+import afero.model.Estado;
+import afero.persistence.AferoDAOException;
+import afero.persistence.EntidadeDAO;
+import afero.persistence.EntidadeFisicaDAO;
+import afero.persistence.EntidadeJuridicaDAO;
+import afero.persistence.EntidadeEnderecoDAO;
+import afero.persistence.EntidadeTelefoneDAO;
+import afero.persistence.EntidadeEmailDAO;
+import afero.persistence.TipoLogradouroDAO;
+import afero.persistence.CidadeDAO;
+import afero.persistence.EstadoDAO;
+import afero.util.ConnectionFactory;
+import afero.util.Utilitaria;
+
+public class GerarArquivoCliente {
+
+	private EntidadeDAO entidadeDAO = null;
+	
+	
+	
+	private EntidadeFisicaDAO entidadeFisicaDAO = null;
+	private EntidadeJuridicaDAO entidadeJuridicaDAO = null;
+	private EntidadeEnderecoDAO entidadeEnderecoDAO = null;
+	private EntidadeTelefoneDAO entidadeTelefoneDAO = null;
+	private EntidadeEmailDAO entidadeEmailDAO = null;
+	private TipoLogradouroDAO tipoLogradouroDAO = null;
+	private CidadeDAO cidadeDAO = null;
+	private EstadoDAO estadoDAO = null;
+	
+	//private int seqArquivo = 0;
+	private int numLinha = 0;
+	private Connection conn = null;
+
+	public GerarArquivoCliente() throws Exception {
+		try {
+			conn = ConnectionFactory.getConnection();
+			entidadeDAO = new EntidadeDAO(conn);
+			entidadeFisicaDAO = new EntidadeFisicaDAO(conn);
+			entidadeJuridicaDAO = new EntidadeJuridicaDAO(conn);
+			entidadeEnderecoDAO = new EntidadeEnderecoDAO(conn);
+			entidadeTelefoneDAO = new EntidadeTelefoneDAO(conn);
+			entidadeEmailDAO = new EntidadeEmailDAO(conn);
+			tipoLogradouroDAO = new TipoLogradouroDAO(conn);
+			cidadeDAO = new CidadeDAO(conn);
+			estadoDAO = new EstadoDAO(conn);
+
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro: " + ":\n" + e.getMessage());
+		}
+	}
+
+	private String montarHeader(int qtdReg) throws Exception {
+		//seqArquivo += 1;
+		String linha = "CLIENTE|"+qtdReg;
+		return linha;
+	}
+	
+	private String montarVersao() throws Exception {
+		//seqArquivo += 1;
+		String linha = "A|1.02";//versao
+		return linha;
+	}
+	
+	private String montarDetalhe(Entidade entidade) throws Exception {
+		String linha = "E|";		
+		//DecimalFormat fmtN = new DecimalFormat("000000");
+		//linha += fmtN.format(numLinha++);	
+		if (entidade.getTpInsc().equals("F")) {
+			EntidadeFisica entidadeFisica = entidadeFisicaDAO.procurarEntidadeFisica(entidade.getCdEntidade());
+			linha += "CPF|";//tpDoc
+			linha += Utilitaria.soNumeros(entidadeFisica.getCpf())+"|";//numDoc
+			linha += entidade.getNome()+"|";//xNome
+			linha += "ISENTO|";//IE
+			linha += "|";//ISUF
+		} else {
+			EntidadeJuridica entidadeJuridica = entidadeJuridicaDAO.procurarEntidadeJuridica(entidade.getCdEntidade());
+			linha += "CNPJ|";//tpDoc
+			linha += Utilitaria.soNumeros(entidadeJuridica.getCnpj())+"|";//numDoc
+			linha += entidade.getNome()+"|";//xNome
+			linha += entidadeJuridica.getInscEstadual()+"|";//IE
+			linha += "|";//ISUF
+		}
+
+		EntidadeEndereco entidadeEndereco = entidadeEnderecoDAO.procurarEntidadeEnderecoPadrao(entidade.getCdEntidade());
+		EntidadeTelefone entidadeTelefone = entidadeTelefoneDAO.procurarEntidadeTelefonePadrao(entidade.getCdEntidade());
+		EntidadeEmail entidadeEmail = entidadeEmailDAO.procurarEntidadeEmailPadrao(entidade.getCdEntidade());
+		TipoLogradouro tipoLogradouro = tipoLogradouroDAO.procurarTipoLogradouro(entidadeEndereco.getCdTipoLogradouro());
+		Cidade cidade = cidadeDAO.procurarCidade(entidadeEndereco.getIdCidade());
+		Estado estado = estadoDAO.procurarEstado(cidade.getCdEstado());
+		
+		linha += tipoLogradouro.getAbrevTipoLogradouro()+" "+entidadeEndereco.getDsEndereco()+"|";//xLgr
+		linha += entidadeEndereco.getNroEndereco()+"|";//nro
+		linha += entidadeEndereco.getCmpEndereco()+"|";//xCpl
+		linha += entidadeEndereco.getBaiEndereco()+"|";//xBairro
+		//linha += cidade.getCdMunicipio()+"|";//cMun
+		linha += "2800308|"; //Aracaju
+		linha += cidade.getNmCidade()+"|";//xMun
+		linha += estado.getSiglaEstado()+"|";//UF
+		linha += Utilitaria.soNumeros(entidadeEndereco.getCepEndereco())+"|";//CEP
+		linha += "1058|"; //cPais
+		linha += "BRASIL|";//xPais
+		linha += Utilitaria.soNumeros(entidadeTelefone.getNroTelefone())+"|";//fone
+		linha += entidadeEmail.getDsEmail();//email
+		return linha;
+	}
+
+	private String montaTrailler() {
+		String linha = "";
+		return linha;
+	}
+
+	public String gerarArquivo(String nomeArquivo, String clausula)
+			throws Exception {
+		String linha = "";
+		String retorno = "";
+		FileWriter arquivo;
+		try {
+			List list = entidadeDAO.listarEntidade(clausula);
+			if (list.size()>0) {
+				String path = "c:/temp/";
+				if (!path.endsWith("/")) {
+					path += "/";
+				}
+
+				numLinha = 1;
+				arquivo = new FileWriter(new File(path + nomeArquivo));
+
+				linha = montarHeader(list.size());
+				arquivo.write(linha+"\r\n");
+
+				int nreg1 = 0;
+				if (list!=null && list.size()>0) {
+					for (Iterator<Entidade> it = list.iterator(); it.hasNext();) {
+						linha = montarVersao();
+						arquivo.write(linha+"\r\n");
+						
+						Entidade bean = (Entidade) it.next();
+						linha = this.montarDetalhe(bean);
+						arquivo.write(linha+"\r\n");
+
+						nreg1++;
+					}
+				}
+
+				linha = montaTrailler();
+				arquivo.write(linha+"\r\n");
+				arquivo.close();
+				if (nreg1==0)
+					retorno = "<p style=\"color:red\">registros não encontrados</p>";
+				else {
+					retorno = "<p style=\"color:blue\">Arquivo "+nomeArquivo+" gerado com sucesso</p>";
+					retorno += "<a href=\"download.jsp?path="+path+"&arquivo="+nomeArquivo+"\">Download</a>";
+				}
+			} else
+				retorno="<p style=\"color:red\">Dados inexistentes para gerar o arquivo</p>";
+		} catch (Exception e) {
+			retorno="<p style=\"color:red\">ERRO: "+e.getMessage()+"</p>";
+		} finally {
+			ConnectionFactory.closeConnection(conn);
+		}
+		return retorno;
+	}
+
+}

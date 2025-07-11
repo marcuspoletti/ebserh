@@ -1,0 +1,1258 @@
+package afero.util;
+
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.io.*;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+
+import java.util.Date;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.Vector;
+
+import javax.swing.JFormattedTextField;
+import javax.swing.text.MaskFormatter;
+
+public class Utilitaria {
+
+	public static Locale locBrasil = new Locale("pt", "BR");
+	private static final String CARACTERES_ACENTUADOS = "������������������������������������������������";
+    private static final String CARACTERES_SEM_ACENTOS = "aAeEiIoOuUaAeEiIoOuUaAeEiIoOuUaAeEiIoOuUaAoOcCnN";
+    
+
+	public Utilitaria() {
+	}
+	public static String formatData(Date dataHora) {  
+	    DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");  
+	    String newDate = dateFormat.format(dataHora);  
+	    return newDate;  
+	}  
+
+	public static String soNumeros(String num, int tam) {
+		String retorno = "";
+		String c = "";
+		if (num!=null && num.length()>0)
+			for (int i = 0; i < num.length(); i++) {
+				c = num.substring(i, i + 1);
+				if ("0123456789".contains(c))
+					retorno += c;
+			}
+		if (tam > 0 && tam != retorno.length()) {
+			if (retorno.length() < tam)
+				for (int i = retorno.length(); i < tam; i++)
+					retorno = "0" + retorno;
+			else
+				retorno = retorno.substring(retorno.length() - tam,
+						retorno.length());
+		}
+		return retorno;
+	}
+
+	public static String soNumeros(String num) {
+		return soNumeros(num, 0);
+	}
+
+	public static String juntaStr(String nomes[]) {
+		String str = "";
+		for (int i = 0; i < nomes.length; i++) {
+			if (nomes[i].length() > 0)
+				str += nomes[i] + " ";
+		}
+		str = str.trim();
+		return str;
+	}
+	public static String abreviarStr(String nome, int tmax) {
+		String names[] = nome.split(" ");
+		int tamanho = names.length;
+		String abv = juntaStr(names);
+		if (abv.length() > tmax && tamanho >= 2) {
+			for (int i = (tamanho - 2); i >= 0; i--) {
+				if (names[i].length() > 3) {
+					names[i] = names[i].charAt(0) + ".";
+					abv = juntaStr(names);
+					if (abv.length() <= tmax) {
+						break;
+					}
+				}
+			}
+		}
+		if (abv.length() > tmax) {
+			abv = abv.substring(0, tmax);
+		}
+		return abv;
+	}
+
+	public static String left(String text, int len) {
+		String ret = text;
+		if (ret==null)
+			ret = "";
+		if (ret.length()>len)
+			ret = ret.substring(0, len);
+		return ret;
+    }
+
+    public static String right(String text, int len) {
+		String ret = text;
+		if (ret==null)
+			ret = "";
+		if (ret.length()>len)
+          ret=ret.substring(ret.length() - len, ret.length());
+		return ret;
+    }  
+
+    public static String substring(String text, int start, int end) {
+          return text.substring(start, end);
+    }  
+
+    public static String substring(String text, int start) {
+          return text.substring(start, text.length() - start);
+    }
+    
+    public static String replace(String texto, int vezes) {
+    	int i = 0;
+    	String str = "";
+    	while (i<vezes) {
+    		str += texto;
+    		i++;
+    	}
+    	return str;
+    }
+    
+    public static String rPad(String text, int len) {
+    	String ret = text;
+    	if (ret==null)
+    		ret = "";
+    	if (ret.length()<len) {
+    		while (ret.length()<len) 
+    			ret += " ";
+    	} else {
+    		ret = ret.substring(0, len);
+    	}
+        return ret;
+  }
+  
+    public static String lPad(String text, int len) {
+    	String ret = text;
+    	if (ret==null)
+    		ret = "";
+    	if (ret.length()<len) {
+    		while (ret.length()<len) 
+    			ret = " " + ret;
+    	} else {
+    		ret = ret.substring(0, len);
+    	}
+        return ret;
+  }
+    
+    public static String spaces(int tamanho) {
+    	String ret = "";
+    	int i = 0;
+    	while (i < tamanho) {
+    		ret += " ";
+    		i++;
+    	}
+    	return ret;
+    }
+  	
+	public static String formatarNumero(float numero, int decimais) {
+		NumberFormat nf = NumberFormat.getNumberInstance(locBrasil);
+		nf.setMinimumFractionDigits(decimais);
+		nf.setMaximumFractionDigits(decimais);
+
+		return nf.format(numero);
+	}
+
+	public static String formatarNumero(double numero, int decimais) {
+		NumberFormat nf = NumberFormat.getNumberInstance(locBrasil);
+		nf.setMinimumFractionDigits(decimais);
+		nf.setMaximumFractionDigits(decimais);
+
+		return nf.format(numero);
+	}
+
+	public static Number toNumber(String numero) throws NumberFormatException {
+		StringBuffer aux = new StringBuffer();
+		for (int i = 0; i < numero.length(); i++) {
+			if (numero.charAt(i) != '.') {
+				if (numero.charAt(i) == ',') {
+					aux.append('.');
+				} else {
+					aux.append(numero.charAt(i));
+				}
+			}
+		}
+		Double.parseDouble(aux.toString());
+		NumberFormat nf = NumberFormat.getNumberInstance(locBrasil);
+
+		return nf.parse(numero, new ParsePosition(0));
+	}
+
+	/** 
+	  * M�todo para comparar as datas e retornar o numero de dias de diferen�a entre elas 
+	  * 
+	  * Compare two date and return the difference between them in days. 
+	  * 
+	  * @param dataLow The lowest date 
+	  * @param dataHigh The highest date 
+	  * 
+	  * @return int 
+	  */  
+	public static int dataDiff(java.util.Date dataLow, java.util.Date dataHigh){  
+	  
+	     GregorianCalendar startTime = new GregorianCalendar();  
+	     GregorianCalendar endTime = new GregorianCalendar();  
+	       
+	     GregorianCalendar curTime = new GregorianCalendar();  
+	     GregorianCalendar baseTime = new GregorianCalendar();  
+	  
+	     startTime.setTime(dataLow);  
+	     endTime.setTime(dataHigh);  
+	       
+	     int dif_multiplier = 1;  
+	       
+	     // Verifica a ordem de inicio das datas  
+	     if( dataLow.compareTo( dataHigh ) < 0 ){  
+	         baseTime.setTime(dataHigh);  
+	         curTime.setTime(dataLow);  
+	         dif_multiplier = 1;  
+	     }else{  
+	         baseTime.setTime(dataLow);  
+	         curTime.setTime(dataHigh);  
+	         dif_multiplier = -1;  
+	     }  
+	       
+	     int result_years = 0;  
+	     int result_months = 0;  
+	     int result_days = 0;  
+	  
+	     // Para cada mes e ano, vai de mes em mes pegar o ultimo dia para import acumulando  
+	     // no total de dias. Ja leva em consideracao ano bissesto  
+	     while( curTime.get(GregorianCalendar.YEAR) < baseTime.get(GregorianCalendar.YEAR) ||  
+	            curTime.get(GregorianCalendar.MONTH) < baseTime.get(GregorianCalendar.MONTH)  )  
+	     {  
+	           
+	         int max_day = curTime.getActualMaximum( GregorianCalendar.DAY_OF_MONTH );  
+	         result_months += max_day;  
+	         curTime.add(GregorianCalendar.MONTH, 1);  
+	           
+	     }  
+	       
+	     // Marca que � um saldo negativo ou positivo  
+	     result_months = result_months*dif_multiplier;  
+	       
+	       
+	     // Retirna a diferenca de dias do total dos meses  
+	     result_days += (endTime.get(GregorianCalendar.DAY_OF_MONTH) - startTime.get(GregorianCalendar.DAY_OF_MONTH));  
+	       
+	     return result_years+result_months+result_days;  
+	} 
+	 public static String getFileURL(String url) {
+	        String temp = "";
+
+	        if (url == null) {
+	            return temp;
+	        }
+
+	        int pos = url.indexOf("?");
+
+	        if (pos == -1) {
+	            StringTokenizer st = new StringTokenizer(url, "/");
+
+	            while (st.hasMoreTokens()) {
+	                temp = st.nextToken();
+	            }
+	        } else {
+	            temp = url.substring(0, pos);
+	            pos = temp.lastIndexOf("/");
+
+	            if (pos != -1) {
+	                temp = url.substring(pos + 1);
+	            }
+	        }
+
+	        return temp;
+	    }
+
+	    public static String getLinkRelURL(String url) {
+	        String temp = "";
+	        int pos = url.indexOf("//");
+
+	        if (pos != -1) {
+	            temp = url.substring(pos + 2);
+	            pos = temp.indexOf("/");
+
+	            if (pos != -1) {
+	                return temp.substring(pos);
+	            }
+	        }
+
+	        return temp;
+	    }
+
+	    public static String getPageURL(String url) {
+	        String temp = "";
+	        StringTokenizer st = new StringTokenizer(url, "/");
+
+	        while (st.hasMoreTokens()) {
+	            temp = st.nextToken();
+
+	            if (temp.indexOf("?") != -1) {
+	                break;
+	            }
+	        }
+
+	        int pos = temp.indexOf("?");
+
+	        if (pos != -1) {
+	            temp = temp.substring(0, pos);
+	        }
+
+	        return temp;
+	    }
+
+	    /** Complementar com zeros � esquerda uma string com base num tamanho m�ximo. <BR>
+	     * Por exemplo: <BR>
+	     * <PRE>
+	     * String num = "12345";
+	     * System.out.println(Util.completarZeros(num, 10));
+	     * </PRE>
+	     * O resultado � "0000012345".
+	     * @param str String a ser complementada.
+	     * @param tamanho Tamanho m�ximo da String.
+	     * @return String complementada com zeros � esquerda.
+	     */
+	    public static String completarZeros(String str, int tamanho) {
+	        if (str.length() >= tamanho) {
+	            str = str.substring(0, tamanho);
+
+	            return str;
+	        }
+
+	        StringBuffer sb = new StringBuffer(str);
+
+	        for (int i = 0; i < tamanho; i++)
+	            sb.insert(0, '0');
+
+	        sb.delete(0, sb.length() - tamanho);
+
+	        return sb.toString();
+	    }
+
+	    /** M�todo para calcular o d�gito m�dulo de 10 (DAC10) de um n�mero.
+	     * @param num N�mero a ser calculado o d�gito DAC10.
+	     * @return D�gito contendo o DAC10.
+	     */
+	    public static int calcularDAC10(String num) {
+	        int tamanho;
+	        int aux;
+	        int resto;
+	        int dac10;
+	        String multiplicacao = "";
+	        int numseq = 2;
+
+	        if (num == null) {
+	            return 0;
+	        }
+
+	        tamanho = num.length();
+
+	        for (int i = tamanho - 1; i >= 0; i--) {
+	            aux = numseq * Integer.parseInt(num.substring(i, i + 1));
+	            multiplicacao += aux;
+	            numseq = (numseq == 2) ? 1 : 2;
+	        }
+
+	        resto = Utilitaria.somarDigitos(multiplicacao) % 10;
+
+	        if (resto == 0) {
+	            dac10 = 0;
+	        } else {
+	            dac10 = 10 - resto;
+	        }
+
+	        return dac10;
+	    }
+
+	    /** M�todo para calcular o resto do m�dulo de 11 de um n�mero com base nos pesos
+	     * informados.
+	     * @param num N�mero a ser calculado.
+	     * @param pesoMin Peso m�nimo.
+	     * @param pesoMax Peso m�ximo.
+	     * @return Resto do m�dulo de 11 do n�mero.
+	     */
+	    public static int calcularDAC11(String num, int pesoMin, int pesoMax) {
+	        return calcularDAC11(num, pesoMin, pesoMax, true);
+	    }
+
+	    /** M�todo para calcular o resto do m�dulo de 11 de um n�mero com base nos pesos
+	     * informados.
+	     * @param num N�mero a ser calculado.
+	     * @param pesoMin Peso m�nimo.
+	     * @param pesoMax Peso m�ximo.
+	     * @param soResto Se true, retorna o resto. Caso contr�rio, o d�gito verificador.
+	     * @return Resto do m�dulo de 11 do n�mero ou d�gito verificador.
+	     */
+	    public static int calcularDAC11(String num, int pesoMin, int pesoMax,
+	        boolean soResto) {
+	        int tamanho;
+	        int aux;
+	        int resto;
+	        int multiplicacao = 0;
+
+	        if (pesoMin > pesoMax) {
+	            aux = pesoMin;
+	            pesoMin = pesoMax;
+	            pesoMax = aux;
+	        }
+
+	        int numseq = pesoMin;
+
+	        if (num == null) {
+	            return 0;
+	        }
+
+	        tamanho = num.length();
+
+	        for (int i = tamanho - 1; i >= 0; i--) {
+	            aux = numseq * Integer.parseInt(num.substring(i, i + 1));
+	            multiplicacao += aux;
+	            numseq++;
+
+	            if (numseq > pesoMax) {
+	                numseq = pesoMin;
+	            }
+	        }
+
+	        resto = multiplicacao % 11;
+
+	        if (!soResto) {
+	            int digito = 11 - resto;
+
+	            if ((digito == 1) || (digito == 0) || (digito > 9)) {
+	                digito = 1;
+	            }
+
+	            resto = digito;
+	        }
+
+	        return resto;
+	    }
+
+	    /** M�todo para somar os d�gitos de uma String.
+	     * <P>Por exemplo: "1234567890" = 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 0 = 45.
+	     * <P>Se a String conter caracteres n�o-num�ricos, o caractere ser� ignorado.
+	     * @param num N�mero a ser calculado a soma dos d�gitos.
+	     * @return Soma dos d�gitos.
+	     */
+	    public static int somarDigitos(String num) {
+	        int soma = 0;
+
+	        for (int i = 0; i < num.length(); i++) {
+	            try {
+	                soma += Integer.parseInt(num.substring(i, i + 1));
+	            } catch (NumberFormatException e) {
+	            }
+	        }
+
+	        return soma;
+	    }
+/**
+	    public static Number toNumber(String numero) throws NumberFormatException {
+	        StringBuffer aux = new StringBuffer();
+
+	        for (int i = 0; i < numero.length(); i++) {
+	            if (numero.charAt(i) != '.') {
+	                if (numero.charAt(i) == ',') {
+	                    aux.append('.');
+	                } else {
+	                    aux.append(numero.charAt(i));
+	                }
+	            }
+	        }
+
+	        Double.parseDouble(aux.toString());
+
+	        NumberFormat nf = NumberFormat.getNumberInstance(locBrasil);
+
+	        return nf.parse(numero, new ParsePosition(0));
+	    }
+*/
+	    /** M�todo para selecionar uma coluna de uma String atrav�s de um delimitador.
+	     * <P>Por exemplo:
+	     * <PRE>
+	     * System.out.println(Util.piece("Jandson^jandson@infox.com.br", 2, "^"));
+	     * </PRE>
+	     * O resultado � jandson@infox.com.br.
+	     * @param texto Texto com delimitador.
+	     * @param coluna Coluna
+	     * @param delimitador Delimitador
+	     * @return String contendo a coluna especificada.
+	     */
+	    public static String piece(String texto, int coluna, String delimitador) {
+	        StringTokenizer st = new StringTokenizer(texto, delimitador);
+	        int i = 1;
+	        String aux = "";
+
+	        while (st.hasMoreTokens() && (i <= coluna)) {
+	            if (i == coluna) {
+	                aux = st.nextToken();
+
+	                break;
+	            }
+
+	            st.nextToken();
+	            i++;
+	        }
+
+	        return aux;
+	    }
+
+	    /** M�todo para calcular a direfen�a em dias entre duas datas.
+	     * @param dataInicio Data inicial.
+	     * @param dataFim Data final.
+	     * @return N�mero de dias. Se uma das datas for <code>null</code> ou
+	     * n�o estiver no formato DD/MM/AAAA, ser� retornado -1.
+	     */
+	    public static int diferencaData(String dataInicio, String dataFim) {
+	        if ((dataInicio == null) || (dataFim == null)) {
+	            return -1;
+	        }
+
+	        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	        Date data1 = sdf.parse(dataInicio, new ParsePosition(0));
+	        Date data2 = sdf.parse(dataFim, new ParsePosition(0));
+
+	        if ((data1 == null) || (data2 == null)) {
+	            return -1;
+	        }
+
+	        int dif = (int) ((data2.getTime() - data1.getTime()) / 1000 / 60 / 60 / 24);
+
+	        return dif;
+	    }
+
+	    /** Formatar uma data do tipo <i>java.util.Date</i> para uma String utilizando uma m�scara.
+	     * @param data Data a ser convertida
+	     * @param formato M�scara para a formata��o
+	     * @return String com a data formatada.
+	     */
+	    public static String dateString(Date data, String formato) {
+	        if (data == null) {
+	            return "";
+	        }
+
+	        if ((formato == null) || formato.equals("")) {
+	            formato = "dd/MM/yyyy";
+	        }
+
+	        SimpleDateFormat sdf = new SimpleDateFormat(formato, locBrasil);
+
+	        return sdf.format(data);
+	    }
+
+	    /** M�todo para limpar uma String retirando os elementos inv�lidos.<BR>
+	     * Por exemplo:<BR>
+	     * <PRE>
+	     * System.out.println(Util.limpar("12345abc6789", "0123456789"));
+	     * </PRE>
+	     * O resultado � 123456789.
+	     *
+	     * @param str String com a ser limpa.
+	     * @param validos String com os caracteres v�lidos.
+	     * @return String limpa.
+	     */
+	    public static String limpar(String str, String validos) {
+	        String aux = "";
+
+	        for (int i = 0; i < str.length(); i++) {
+	            if (validos.indexOf(str.substring(i, i + 1)) != -1) {
+	                aux += str.substring(i, i + 1);
+	            }
+	        }
+
+	        return aux;
+	    }
+
+	    /** Corrigi valores com duas casas decimais para formato inteiro.<br>Por exemplo,
+	     * 12.3 ficaria 1230.
+	     * @param str Valor a ser corrigido
+	     * @return Valor corrigido
+	     */
+	    public static String corrigirValor(String str) {
+	        if (str == null) {
+	            return "";
+	        }
+
+	        String aux = Utilitaria.limpar(str, "0123456789.");
+	        int pos = aux.indexOf('.');
+	        int tamanho = aux.length() - 1;
+	        String zeros = "";
+
+	        if (pos == -1) {
+	            zeros = "00";
+	        } else {
+	            if ((tamanho - pos) == 1) {
+	                zeros = "0";
+	            } else {
+	                if ((tamanho - pos) == 0) {
+	                    zeros = "00";
+	                } else {
+	                    if ((tamanho - pos) > 1) {
+	                        aux = aux.substring(0, pos + 3);
+	                    }
+	                }
+	            }
+	        }
+
+	        return Utilitaria.limpar(aux + zeros, "0123456789");
+	    }
+
+	    /** Converte uma data no formato YYYY-MM-DD para DD/MM/YYYY.
+	     * @param data Data no formato ANSI
+	     * @return Data no formato DD/MM/AAAA
+	     */
+	    public static String converteANSItoData(String data) {
+	        if (data == null) {
+	            return "";
+	        }
+
+	        String aux = limpar(data, "0123456789");
+
+	        if (aux.length() != 8) {
+	            return "";
+	        }
+
+	        return aux.substring(6, 8) + "/" + aux.substring(4, 6) + "/" +
+	        aux.substring(0, 4);
+	    }
+
+	    /** Cria ou restaura uma conex�o de banco de dados.
+	     * @param con Conex�o atual
+	     * @param jdbc Classe JDBC do banco de dados
+	     * @param host URL para a conex�o
+	     * @param user Usu�rio
+	     * @param password Senha
+	     * @return Uma conex�o v�lida ou null.
+	     */
+	    public static Connection conexao(Connection con, String jdbc, String host,
+	        String user, String password) {
+	        try {
+	            if (con != null) {
+	                con.setAutoCommit(true);
+	            }
+	        } catch (SQLException e) {
+	            con = null;
+	        }
+
+	        if (con == null) {
+	            try {
+	                Class.forName(jdbc);
+	                con = DriverManager.getConnection(host, user, password);
+	            } catch (Exception e) {
+	                System.err.println(
+	                    "Erro ao abrir conex�o: " + e);
+	                e.printStackTrace();
+	                con = null;
+	            }
+	        }
+
+	        return con;
+	    }
+
+	    /** Verifica se a String � num�rica.
+	     * @param valor Valor a ser verificado.
+	     * @return <CODE>true</CODE> se for n�mero.
+	     */
+	    public static boolean isNumber(String valor) {
+	        if (valor != null) {
+	            try {
+	                Float.parseFloat(valor);
+
+	                return true;
+	            } catch (Exception e) {
+	            }
+	        }
+
+	        return false;
+	    }
+
+	    /** Completar uma String com brancos a direita at� completar o tamanho estabelecido.
+	     * @param str String a ser preenchida.
+	     * @param tamanho Tamanho m�ximo da String.
+	     * @return String com brancos � direita
+	     */
+	    public static String completarBrancos(String str, int tamanho) {
+	        StringBuffer sb = new StringBuffer(str);
+
+	        for (int i = 0; i < tamanho; i++)
+	            sb.append(' ');
+
+	        sb.delete(tamanho, sb.length());
+
+	        return sb.toString();
+	    }
+
+	    /** Completar uma String com brancos a esquerda at� completar o tamanho estabelecido.
+	     * @param str String a ser preenchida.
+	     * @param tamanho Tamanho m�ximo da String.
+	     * @return String com brancos � esquerda
+	     */
+	    public static String completarBrancosEsquerda(String str, int tamanho) {
+	        if (str.length() >= tamanho) {
+	            str = str.substring(0, tamanho);
+
+	            return str;
+	        }
+
+	        StringBuffer sb = new StringBuffer(str);
+
+	        for (int i = 0; i < tamanho; i++)
+	            sb.insert(0, ' ');
+
+	        sb.delete(0, sb.length() - tamanho);
+
+	        return sb.toString();
+	    }
+
+	    /** Marcar o texto a ser procurado numa String com a tag &lt;SPAN class="mlog"&gt;.
+	     * @param textoInteiro Texto completo.
+	     * @param textoProcurado Texto a ser procurado.
+	     * @return Texto com as tags SPAN
+	     */
+	    public static String marcarTexto(String textoInteiro, String textoProcurado) {
+	        if ((textoProcurado == null) || (textoProcurado.length() < 3)) {
+	            return textoInteiro;
+	        }
+
+	        StringBuffer texto = new StringBuffer(textoInteiro);
+	        String separador = "^^^";
+	        int poslt = texto.indexOf("<");
+	        int posgt = texto.indexOf(">");
+	        Vector tags = new Vector();
+
+	        while ((poslt != -1) && (posgt != -1) && (poslt < posgt)) {
+	            tags.add(texto.substring(poslt, posgt + 1));
+	            texto.replace(poslt, posgt + 1, separador);
+	            poslt = texto.indexOf("<", poslt + 3);
+
+	            if (poslt != -1) {
+	                posgt = texto.indexOf(">", poslt);
+	            }
+	        }
+
+	        StringBuffer textoMinusculo = new StringBuffer(texto.toString()
+	                                                            .toLowerCase());
+	        int posini = textoMinusculo.indexOf(textoProcurado);
+	        int posTexto = posini;
+
+	        while (posini != -1) {
+	            texto.insert(posTexto, "<span class=\"mlog\">");
+	            texto.insert(posTexto + textoProcurado.length() + 19, "</span>");
+	            posini = textoMinusculo.indexOf(textoProcurado,
+	                    posini + textoProcurado.length());
+	            posTexto = posini + 26;
+	        }
+
+	        posini = texto.indexOf(separador);
+
+	        int indice = 0;
+	        String tag = "";
+
+	        while (posini != -1) {
+	            tag = (String) tags.get(indice);
+	            texto.replace(posini, posini + 3, tag);
+	            indice++;
+	            posini = texto.indexOf(separador, posini + tag.length());
+	        }
+
+	        return texto.toString();
+	    }
+
+	    /** Formata um n�mero em dinheiro. Por exemplo, 12345.67 -> R$ 12.345,67
+	     * @param numero N�mero a ser convertido
+	     * @return N�mero formatado
+	     */
+	    public static String formatarDinheiro(double numero) {
+	        NumberFormat nf = NumberFormat.getCurrencyInstance(locBrasil);
+	        nf.setMinimumFractionDigits(2);
+	        nf.setMaximumFractionDigits(2);
+
+	        return nf.format(numero);
+	    }
+
+	    /** Formata um n�mero em dinheiro. Por exemplo, 12345.67 -> R$ 12.345,67
+	     * @param numero N�mero a ser convertido
+	     * @return N�mero formatado
+	     */
+	    public static String formatarDinheiro(Double numero) {
+	        return formatarDinheiro(numero.doubleValue());
+	    }
+
+	    /** Formata um n�mero em dinheiro. Por exemplo, 12345.67 -> R$ 12.345,67
+	     * @param numero N�mero a ser convertido
+	     * @return N�mero formatado
+	     */
+	    public static String formatarDinheiro(float numero) {
+	        NumberFormat nf = NumberFormat.getCurrencyInstance(locBrasil);
+	        nf.setMinimumFractionDigits(2);
+	        nf.setMaximumFractionDigits(2);
+
+	        return nf.format(numero);
+	    }
+
+	    /** Formata um n�mero em dinheiro. Por exemplo, 12345.67 -> R$ 12.345,67
+	     * @param numero N�mero a ser convertido
+	     * @return N�mero formatado
+	     */
+	    public static String formatarDinheiro(Float numero) {
+	        return formatarDinheiro(numero.floatValue());
+	    }
+
+	    /** Formata um n�mero, como segue o exemplo: 12345.67 -> 12.345,67
+	     * @param numero N�mero a ser convertido
+	     * @param decimais N�mero de casas decimais
+	     * @return N�mero formatado
+	     */
+	    /**
+	    public static String formatarNumero(double numero, int decimais) {
+	        NumberFormat nf = NumberFormat.getNumberInstance(locBrasil);
+	        nf.setMinimumFractionDigits(decimais);
+	        nf.setMaximumFractionDigits(decimais);
+
+	        return nf.format(numero);
+	    }
+*/
+	    /** Formata um n�mero, como segue o exemplo: 12345.67 -> 12.345,67
+	     * @param numero N�mero a ser convertido
+	     * @param decimais N�mero de casas decimais
+	     * @return N�mero formatado
+	     */
+	   /**public static String formatarNumero(float numero, int decimais) {
+	     //   NumberFormat nf = NumberFormat.getNumberInstance(locBrasil);
+	    //    nf.setMinimumFractionDigits(decimais);
+	        nf.setMaximumFractionDigits(decimais);
+
+	        return nf.format(numero);
+	    }
+       */
+	    /** Captura o printStackTrace de uma exce��o e coloca numa String.
+	     * @param e Exce��o capturada
+	     * @return String com os detalhes da exce��o.
+	     */
+	    public static String exceptionToString(Exception e) {
+	        StringWriter sw = new StringWriter();
+	        PrintWriter pw = new PrintWriter(sw);
+	        e.printStackTrace(pw);
+
+	        String erro = sw.toString();
+
+	        return erro;
+	    }
+
+	    /** Formatar um CNPJ a partir de n�meros. Por exemplo, 12345678901234 -> 12.345.678/9012-34
+	     * @param cnpj CNPJ em somente n�meros
+	     * @return CNPJ formatado
+	     */
+	    public static String formatarCNPJ(String cnpj) {
+	        if (cnpj.length() == 14) {
+	            return cnpj.substring(0, 2) + "." + cnpj.substring(2, 5) + "." +
+	            cnpj.substring(5, 8) + "/" + cnpj.substring(8, 12) + "-" +
+	            cnpj.substring(12, 14);
+	        }
+
+	        return cnpj;
+	    }
+
+	    /** Formatar um CPF a partir de n�meros. Por exemplo, 12345678901 -> 123.456.789-01
+	     * @param cpf CPF em somente n�meros
+	     * @return CPF formatado
+	     */
+	    public static String formatarCPF(String cpf) {
+	        if (cpf.length() == 11) {
+	            return cpf.substring(0, 3) + "." + cpf.substring(3, 6) + "." +
+	            cpf.substring(6, 9) + "-" + cpf.substring(9, 11);
+	        }
+
+	        return cpf;
+	    }
+
+	    /** Formatar uma String baseada em uma m�scara. Por exemplo, 12345678901234 com m�scara "__.___.___/____-__ -> 12.345.678/9012-34
+	     * @param texto Texto a ser aplicado na m�scara
+	     * @param mascara M�scara
+	     * @return Texto aplicado na m�scara
+	     */
+	    public static String formatarInv(String texto, String mascara) {
+	        StringBuffer out = new StringBuffer(mascara.length());
+	        int j = texto.length() - 1;
+
+	        for (int i = mascara.length() - 1; i >= 0; i--)
+	            if (mascara.charAt(i) == '_') {
+	                out.insert(0, texto.charAt(j));
+
+	                if ((--j) < 0) {
+	                    break;
+	                }
+	            } else {
+	                out.insert(0, mascara.charAt(i));
+	            }
+
+	        return out.toString();
+	    }
+
+	    public static String substituirTodos(String texto, String cadeia,
+	        Vector valores) {
+	        StringBuffer sb = new StringBuffer(texto);
+	        int cont = 0;
+	        int ini = sb.indexOf(cadeia);
+	        int tamCadeia = cadeia.length();
+
+	        while (ini != -1) {
+	            if (cont < valores.size()) {
+	                String valor;
+
+	                if (valores.get(cont) instanceof String) {
+	                    valor = (String) (valores.get(cont));
+	                } else {
+	                    valor = valores.get(cont).toString();
+	                }
+
+	                sb.replace(ini, ini + tamCadeia, valor);
+	                ini = ini + valor.length();
+	            } else {
+	                sb.delete(ini, ini + tamCadeia);
+	            }
+
+	            cont++;
+	            ini = sb.indexOf(cadeia, ini);
+	        }
+
+	        return sb.toString();
+	    }
+
+	    public static String quote(String x) {
+	        if (x == null) {
+	            return null;
+	        } else {
+	            x = replace(x, "&", "&amp;");
+	            x = replace(x, "\"", "&quot;");
+	            x = replace(x, "<", "&lt;");
+	            x = replace(x, ">", "&gt;");
+
+	            return x;
+	        }
+	    }
+
+	    public static String replace(String subject, String find, String replace) {
+	        StringBuffer buf = new StringBuffer();
+	        int l = find.length();
+	        int s = 0;
+	        int i = subject.indexOf(find);
+
+	        while (i != -1) {
+	            buf.append(subject.substring(s, i));
+	            buf.append(replace);
+	            s = i + l;
+	            i = subject.indexOf(find, s);
+	        }
+
+	        buf.append(subject.substring(s));
+
+	        return buf.toString();
+	    }
+
+	    public static String obterSeqPostgreSQL(Connection con, String nomeSequencia)
+	        throws Exception {
+	        return obterSeqPostgreSQL(con, nomeSequencia, false);
+	    }
+
+	    public static String obterSeqPostgreSQL(Connection con,
+	        String nomeSequencia, boolean nextVal) throws Exception {
+	        String sql = "select currval(?)";
+
+	        if (nextVal) {
+	            sql = "select nextval(?)";
+	        }
+
+	        PreparedStatement ps = con.prepareStatement(sql);
+	        ps.setString(1, nomeSequencia);
+
+	        ResultSet rs = ps.executeQuery();
+	        rs.next();
+
+	        String seq = rs.getString(1);
+	        rs.close();
+	        ps.close();
+
+	        return seq;
+	    }
+
+	    public static boolean isCPFValido(String strCpf) {
+	        int d1;
+	        int d2;
+	        int digito1;
+	        int digito2;
+	        int resto;
+	        int digitoCPF;
+	        String nDigResult;
+	        strCpf = limpar(strCpf, "0123456789");
+
+	        if (strCpf.length() != 11) {
+	            return false;
+	        }
+
+	        d1 = d2 = 0;
+	        digito1 = digito2 = resto = 0;
+
+	        for (int nCount = 1; nCount < (strCpf.length() - 1); nCount++) {
+	            digitoCPF = Integer.valueOf(strCpf.substring(nCount - 1, nCount))
+	                               .intValue();
+
+	            //multiplique a ultima casa por 2 a seguinte por 3 a seguinte por 4 e assim por diante.
+	            d1 = d1 + ((11 - nCount) * digitoCPF);
+
+	            //para o segundo digito repita o procedimento incluindo o primeiro digito calculado no passo anterior.
+	            d2 = d2 + ((12 - nCount) * digitoCPF);
+	        }
+
+	        //Primeiro resto da divis�o por 11.
+	        resto = (d1 % 11);
+
+	        //Se o resultado for 0 ou 1 o digito � 0 caso contr�rio o digito � 11 menos o resultado anterior.
+	        if (resto < 2) {
+	            digito1 = 0;
+	        } else {
+	            digito1 = 11 - resto;
+	        }
+
+	        d2 += (2 * digito1);
+
+	        //Segundo resto da divis�o por 11.
+	        resto = (d2 % 11);
+
+	        //Se o resultado for 0 ou 1 o digito � 0 caso contr�rio o digito � 11 menos o resultado anterior.
+	        if (resto < 2) {
+	            digito2 = 0;
+	        } else {
+	            digito2 = 11 - resto;
+	        }
+
+	        //Digito verificador do CPF que est� sendo validado.
+	        String nDigVerific = strCpf.substring(strCpf.length() - 2,
+	                strCpf.length());
+
+	        //Concatenando o primeiro resto com o segundo.
+	        nDigResult = String.valueOf(digito1) + String.valueOf(digito2);
+
+	        //comparar o digito verificador do cpf com o primeiro resto + o segundo resto.
+	        return nDigVerific.equals(nDigResult);
+	    }
+
+	    public static boolean isCNPJValido(String str_cnpj) {
+	        int soma = 0;
+	        int aux;
+	        int dig;
+
+	        str_cnpj = limpar(str_cnpj, "0123456789");
+
+	        if (str_cnpj.length() != 14) {
+	            return false;
+	        }
+
+	        String cnpj_calc = str_cnpj.substring(0, 12);
+	        char[] chr_cnpj = str_cnpj.toCharArray();
+
+	        /* Primeira parte */
+	        for (int i = 0; i < 4; i++)
+	            if (((chr_cnpj[i] - 48) >= 0) && ((chr_cnpj[i] - 48) <= 9)) {
+	                soma += ((chr_cnpj[i] - 48) * (6 - (i + 1)));
+	            }
+
+	        for (int i = 0; i < 8; i++)
+	            if (((chr_cnpj[i + 4] - 48) >= 0) && ((chr_cnpj[i + 4] - 48) <= 9)) {
+	                soma += ((chr_cnpj[i + 4] - 48) * (10 - (i + 1)));
+	            }
+
+	        dig = 11 - (soma % 11);
+
+	        cnpj_calc += (((dig == 10) || (dig == 11)) ? "0" : Integer.toString(dig));
+
+	        /* Segunda parte */
+	        soma = 0;
+
+	        for (int i = 0; i < 5; i++)
+	            if (((chr_cnpj[i] - 48) >= 0) && ((chr_cnpj[i] - 48) <= 9)) {
+	                soma += ((chr_cnpj[i] - 48) * (7 - (i + 1)));
+	            }
+
+	        for (int i = 0; i < 8; i++)
+	            if (((chr_cnpj[i + 5] - 48) >= 0) && ((chr_cnpj[i + 5] - 48) <= 9)) {
+	                soma += ((chr_cnpj[i + 5] - 48) * (10 - (i + 1)));
+	            }
+
+	        dig = 11 - (soma % 11);
+	        cnpj_calc += (((dig == 10) || (dig == 11)) ? "0" : Integer.toString(dig));
+
+	        return str_cnpj.equals(cnpj_calc);
+	    }
+
+	    public static String paginacao(int pos, int qtdeRegistros, int salto, int qtdePaginas, String texto) {
+	        int qtdePaginasTotal = (int) Math.ceil(qtdeRegistros/((double) salto));
+	        int pagPos = (int) Math.ceil(pos/((double) salto));
+	        int pagIni = 1;
+	        StringBuffer saida = new StringBuffer();
+	        int cont = 0;
+	        if (pagPos > 1) {
+	            saida.append("anterior ");
+	        }
+	        for (int i = pagIni; i <= qtdePaginasTotal && cont < qtdePaginas; i++) {
+	            cont++;
+	            if (i == pagPos) {
+	                saida.append("[" + i + "] ");
+	            } else {
+	                saida.append(i + " ");
+	            }
+	        }
+	        if (pagPos < qtdeRegistros) {
+	            saida.append("pr�ximo");
+	        }
+	        return saida.toString();
+	    }
+
+	    public static String retirarAcentos(String texto) {
+	        return trocarCaracteres(texto, CARACTERES_ACENTUADOS, CARACTERES_SEM_ACENTOS);
+	    }
+	    
+	    public static String trocarCaracteres(String texto,
+	        String caracteresAntigos, String caracteresNovos) {
+	        StringBuffer buf = new StringBuffer();
+
+	        for (int i = 0; i < texto.length(); i++) {
+	            char c = texto.charAt(i);
+	            int pos = caracteresAntigos.indexOf(c);
+
+	            if (pos != -1) {
+	                buf.append(caracteresNovos.charAt(pos));
+	            } else {
+	                buf.append(c);
+	            }
+	        }
+
+	        return buf.toString();
+	    }
+
+	    public static String ifNull(String parametro, String padrao) {
+	        return (parametro == null? padrao: parametro);
+	    }
+	    
+	    public static String ifVazio(String parametro, String padrao) {
+	        return (parametro != null && parametro.trim().length() > 0? parametro: padrao);
+	    }
+
+	    public static void adicionarResumo(TreeMap<String, Double> resumo, String descricao, double valor) throws Exception {
+	        Double valorAnterior = resumo.get(descricao);
+	        if (valorAnterior == null) {
+	            resumo.put(descricao, new Double(valor));
+	        } else {
+	            resumo.put(descricao, new Double(valor + valorAnterior.doubleValue()));
+	        }
+	    }
+
+	    public static String formatarTelefone(String phone) {  
+	        if ( phone != null ) {  
+	            MaskFormatter format = null;  
+	            try {  
+	            	if (phone.length() > 8) {
+		                format = new MaskFormatter("(##) ####-####");  
+	            	} else {
+		                format = new MaskFormatter("####-####");  
+	            	}	            		
+	                JFormattedTextField txtPhone = new JFormattedTextField(format);  
+	                txtPhone.setText(phone);  
+	                phone = txtPhone.getText();  
+	            } catch (ParseException e) {  
+	                // TODO Auto-generated catch block  
+	                e.printStackTrace();  
+	            }  
+	        }  
+	        return phone;  
+	    }
+	    
+	    public static void main(String[] args) {
+	        try {
+	/*            System.out.println(Util.dateString(new Date(),
+	                    "dd 'de' MMMMM 'de' yyyy'.'"));
+	            System.out.println(Util.formatarInv("49045280", "__.___-___"));
+	            System.out.println(Util.completarZeros("12345", 10));
+	            System.out.println(Util.completarBrancos("12345", 10));
+	            System.out.println(Util.formatarCNPJ("15123946000112"));
+	            System.out.println(Util.formatarCPF("90164598553"));
+	            System.out.println(Util.formatarDinheiro(1234.5678F));
+	            System.out.println(Util.formatarDinheiro(1234.5678D));
+	            System.out.println(Util.formatarNumero(1234.5678D, 3));
+	            System.out.println(Util.formatarNumero(1234.5678F, 3));
+	            System.out.println(Util.converteANSItoData("20020701"));
+	            System.out.println(Util.isNumber("123432432"));
+	            System.out.println(Util.isNumber("123432432asda"));
+	            System.out.println(Util.isNumber("123432432.09"));
+
+	            System.out.println(Util.getFileURL(
+	                    "http://127.0.0.1/teste.jsp?acao=selecionar"));
+	            System.out.println(Util.getFileURL(
+	                    "http://127.0.0.1/teste.jsp?acao=/selecionar"));
+	            System.out.println(Util.getFileURL("http://127.0.0.1/teste.jsp?"));
+	            System.out.println(Util.getPageURL(
+	                    "http://127.0.0.1/teste.jsp?acao=/selecionar"));
+	            System.out.println(Util.getPageURL("http://127.0.0.1/teste.jsp"));
+	            System.out.println(Util.getLinkRelURL(
+	                    "http://127.0.0.1/teste.jsp?acao=selecionar"));
+	            System.out.println(Util.getPageURL(Util.getLinkRelURL(
+	                        "http://127.0.0.1/teste.jsp?acao=selecionar")));
+	            System.out.println(Util.toNumber("10,95"));
+	            System.out.println(Util.toNumber("1.010,95"));
+	            System.out.println(Utilitaria.calcularDAC11("00195355300000005000000001421592000000181818", 2, 9, false));
+	 */
+	           // System.out.println(Utilitaria.formatarTelefone("32177100"));
+	           // System.out.println(Utilitaria.formatarTelefone("7932177100"));
+	            System.out.println(Utilitaria.soNumeros("787.670.325-91"));
+	            System.out.println(Utilitaria.abreviarStr("Universidade Tiradentes Salesiano Teste Teste Teste Teste TESTE", 60));
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    public static String calcularDigitoGTIN(String num) {
+	        int tam = num.length();
+	        if (tam == 8 || tam == 12 || tam == 13 || tam == 14) {
+	            String base = num.substring(0, tam - 1);
+	            boolean fator3 = true;
+	            int soma = 0;
+	            for (int i = tam - 1; i > 0; i--) {
+	                if (fator3) {
+	                    soma += 3 * Integer.parseInt(base.substring(i - 1, i));
+	                } else {
+	                    soma += Integer.parseInt(base.substring(i - 1, i));
+	                }
+	                fator3 = !fator3;
+	            }
+	            int proximo = (soma/10 + 1) * 10;
+	            int digito = proximo - soma;
+	            if (digito == 10) {
+	                digito = 0;
+	            }
+	            num = base + digito;
+	        }
+	        return num;
+	    }
+
+	
+}

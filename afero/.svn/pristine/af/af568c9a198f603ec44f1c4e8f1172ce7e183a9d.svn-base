@@ -1,0 +1,332 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import afero.model.Tributacao;
+
+public class TributacaoDAO{
+	
+	private Connection conn;
+
+	public TributacaoDAO(Connection conn) throws AferoDAOException {
+		this.conn = conn;
+	}
+
+	public void incluir(Tributacao tributacao) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (tributacao == null)
+			throw new AferoDAOException(
+					"O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "INSERT INTO tbtributacao (idCatTributaria, cdEstado, crt, "+
+			             "cdCstIcms, cdCsosn, origem, modBCIcms, "+
+			             "pReduBCIcms, pBCOperacao, pMargemIcms, "+
+			             "aliquotaIcms, modBCIcmsST, pReduBCIcmsST, "+
+			             "pMargemIcmsST, aliquotaIcmsST, cdEstadoIcmsST, "+
+			             "aliquotaCredito, observacao, dtMod, usuario) "+
+					     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, tributacao.getIdCatTributacao());
+			ps.setInt(2, tributacao.getCdEstado());
+			ps.setString(3, tributacao.getCrt());
+			if(tributacao.getCdCstIcms() > 0){
+				ps.setInt(4, tributacao.getCdCstIcms());
+			}else{
+				ps.setNull(4, 0);
+			}
+			if( tributacao.getCdCsosn() > 0){
+				ps.setInt(5, tributacao.getCdCsosn());
+			}else{
+				ps.setNull(5, 0);
+			}
+			if(tributacao.getOrigem() != null){
+				ps.setString(6, tributacao.getOrigem());
+			}else{
+				ps.setNull(6, 0);
+			}
+			if(tributacao.getModBCIcms() != null){
+				ps.setString(7, tributacao.getModBCIcms());
+			}else{
+				ps.setNull(7, 0);
+			}
+			if(tributacao.getpReduBCIcms() > 0){
+				ps.setFloat(8, tributacao.getpReduBCIcms());
+			}else{
+				ps.setNull(8, 0);
+			}
+			if(tributacao.getpBCOperacao() > 0){
+				ps.setFloat(9, tributacao.getpBCOperacao());
+			}else{
+				ps.setNull(9, 0);
+			}
+			if(tributacao.getpMargemIcms() > 0){
+				ps.setFloat(10, tributacao.getpMargemIcms());
+			}else{
+				ps.setNull(10, 0);
+			}
+			if(tributacao.getAliquotaIcms() >0){
+				ps.setFloat(11, tributacao.getAliquotaIcms());
+			}else{
+				ps.setNull(11, 0);
+			}
+			if(tributacao.getModBCIcmsST() != null){
+				ps.setString(12, tributacao.getModBCIcmsST());
+			}else{
+				ps.setNull(12, 0);
+			}
+			if(tributacao.getpReduBCIcmsST() > 0 ){
+				ps.setFloat(13, tributacao.getpReduBCIcmsST());
+			}else{
+				ps.setNull(13, 0);
+			}
+			if(tributacao.getpMargemIcmsST() > 0){
+				ps.setFloat(14, tributacao.getpMargemIcmsST());
+			}else{
+				ps.setNull(14, 0);
+			}
+			if(tributacao.getAliquotaIcmsST() > 0){
+				ps.setFloat(15, tributacao.getAliquotaIcmsST());
+			}else{
+				ps.setNull(15, 0);
+			}
+			if(tributacao.getCdEstadoIcmsST() > 0){
+				ps.setInt(16, tributacao.getCdEstadoIcmsST());
+			}else{
+				ps.setNull(16, 0);
+			}
+			if(tributacao.getAliquotaCredito() > 0){
+				ps.setFloat(17, tributacao.getAliquotaCredito());
+			}else{
+				ps.setNull(17, 0);
+			}
+			if(tributacao.getObservacao() != null){
+				ps.setString(18, tributacao.getObservacao());
+			}else{
+				ps.setNull(18, 0);
+			}
+			ps.setString(19, tributacao.getUsuario());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} 
+	}
+
+	public void atualizar(Tributacao tributacao) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (tributacao == null)
+			throw new AferoDAOException(
+					"O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbtributacao SET idCatTributaria = ?, cdEstado = ?, crt = ?, "+
+			             "cdCstIcms = ?, cdCsosn = ?, origem = ?, modBCIcms = ?, "+
+			             "pReduBCIcms = ?, pBCOperacao = ?, pMargemIcms = ?, "+
+			             "aliquotaIcms = ?, modBCIcmsST = ?, pReduBCIcmsST = ?, "+
+			             "pMargemIcmsST = ?, aliquotaIcmsST = ?, cdEstadoIcmsST = ?, "+
+			             "aliquotaCredito = ?, observacao = ?, dtMod = now(), usuario = ? "+
+					     "WHERE idTributacao = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, tributacao.getIdCatTributacao());
+			ps.setInt(2, tributacao.getCdEstado());
+			ps.setString(3, tributacao.getCrt());
+			ps.setInt(4, tributacao.getCdCstIcms());
+			ps.setInt(5, tributacao.getCdCsosn());
+			ps.setString(6, tributacao.getOrigem());
+			ps.setString(7, tributacao.getModBCIcms());
+			ps.setFloat(8, tributacao.getpReduBCIcms());
+			ps.setFloat(9, tributacao.getpBCOperacao());
+			ps.setFloat(10, tributacao.getpMargemIcms());
+			ps.setFloat(11, tributacao.getAliquotaIcms());
+			ps.setString(12, tributacao.getModBCIcmsST());
+			ps.setFloat(13, tributacao.getpReduBCIcmsST());
+			ps.setFloat(14, tributacao.getpMargemIcmsST());
+			ps.setFloat(15, tributacao.getAliquotaIcmsST());
+			ps.setInt(16, tributacao.getCdEstadoIcmsST());
+			ps.setFloat(17, tributacao.getAliquotaCredito());
+			ps.setString(18, tributacao.getObservacao());
+			ps.setString(19, tributacao.getUsuario());
+			ps.setInt(20, tributacao.getIdTributacao());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} 
+	}
+
+	public void excluir(Tributacao tributacao) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (tributacao == null)
+			throw new AferoDAOException(
+					"O valor passado n�o pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbtributacao WHERE idTributacao = ?");
+			ps.setInt(1, tributacao.getIdTributacao());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} 
+
+	}
+
+	public Tributacao procurarTributacao(int idTributacao) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Tributacao tributacao = null;
+
+		try {
+			String sql = "SELECT idCatTributaria, cdEstado, crt, "+
+			             "cdCstIcms, cdCsosn, origem, modBCIcms, "+
+			             "pReduBCIcms, pBCOperacao, pMargemIcms, "+
+			             "aliquotaIcms, modBCIcmsST, pReduBCIcmsST, "+
+			             "pMargemIcmsST, aliquotaIcmsST, cdEstadoIcmsST, "+
+			             "aliquotaCredito, observacao, dtMod, usuario FROM tbtributacao "+
+				         "WHERE idTributacao = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idTributacao);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("N�o foi encontrado nenhum "
+						+ "registro com o c�digo: " + idTributacao);
+			}
+            
+			int idCatTributacao = rs.getInt(1);
+			int cdEstado = rs.getInt(2);
+			String crt = rs.getString(3);
+			int cdCstIcms = rs.getInt(4);
+			int cdCsosn = rs.getInt(5);
+			String origem = rs.getString(6);
+			String modBCIcms = rs.getString(7);
+			float pReduBCIcms = rs.getFloat(8);
+			float pBCOperacao = rs.getFloat(9);
+			float pMargemIcms = rs.getFloat(10);
+			float aliquotaIcms = rs.getFloat(11);
+			String modBCIcmsST = rs.getString(12);
+			float pReduBCIcmsST = rs.getFloat(13);
+			float pMargemIcmsST = rs.getFloat(14);
+			float aliquotaIcmsST = rs.getFloat(15);
+			int cdEstadoIcmsST = rs.getInt(16);
+			float aliquotaCredito = rs.getFloat(17);
+			String observacao = rs.getString(18);
+			Date dtMod = rs.getDate(19);
+			String usuario = rs.getString(20);
+
+			tributacao = new Tributacao(idTributacao, idCatTributacao, cdEstado,
+					crt, cdCstIcms, cdCsosn, origem,
+					modBCIcms, pReduBCIcms, pBCOperacao,
+					pMargemIcms, aliquotaIcms, modBCIcmsST,
+					pReduBCIcmsST, pMargemIcmsST, aliquotaIcmsST,
+					cdEstadoIcmsST, aliquotaCredito, observacao,
+					dtMod, usuario);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return tributacao;
+	}
+
+	public List listarTributacao(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Tributacao> list = null;
+		
+		try {
+			String sql = "SELECT idCatTributaria, cdEstado, crt, "+
+			             "cdCstIcms, cdCsosn, origem, modBCIcms, "+
+			             "pReduBCIcms, pBCOperacao, pMargemIcms, "+
+			             "aliquotaIcms, modBCIcmsST, pReduBCIcmsST, "+
+			             "pMargemIcmsST, aliquotaIcmsST, cdEstadoIcmsST, "+
+			             "aliquotaCredito, observacao, dtMod, usuario, idTributacao FROM tbtributacao ";
+			if (clausula != null) sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<Tributacao>();
+			while (rs.next()) {
+				int idCatTributacao = rs.getInt(1);
+				int cdEstado = rs.getInt(2);
+				String crt = rs.getString(3);
+				int cdCstIcms = rs.getInt(4);
+				int cdCsosn = rs.getInt(5);
+				String origem = rs.getString(6);
+				String modBCIcms = rs.getString(7);
+				float pReduBCIcms = rs.getFloat(8);
+				float pBCOperacao = rs.getFloat(9);
+				float pMargemIcms = rs.getFloat(10);
+				float aliquotaIcms = rs.getFloat(11);
+				String modBCIcmsST = rs.getString(12);
+				float pReduBCIcmsST = rs.getFloat(13);
+				float pMargemIcmsST = rs.getFloat(14);
+				float aliquotaIcmsST = rs.getFloat(15);
+				int cdEstadoIcmsST = rs.getInt(16);
+				float aliquotaCredito = rs.getFloat(17);
+				String observacao = rs.getString(18);
+				Date dtMod = rs.getDate(19);
+				String usuario = rs.getString(20);
+				int idTributacao = rs.getInt(21);
+
+				list.add(new Tributacao(idTributacao, idCatTributacao, cdEstado,
+						crt, cdCstIcms, cdCsosn, origem,
+						modBCIcms, pReduBCIcms, pBCOperacao,
+						pMargemIcms, aliquotaIcms, modBCIcmsST,
+						pReduBCIcmsST, pMargemIcmsST, aliquotaIcmsST,
+						cdEstadoIcmsST, aliquotaCredito, observacao,
+						dtMod, usuario));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	
+	public boolean exclusaoIdTributacao(int idTributacao) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+		try {
+			String sql = "select ct.idCatTributaria from tbcattributaria ct "+
+                         "JOIN tbtributacao t on ct.idCatTributaria = t.idCatTributaria "+
+                         "JOIN tbproduto p on t.idCatTributaria = p.idCatTributaria "+
+                         "Where ct.idCatTributaria = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idTributacao);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+			   ok=true;
+			}else{
+				ok=false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return ok;
+		
+	}
+
+}

@@ -1,0 +1,19 @@
+<%@page import ="aferopet.model.GrupoMedicamento" %>
+<%@page import ="aferopet.persistence.GrupoMedicamentoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+GrupoMedicamentoDAO daoGrupoMedicamento;
+List listGrupoMedicamento;
+daoGrupoMedicamento = new GrupoMedicamentoDAO(conn);
+String clausulaGrupoMedicamento = "  WHERE status='A' ORDER BY dsGrupoMedicamento";
+listGrupoMedicamento = daoGrupoMedicamento.listarGrupoMedicamento(clausulaGrupoMedicamento);
+Iterator itGrupoMedicamento = listGrupoMedicamento.iterator();
+while (itGrupoMedicamento.hasNext()) { 
+	GrupoMedicamento grupo = (GrupoMedicamento) itGrupoMedicamento.next();
+%>
+
+<option value="<%=grupo.getIdGrupoMedicamento()%>"><%=grupo.getDsGrupoMedicamento()%></option>
+<%
+}
+%>

@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Ncm" %>
+<%@page import ="afero.persistence.NcmDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+NcmDAO daoNcm;
+List listNcm;
+daoNcm = new NcmDAO(conn);
+String clausulaNcm = " ORDER BY dsNcm";
+listNcm = daoNcm.listarNcm(clausulaNcm);
+Iterator itNcm = listNcm.iterator();
+while (itNcm.hasNext()) { 
+	Ncm ncm = (Ncm) itNcm.next();
+%>
+
+<option value="<%=ncm.getCdNcm()%>"><%=ncm.getCdNcm()+"/"%><%=ncm.getDsNcm()%></option>
+<%
+}
+%>

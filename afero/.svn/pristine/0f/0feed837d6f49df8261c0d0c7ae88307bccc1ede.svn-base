@@ -1,0 +1,198 @@
+package afero.persistence;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+
+import afero.model.Recibo;
+import afero.util.ConverteDate;
+
+
+public class ReciboDAO implements IReciboDAO{
+	
+	private Connection conn;
+
+	public ReciboDAO(Connection conn) {
+		this.conn = conn;
+	}
+
+	public void incluir(Recibo recibo) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (recibo == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			String sql = "INSERT INTO tbrecibo(idLoja, cdEntidade, favorecido, valor, referente, observacao, emitente, endereco, cpfCnpj, cidade, dtEmissao, dtMod, usuario)" +
+					" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, recibo.getIdLoja());
+			ps.setInt(2, recibo.getCdEntidade());
+			ps.setString(3, recibo.getFavorecido());
+			ps.setDouble(4, recibo.getValor());
+			ps.setString(5, recibo.getReferente());
+			ps.setString(6, recibo.getObservacao());
+			ps.setString(7, recibo.getEmitente());
+			ps.setString(8, recibo.getEndereco());
+			ps.setString(9, recibo.getCpfCnpj());
+			ps.setString(10, recibo.getCidade());
+			ps.setDate(11, ConverteDate.DateToDateSql(recibo.getDtEmissao()));
+			ps.setString(12, recibo.getUsuario());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		}
+	}
+
+	public void atualizar(Recibo recibo) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (recibo == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbrecibo set idLoja = ?, cdEntidade = ?, favorecido = ?, "
+					+ "valor = ?, referente = ?, observacao = ?, emitente = ?, "
+					+ "endereco = ?, cpfCnpj = ?, cidade= ?, dtEmissao = ?, dtMod = now(), usuario = ? "
+					+ "where idRecibo = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, recibo.getIdLoja());
+			ps.setInt(2, recibo.getCdEntidade());
+			ps.setString(3, recibo.getFavorecido());
+			ps.setDouble(4, recibo.getValor());
+			ps.setString(5, recibo.getReferente());
+			ps.setString(6, recibo.getObservacao());
+			ps.setString(7, recibo.getEmitente());
+			ps.setString(8, recibo.getEndereco());
+			ps.setString(9, recibo.getCpfCnpj());
+			ps.setString(10, recibo.getCidade());
+			ps.setDate(11, ConverteDate.DateToDateSql(recibo.getDtEmissao()));
+			ps.setString(12, recibo.getUsuario());
+			ps.setInt(13, recibo.getIdRecibo());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		}
+	}
+	
+		public void excluir(Recibo recibo) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		
+		if (recibo == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbrecibo WHERE idRecibo=?");
+			ps.setInt(1, recibo.getIdRecibo());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} 
+
+	}
+
+	public Recibo procurarRecibo(int idRecibo)throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Recibo recibo = null;
+
+		try {
+			String sql = "SELECT idRecibo, idLoja, cdEntidade, favorecido, valor, referente, observacao, emitente, endereco, cpfCnpj, cidade, dtEmissao, dtMod, usuario " +
+					     " from tbrecibo Where idRecibo = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idRecibo);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o código: " + idRecibo);
+			}
+
+			
+			int idLoja = rs.getInt(2);
+			int cdEntidade = rs.getInt(3);
+			String favorecido = rs.getString(4);
+			double valor = rs.getDouble(5);
+			String referente = rs.getString(6);
+			String observacao = rs.getString(7);
+			String emitente = rs.getString(8);
+			String endereco = rs.getString(9);
+			String cpfCnpj  = rs.getString(10);
+            String cidade   = rs.getString(11);
+            Date dtEmissao  = rs.getDate(12);
+			Date dtMov      = rs.getDate(13);
+			String usuario  = rs.getString(14);
+
+			recibo = new Recibo(idRecibo, idLoja, cdEntidade, favorecido,
+					valor, referente, observacao, emitente,
+					endereco, cpfCnpj, cidade, dtEmissao,
+					dtMov, usuario);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return recibo;
+	}
+	
+	public List listarRecibo(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Recibo> list = null;
+
+		try {
+			String sql = "SELECT r.idRecibo, r.idLoja, r.cdEntidade, r.favorecido, r.valor, r.referente, r.observacao, r.emitente, r.endereco, r.cpfCnpj, r.cidade, r.dtEmissao, r.dtMod, r.usuario " +
+					    " from tbrecibo r "+
+					    " join tbentidade e on (r.cdEntidade = e.cdEntidade) ";
+			if (clausula != null)
+				sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<Recibo>();
+			while (rs.next()) {
+				int idRecibo   = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				int cdEntidade = rs.getInt(3);
+				String favorecido = rs.getString(4);
+				double valor = rs.getDouble(5);
+				String referente = rs.getString(6);
+				String observacao = rs.getString(7);
+				String emitente = rs.getString(8);
+				String endereco = rs.getString(9);
+				String cpfCnpj  = rs.getString(10);
+	            String cidade   = rs.getString(11);
+	            Date dtEmissao  = rs.getDate(12);
+				Date dtMov      = rs.getDate(13);
+				String usuario  = rs.getString(14);
+				list.add(new Recibo(idRecibo, idLoja, cdEntidade, favorecido,
+						valor, referente, observacao, emitente,
+						endereco, cpfCnpj, cidade, dtEmissao,
+						dtMov, usuario));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+
+}

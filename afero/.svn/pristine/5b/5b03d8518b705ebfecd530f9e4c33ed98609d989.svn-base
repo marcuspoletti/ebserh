@@ -1,0 +1,19 @@
+<%@page import ="afero.model.EstadoCivil" %>
+<%@page import ="afero.persistence.EstadoCivilDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EstadoCivilDAO daoEstadoCivil;
+List listEstadoCivil;
+daoEstadoCivil = new EstadoCivilDAO(conn);
+String clausulaEstadoCivil = "  WHERE status='A'";
+listEstadoCivil = daoEstadoCivil.listarEstadoCivil(clausulaEstadoCivil);
+Iterator itEstadoCivil = listEstadoCivil.iterator();
+while (itEstadoCivil.hasNext()) { 
+	EstadoCivil estadoCivil = (EstadoCivil) itEstadoCivil.next();
+%>
+
+<option value="<%=estadoCivil.getCdEstadoCivil()%>"><%=estadoCivil.getDsEstadoCivil()%></option>
+<%
+}
+%>

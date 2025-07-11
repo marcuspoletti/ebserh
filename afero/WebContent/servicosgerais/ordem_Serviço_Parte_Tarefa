@@ -1,0 +1,85 @@
+<!-- 
+<br>
+<br>
+<hr>
+<p align="right"><a class="button" href="javascript:abrirPopup('consultarOrdemServicoTarefa.jsp?acao=inc&idOrdemServico=<%=idOrdemServico %>&idLoja=<%=idLoja %>');"  style="font-size: 14px; float: right;">Adicionar Tarefa</a>
+<table border="0" width="100%">
+
+	<tr>
+		<th class="label" colspan="8">Tarefas</th>
+	</tr>
+	<tr>
+		<th class="grid">&nbsp;</th>
+		<th class="grid">Serviço</th>
+		<th class="grid">Descrição</th>
+		<th class="grid">Desc. Tarefa</th>
+		<th class="grid">Valor (Unitário)</th>
+		<th class="grid">Quantidade</th>
+		<th class="grid">Valor </th>
+		<th class="grid">Remover</th>
+	</tr>
+<%
+
+
+//List<OrdemServicoTarefa> listTarefa = null;
+//daoTarefa = new OrdemServicoTarefaDAO(conn);
+//listTarefa = daoTarefa.listarIdOrdemServico(Integer.parseInt(idOrdemServico));
+//int cont3 = 0;
+// Associar Objeto com o serviço
+//String nomeServ = "";
+//String nomeTarefa = "";
+
+//for ( Iterator itTarefa = listTarefa.iterator(); itTarefa.hasNext(); ) {
+	//ordemServicoTarefa = (OrdemServicoTarefa) itTarefa.next();
+	//cont3++;
+
+	//NOME TAREFA
+	//daoListaTarefa = new ListaTarefaDAO(conn);
+	//listaTarefa = daoListaTarefa.procurarListaTarefa(" WHERE idListaTarefa = "+ordemServicoTarefa.getIdListaTarefa());
+	//nomeTarefa = listaTarefa.getDsListaTarefa();
+	
+	
+	//NOME SERVIÇO
+	//daoListaServico = new ListaServicoDAO(conn);
+	//listaServico = daoListaServico.procurarListaServico(" WHERE idListaServico = "+ordemServicoItem.getIdListaServico());
+	//if(listaServico.getDsListaServico() != null){
+	//    nomeServ = listaServico.getDsListaServico();
+	//}else{
+	//	nomeServ = "-";
+	//}
+	//totalTarefas +=ordemServicoTarefa.getValor();
+	
+
+%>
+
+	<tr>
+		<td class="grid" width="2%"><%=//cont3 %></td>
+		<td class="grid" width="15%"><%=//nomeServ %></td>
+		<td class="grid" width="15%"><%=//nomeTarefa %></td>
+		<td class="grid" width="15%"><a href="javascript:abrirPopup('formOrdemServicoTarefa.jsp?acao=atu&idOrdemServicoTarefa=<%=//ordemServicoTarefa.getIdOrdemServicoTarefa()%>');" ><%=ordemServicoTarefa.getDsCompTarefa()%></a></td>
+		<td class="grid" width="15%"><%=//Utilitaria.formatarNumero(ordemServicoTarefa.getVlUni(), 2) %></td>
+		<td class="grid" width="15%"><%=//Utilitaria.formatarNumero(ordemServicoTarefa.getQuant(), 0) %></td>
+		<td class="grid" width="15%"><%=//Utilitaria.formatarNumero(ordemServicoTarefa.getValor(), 2) %></td>
+		<td class="grid" width="7%"><center><a href="javascript:confirmaExcluirTarefa(<%=//cont3%>,<%=//ordemServicoTarefa.getIdOrdemServicoTarefa() %>);"><img border = "0" src="../images/delete.gif"></a></center></td>		
+	</tr>
+<%//}%>
+
+</table>
+<table border=0 align="right">
+	<tr>
+		<th class="grid" width="100px">Total Tarefas</th>
+		<td width="50px"><input type="text" id="valorServicos" name="valores" value="<%=Utilitaria.formatarNumero(totalTarefas, 2) %>" size="10px"/></td>
+	</tr>
+</table>
+<br>
+<br>
+<hr>
+ -->
+<table border=0 align="right">
+	<tr>
+		<th class="grid" width="80px">Total Geral</th>
+		<td width="50px"><input type="text" id="valorServicos" name="valores" value="<%=Utilitaria.formatarNumero(totalServicos + totalTarefas, 2)%> " size="10px"/></td>
+	</tr>
+</table>
+</form>
+<!-- <a href="javascript:abrirPopup('formOrdemServicoTarefa.jsp?acao=atu&idOrdemServicoTarefa=%>');" -->

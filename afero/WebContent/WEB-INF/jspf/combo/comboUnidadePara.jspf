@@ -1,0 +1,15 @@
+
+<%
+	UnidadeDAO daoUnidadePara;
+	List listUnidadePara;
+	daoUnidadePara = new UnidadeDAO(conn);
+	String clausulaUnidadePara = "  WHERE status='A' ORDER BY dsUnidade";
+	listUnidadePara = daoUnidadePara.listarUnidade(clausulaUnidadePara);
+	Iterator itUnidadePara = listUnidadePara.iterator();
+    while (itUnidadePara.hasNext()) { 
+		Unidade unidadePara = (Unidade) itUnidadePara.next();
+%>
+<option value="<%=unidadePara.getIdUnidade()%>"><%=unidadePara.getDsUnidade()%></option>
+<%
+    }
+%>

@@ -1,0 +1,10 @@
+package afero.util;
+
+public interface IDadosSistema {
+
+	public final String Sis_nom = "Afero";
+	public final String Sis_tit = "Solução Web de Gestão de Negócios";
+	public final String Sis_cod = "SWGN";
+	public final String Sis_ver = "1.5.3.01";
+
+}

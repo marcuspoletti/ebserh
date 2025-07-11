@@ -1,0 +1,274 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="aferopet.model.AnimalRetorno" %>
+<%@ page import="aferopet.model.Animal" %>
+<%@ page import="afero.model.Entidade" %>
+<%@ page import="afero.model.EntidadeTelefone" %>
+<%@ page import="afero.persistence.EntidadeTelefoneDAO" %>
+<%@ page import="aferopet.persistence.AnimalDAO" %>
+<%@ page import="afero.persistence.EntidadeDAO" %>
+<%@ page import="aferopet.persistence.AnimalRetornoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="afero.util.ConverteDate" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+
+<%@page import="com.sun.org.apache.bcel.internal.generic.SWITCH"%><link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+
+<script>
+function confirmaExcluir(cont, id) {  
+  if (confirm("Deseja mesmo apagar o registro [" + cont + "]?")) {  
+       location.href = 'listarAnimalRetorno.jsp?acao=exc&idAnimalRetorno=' + id;   
+  }  
+}
+
+function localizar() {
+  document.forms[0].submit();
+}  
+
+function novaPesquisa() {
+  document.all.descricaoFiltro.value = '';
+  document.all.statusFiltro.value = ''; //não está limpando
+  document.forms[0].submit();
+}  
+</script>
+
+<%
+AnimalRetornoDAO dao;
+AnimalRetornoDAO daoExclusao;
+AnimalDAO dao1;
+EntidadeDAO dao2;
+EntidadeTelefoneDAO dao3;
+ConverteDate conDate = new ConverteDate();
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null) mensagem = "";
+String acao = request.getParameter("acao");
+if (acao == null) acao = "listar";
+String idAnimal = request.getParameter("idAnimal");
+if (idAnimal == null) idAnimal = "0";
+
+String idAnimalRetorno = "";
+//String idAnimal = "";
+String dtRetorno = "";
+String descricao = "";
+String lembrete = "N";
+String avisoTempo = "0";
+String avisoUnidade = "";
+String status = "";
+String dtMod = "";
+String usuario = "";
+String clausula = "";
+String descricaoFiltro = "";
+String statusFiltro = "A";
+
+if (acao.equalsIgnoreCase("inc") || acao.equalsIgnoreCase("atu") || acao.equalsIgnoreCase("exc")) {
+	AnimalDAO daoAnimal = new AnimalDAO(conn);
+	Animal grupoAnimalRetorno = new Animal();
+	idAnimalRetorno = request.getParameter("idAnimalRetorno");
+	//idAnimal = request.getParameter("idAnimal");
+	dtRetorno = request.getParameter("dtRetorno");
+	descricao = request.getParameter("descricao");
+	//lembrete = request.getParameter("lembrete");
+	avisoTempo = request.getParameter("avisoTempo");
+	avisoUnidade = request.getParameter("avisoUnidade");
+  status = request.getParameter("status");
+  if (idAnimalRetorno == null) idAnimalRetorno = "0";
+  //if (idAnimal == null) idAnimal = "0";
+  if (dtRetorno == null) dtRetorno = "";
+  if (descricao == null) descricao = "";
+  //if (lembrete == null) lembrete = "";
+  if (avisoTempo == null || avisoTempo.isEmpty()) avisoTempo = "0";
+  if (avisoUnidade == null) avisoUnidade = "";
+  if (status == null) status = "A";
+  if (!avisoTempo.equals("0")) lembrete = "S";
+
+  usuario = (String)session.getAttribute("Login");
+  AnimalRetorno animalRetorno = new AnimalRetorno();
+  
+	try {
+	  if (!acao.equalsIgnoreCase("inc")) {
+		  animalRetorno.setIdAnimalRetorno(Integer.parseInt(idAnimalRetorno));
+	  }
+	  
+	  animalRetorno.setIdAnimal(Integer.parseInt(idAnimal));
+	  if (!dtRetorno.equals(""))
+	  	animalRetorno.setDtRetorno(ConverteDate.stringToDate(dtRetorno));
+	  animalRetorno.setDescricao(descricao);
+	  animalRetorno.setLembrete(lembrete);
+	  animalRetorno.setAvisoTempo(Integer.parseInt(avisoTempo));
+	  animalRetorno.setAvisoUnidade(avisoUnidade);
+    animalRetorno.setStatus(status);
+    animalRetorno.setUsuario(usuario);
+      
+	} catch (NumberFormatException nfe) {
+		throw new Exception("Código inválido");
+	}
+
+  dao = new AnimalRetornoDAO(conn);
+  daoExclusao = new AnimalRetornoDAO(conn);
+
+  if (acao.equalsIgnoreCase("inc")) {
+	  
+	  //inclui no banco de dados
+  	dao.incluir(animalRetorno);
+
+  } else if (acao.equalsIgnoreCase("atu")) {
+	  //atualiza no banco de dados
+	 
+	  dao.atualizar(animalRetorno);
+
+  } else if (acao.equalsIgnoreCase("exc")) {
+	  //exclui no banco de dados]
+//	  if(!daoExclusao.exclusaoIdAnimalRetorno(Integer.parseInt(idAnimalRetorno))) {
+		  dao.excluir(animalRetorno);
+//	  } else {
+		  response.sendRedirect("listarAnimalRetorno.jsp?mensagem=Exclusão Inválida! Item já possui lançamentos.&acao=listar");
+//	  }
+	  
+  }
+} else {
+  if (!acao.equalsIgnoreCase("voltar")) {
+    descricaoFiltro = request.getParameter("descricaoFiltro");
+    statusFiltro = request.getParameter("statusFiltro");
+    if (statusFiltro == null) statusFiltro = "A";
+  }
+}
+
+if (descricaoFiltro != null && !descricaoFiltro.isEmpty()) {
+  clausula = " WHERE idAnimal = "+idAnimal+" AND descricao LIKE '%"+descricaoFiltro+"%'";
+} else {
+	clausula = " WHERE idAnimal = "+idAnimal;
+}  
+if (statusFiltro.isEmpty()) {
+	clausula += " AND status is not null ";  
+} else {
+  clausula += " AND status='"+statusFiltro+"'";  
+}
+
+//seleciona todos os registros do banco de dados
+List list;
+dao = new AnimalRetornoDAO(conn);
+clausula = clausula+" ORDER BY dtRetorno DESC ";
+list = dao.listarAnimalRetorno(clausula);
+
+dao1 = new AnimalDAO(conn);
+Animal animal = dao1.procurarAnimal(Integer.parseInt(idAnimal));
+dao2 = new EntidadeDAO(conn);
+Entidade entidade = dao2.procurarEntidade(animal.getCdEntidade());
+dao3 = new EntidadeTelefoneDAO(conn);
+EntidadeTelefone entidadeTelefone = dao3.procurarEntidadeTelefonePadrao(animal.getCdEntidade());
+
+%>
+<h1 class="cabecalho_pagina">Cadastro de Animal - Retorno</h1>
+
+|<a class="button" href="formAnimalFicha.jsp?acao=inc&idAnimal=<%=idAnimal%>">Novo Registro</a>|&nbsp;&nbsp;&nbsp;
+|<a class="button" href="formAnimalRetorno.jsp?acao=inc&idAnimal=<%=idAnimal%>">Novo Retorno</a>|&nbsp;&nbsp;&nbsp;
+|<a class="button" href="listarAnimal.jsp?acao=voltar">Voltar</a>|<br>
+<body onload="document.forms[0].elements[0].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<form action="listarAnimalRetorno.jsp">
+<input type="hidden" name="idAnimal" value="<%=idAnimal%>">
+<table width="100%">
+  <tr>
+    <td align="left" style="font-size:12px">Animal: <a style="font-size:14px" target="_blank" href="formAnimal.jsp?acao=atu&idAnimal=<%=animal.getIdAnimal()%>"><%=animal.getNmAnimal() %></a></td>
+    <td align="center" style="font-size:12px">Proprietário: <%=entidade.getNome()%></td>
+    <td align="right" style="font-size:12px">Telefone: <%=entidadeTelefone.getNroTelefone()%></td>
+  </tr>
+</table>
+<hr>
+<table colspan="2">
+  <tr>
+    <th class='label'>Atividade</th>
+    <td><input type="text" name="descricaoFiltro" <%if (descricaoFiltro != null) { %>value="<%=descricaoFiltro%>"<% }%> size="70" maxlength="100"></td>
+    <td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+    <td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+  <tr>
+    <th class="label">Status</th>
+      <td class="label_radio">
+      <input type="radio" class="radio" name="statusFiltro" value="" <%= (statusFiltro.equals("")? "checked": "") %>>Todos
+      <input type="radio" class="radio" name="statusFiltro" value="A" <%= (statusFiltro.equals("A")? "checked": "") %>>Agendado
+      <input type="radio" class="radio" name="statusFiltro" value="C" <%= (statusFiltro.equals("C")? "checked": "") %>>Cancelado    
+      <input type="radio" class="radio" name="statusFiltro" value="R" <%= (statusFiltro.equals("R")? "checked": "") %>>Realizado    
+      <input type="radio" class="radio" name="statusFiltro" value="N" <%= (statusFiltro.equals("N")? "checked": "") %>>Não compareceu</td>    
+  </tr>  
+</table>
+<hr>
+
+<%-- mostra todos os registros do banco de dados --%>
+<table border="0" width="100%">
+    <tr">
+      <th class="grid">&nbsp;</th>
+      <th class="grid"><center>Data</center></th>
+      <th class="grid"><center>Descrição Atividade</center></th>
+      <th class="grid">Status</th>
+      <th class="grid">Excluir</th>
+    </tr>
+<%
+int cont = 0;
+int gridSize = 15;
+String rowNumStr = request.getParameter("rowNum");
+int rowNum = (rowNumStr == null ? 0: Integer.parseInt(rowNumStr));
+if (rowNum < 0) rowNum = 0;
+boolean hasNext = false;
+int rowCount = list.size();
+int rowLast = 0;
+if (rowCount > 0) {
+  if (rowCount > gridSize) {
+    rowLast = rowNum+gridSize+1; 
+    if (rowLast >= rowCount && rowCount > 0) rowLast = rowCount;
+    if (rowNum > rowLast) rowNum = 0;
+    list = list.subList(rowNum, rowLast);
+  }
+  hasNext = true;
+}
+
+String msgStatus = "";
+//Utiliza o ResultSet para trazer os registros do banco de dados
+for ( Iterator it = list.iterator(); hasNext && cont < gridSize; hasNext = it.hasNext()) {
+	AnimalRetorno animalRetorno = (AnimalRetorno) it.next();
+	if (animalRetorno.getStatus().equals("A")) {
+		msgStatus = "AGENDADO";
+	} else if (animalRetorno.getStatus().equals("C")) {
+		msgStatus = "CANCELADO";
+	} else if (animalRetorno.getStatus().equals("R")) {
+		msgStatus = "REALIZADO";
+	} else if (animalRetorno.getStatus().equals("N")){
+		msgStatus = "NÃO COMPARECEU";
+	}
+	
+	cont++;
+
+%>
+    <tr>
+      <td class = "grid" width="2%"><center><%=rowNum+cont%></center></td>
+      <td class = "grid" width="10%"><center><a href="formAnimalRetorno.jsp?acao=atu&idAnimalRetorno=<%=animalRetorno.getIdAnimalRetorno()%>"><%=ConverteDate.dateToString(animalRetorno.getDtRetorno())%></a></center></td>
+      <td class = "grid"><center><%=animalRetorno.getDescricao()%></center></td>
+      <td class = "grid" width="10%"><center><%=msgStatus%></center></td>
+      <td class = "grid" width="3%"><center><a href="javascript: confirmaExcluir(<%=rowNum+cont%>,<%=animalRetorno.getIdAnimalRetorno()%>);"><img border = "0" src="../images/delete.gif"></a></center></td>
+  	</tr>
+<%
+}
+%>   
+</table>
+</form>
+<p align="right">|<a class="button" href="formAnimalRetorno.jsp?acao=inc&idAnimal=<%=idAnimal%>">Novo Retorno</a>|
+<%  if (rowNum != 0 || hasNext) { %>
+        <center>
+<%      if (rowNum != 0) { %>
+<a class="link" href="listarAnimalRetorno.jsp?rowNum=<%=0%>&descricaoFiltro=<%=descricaoFiltro%>">Primeira</a>&nbsp&nbsp
+|&nbsp&nbsp<a class="link" href="listarAnimalRetorno.jsp?rowNum=<%=rowNum-gridSize%>&descricaoFiltro=<%=descricaoFiltro%>">< Anterior</a>&nbsp&nbsp
+<%      } else { %>
+Primeira&nbsp&nbsp|&nbsp&nbsp< Anterior&nbsp
+<%      } %>
+<%      if (hasNext) { %>
+|&nbsp&nbsp<a class="link" href="listarAnimalRetorno.jsp?rowNum=<%=rowNum+gridSize%>&descricaoFiltro=<%=descricaoFiltro%>">Próxima ></a>&nbsp&nbsp
+|&nbsp&nbsp<a class="link" href="listarAnimalRetorno.jsp?rowNum=<%=rowCount-gridSize%>&descricaoFiltro=<%=descricaoFiltro%>">Última</a>
+<%      } else { %>
+|&nbsp&nbsp Próxima >&nbsp&nbsp|&nbsp&nbspÚltima
+<%      } %>
+        </center>
+<%  } %>
+</body>
+<%@include file="../fimConexao.jsp"%>

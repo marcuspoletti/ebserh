@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Banco" %>
+<%@page import ="afero.persistence.BancoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+BancoDAO daoBanco;
+List listBanco;
+daoBanco = new BancoDAO(conn);
+String clausulaBanco = "  WHERE status='A' ";
+listBanco = daoBanco.listarBanco(clausulaBanco);
+Iterator itBanco = listBanco.iterator();
+while (itBanco.hasNext()) { 
+	Banco banco = (Banco) itBanco.next();
+%>
+
+<option value="<%=banco.getIdBanco()%>"><%=banco.getNmBanco() + " - " + banco.getNrBanco() %></option>
+<%
+}
+%>

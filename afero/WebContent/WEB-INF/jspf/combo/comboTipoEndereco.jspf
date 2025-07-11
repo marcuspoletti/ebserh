@@ -1,0 +1,20 @@
+<%@page import="afero.model.TipoEndereco"%>
+<%@page import ="afero.persistence.TipoEnderecoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoEnderecoDAO daoTipoEndereco;
+List listTipoEndereco;
+daoTipoEndereco = new TipoEnderecoDAO(conn);
+String clausulaTipoEndereco = " WHERE status='A' ";
+listTipoEndereco = daoTipoEndereco.listarTipoEndereco(clausulaTipoEndereco);
+Iterator itTipoEndereco = listTipoEndereco.iterator();
+while (itTipoEndereco.hasNext()) { 
+	TipoEndereco tipoEndereco = (TipoEndereco) itTipoEndereco.next();
+%>
+
+
+<option value="<%=tipoEndereco.getCdTipoEndereco()%>"><%=tipoEndereco.getDsTipoEndereco()%></option>
+<%
+}
+%>

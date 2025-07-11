@@ -1,0 +1,22 @@
+<%@page import ="afero.model.Duplicata" %>
+<%@page import ="afero.persistence.DuplicataDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+
+DuplicataDAO daoDuplicataPai;
+List listDuplicataPai;
+daoDuplicataPai = new DuplicataDAO(conn);
+String clausulaDuplicataPai = "";
+clausulaDuplicataPai = "  WHERE d.status='A' and d.idDuplicataPai is null ";
+listDuplicataPai = daoDuplicataPai.listarDuplicata(clausulaDuplicataPai);
+Iterator itDuplicataPai = listDuplicataPai.iterator();
+while (itDuplicataPai.hasNext()) { 
+	Duplicata duplicataPai = (Duplicata) itDuplicataPai.next();
+	
+%>
+
+<option value="<%=duplicataPai.getIdDuplicata()%>"><%=duplicataPai.getNrTitulo() + " / " + duplicataPai.getNrDoc() + " / " + duplicataPai.getNrSerie()%></option>
+<%
+}
+%>

@@ -1,0 +1,19 @@
+<%@page import ="afero.model.CstPis" %>
+<%@page import ="afero.persistence.CstPisDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CstPisDAO daoCstPis;
+List listCstPis;
+daoCstPis = new CstPisDAO(conn);
+String clausulaCstPis = " ORDER BY dsCstPis";
+listCstPis = daoCstPis.listarCstPis(clausulaCstPis);
+Iterator itCstPis = listCstPis.iterator();
+while (itCstPis.hasNext()) { 
+	CstPis cstPis = (CstPis) itCstPis.next();
+%>
+
+<option value="<%=cstPis.getCdCstPis()%>"><%=cstPis.getCdCstPis()+"/"%><%=cstPis.getDsCstPis()%></option>
+<%
+}
+%>

@@ -1,0 +1,46 @@
+<!-- 
+'****************************************************************
+'                      SENAI - IEL
+'****************************************************************
+' Módulo: IEL
+' Autor : Tereza Cristina (GEDIN)
+' Data  : 13/01/2003
+' OBS.  : 
+' Atualização:
+'       Autor: 
+'       Data :
+'****************************************************************
+' Atualização:
+'       Autor: 
+'       Data : 
+'****************************************************************
+-->
+<html>
+<head>
+<title> Acesso Negado</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<meta name="author" content="acehtml">
+<meta name="generator" content="AceHTML 5 Pro">
+</head>
+<body>
+
+
+<br><br><br><br>
+
+<hr  color="red">
+
+<table border="0" width="100%">
+    <tr>
+		<td width="100%" align="center">
+		   <font size="2" color="red" face="arial">
+		      <b>ACESSO NEGADO</b>.<br><br> Você não está autorizado a exibir este conteúdo. Para maiores informações contate o administrador do site.
+		   </font>	 
+		</td>
+	</tr>
+</table>
+	
+<hr  color="red">
+
+</body>
+</html>

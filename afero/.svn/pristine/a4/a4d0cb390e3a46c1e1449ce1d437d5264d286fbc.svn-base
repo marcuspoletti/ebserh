@@ -1,0 +1,11 @@
+package afero.util;
+
+public interface IDatabase {
+
+	public final String driver = "org.gjt.mm.mysql.Driver";
+	public final String url = "jdbc:mysql://mysql.aferosistemas.kinghost.net/aferosistemas";
+	public final String user = "aferosistemas";
+	public final String password = "170917Po";
+	//public final String password = "32859126";
+	
+}

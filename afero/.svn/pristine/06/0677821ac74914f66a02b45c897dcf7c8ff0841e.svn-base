@@ -1,0 +1,18 @@
+<%@ page import ="afero.model.ListaServico" %>
+<%@ page import ="afero.persistence.ListaServicoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+ListaServicoDAO daoListaServico;
+List listListaServico;
+daoListaServico = new ListaServicoDAO(conn);
+String clausulaListaServico = " ORDER BY dsListaServico ";
+listListaServico = daoListaServico.listarListaServico(clausulaListaServico);
+Iterator itListaServico = listListaServico.iterator();
+while (itListaServico.hasNext()) { 
+	ListaServico listaServico = (ListaServico) itListaServico.next();
+%>
+<option value="<%=listaServico.getIdListaServico()%>"><%=listaServico.getDsListaServico() %></option>
+<%
+}
+%>

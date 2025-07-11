@@ -1,0 +1,310 @@
+<%@page import="afero.persistence.ListaServicoDAO"%>
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+
+<%@page import="afero.model.ConfigServico"%>
+<%@ page import="afero.model.ListaServico" %>
+<%@ page import="afero.model.OrdemServicoObjeto" %>
+<%@ page import="afero.model.OrdemServicoItem" %>
+
+<%@page import="afero.persistence.ConfigServicoDAO"%>
+<%@ page import="afero.persistence.ListaServicoDAO" %>
+<%@ page import="afero.persistence.OrdemServicoObjetoDAO" %>
+<%@ page import="afero.persistence.OrdemServicoItemDAO" %>
+
+<%@ page import="afero.util.Utilitaria" %>
+<%@ page import="afero.util.ConverteDate" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script>
+
+//Depois ver...
+function localizar() {
+  document.forms[0].submit();
+}  
+
+function novaPesquisa() {
+  document.all.dsPesquisaServico.value = '';
+  document.all.status.value = ''; //não está limpando
+  document.forms[0].submit();
+}  
+
+function addItem(){
+	window.opener.location.reload();
+	self.close();
+}
+
+function AddOb(url){
+	var idOS = document.getElementById('idOrdemServico').value;
+	var idOSObj = document.getElementById('idOrdemServicoObjeto').value;
+	location.href= url+'?idOrdemServico='+idOS+'&idOrdemServicoObjeto='+idOSObj;
+}
+
+</script>
+<%
+ListaServico listaServico;
+ListaServicoDAO daoServico;
+String clausulaServico = "";
+
+OrdemServicoObjeto ordemServicoObjeto;
+OrdemServicoObjetoDAO daoObj;
+String clausulaObj = "";
+
+OrdemServicoItem ordemServicoItem;
+OrdemServicoItemDAO daoItem;
+
+ConfigServicoDAO daoConfig;
+ConfigServico configServico;
+
+String dsPesquisaServico = request.getParameter("dsPesquisaServico");
+String status = request.getParameter("status");
+if(status == null)status = "";
+
+//
+String acao = request.getParameter("acao");
+String idOrdemServico = request.getParameter("idOrdemServico");
+String idOrdemServicoObjeto = request.getParameter("idOrdemServicoObjeto");
+String idOrdemServicoItem = request.getParameter("idOrdemServicoItem");
+if (acao == null) acao = "listar";
+
+int idLoja = Integer.parseInt((String)session.getAttribute("idLoja"));
+String clausula = "";
+
+// DADOS DO ITEM
+
+String idListaServico = null;
+String dsCompServico = null;
+String comp = null;
+String larg = null;
+String quant = null;
+String valor = null;
+String pDesc = null;
+String vlUni = null;
+String idColaborador = null;
+String dtMod = null;
+String usuario = (String)session.getAttribute("Login");
+
+if (acao.equalsIgnoreCase("incItem") || acao.equalsIgnoreCase("atuItem")) {
+	
+	idOrdemServicoItem = request.getParameter("idOrdemServicoItem");
+	idOrdemServicoObjeto = request.getParameter("idOrdemServicoObjeto");
+	idListaServico = request.getParameter("idListaServico");
+	dsCompServico = request.getParameter("dsCompServico");
+	comp = request.getParameter("comp");
+	larg = request.getParameter("larg");
+	quant = request.getParameter("quant");
+	valor = request.getParameter("valor");
+	pDesc = request.getParameter("pDesc");
+	idColaborador = request.getParameter("idColaborador");
+	dtMod = request.getParameter("dtMod");
+	if(idOrdemServicoItem == null) idOrdemServicoItem = "0";
+	if(idOrdemServicoObjeto == null) idOrdemServicoObjeto = "0";
+	if(idListaServico == null) idListaServico = "0";
+	if(dsCompServico == null) dsCompServico = "";
+	if(comp == null) comp = "0";
+	if(larg == null) larg = "0";
+	if(quant == null) quant = "0";
+	if(valor == null) valor = "0";
+	if(pDesc == null) pDesc = "0";
+	if(idColaborador == null) idColaborador = "0";
+	if(dtMod == null) dtMod = "";
+	
+	ordemServicoItem = new OrdemServicoItem();
+  
+	try {
+	  if (!acao.equalsIgnoreCase("incItem")){
+		  ordemServicoItem.setIdOrdemServicoItem(Integer.parseInt(idOrdemServicoItem));
+	  }
+	  
+	  	ordemServicoItem.setIdOrdemServicoObjeto(Integer.parseInt(idOrdemServicoObjeto));
+	  	ordemServicoItem.setIdListaServico(Integer.parseInt(idListaServico));
+	  	ordemServicoItem.setDsCompServico(dsCompServico);
+	  	ordemServicoItem.setComp(Float.parseFloat(comp));
+	  	ordemServicoItem.setLarg(Float.parseFloat(larg));
+	  	ordemServicoItem.setQuant(Float.parseFloat(quant));
+	  	ordemServicoItem.setValor(Float.parseFloat(valor));
+	  	ordemServicoItem.setpDesc(Float.parseFloat(pDesc));
+	  	ordemServicoItem.setIdColaborador(Integer.parseInt(idColaborador));
+	  	ordemServicoItem.setUsuario(usuario);
+	  	
+	  	if(dtMod != null){
+	  		ordemServicoItem.setDtMod(ConverteDate.stringToDate(dtMod));
+	  	}
+	  		      
+	} catch (NumberFormatException nfe) {
+		throw new Exception("Código inválido");
+	}
+
+	daoItem = new OrdemServicoItemDAO(conn);
+
+
+  if (acao.equalsIgnoreCase("incItem")) {  
+	  //inclui no banco de dados
+  	daoItem.incluir(ordemServicoItem);
+  	%>
+	  <script language="javascript">addPd();</script>
+	<%
+
+  } else if (acao.equalsIgnoreCase("atuItem")) {
+	  //atualiza no banco de dados
+    	 daoItem.atualiza(ordemServicoItem);
+	  %>
+	  	<script language="javascript">addPd();</script>
+	  <%
+  }
+}
+// OBJETO e SERVIÇO;;;
+%>
+<form action="consultarOrdemServicoItem.jsp">
+<input type="hidden" name="idOrdemServico" value="<%=idOrdemServico%>"/>
+<input type="hidden" name="idOrdemServicoObjeto" value="<%=idOrdemServicoObjeto%>"/>
+<input type="hidden" name="idOrdemServicoItem" value="<%=idOrdemServicoItem%>"/>
+<input type="hidden" name="acao" value="<%=acao%>"/>
+<hr>
+<%if((idOrdemServicoObjeto != null) && idListaServico == null){ %>
+<table colspan="2">
+   <tr>
+    <th class='label'>Descrição Serviço</th>
+    <td><input type="text" name="dsPesquisaServico" <%if (dsPesquisaServico != null) { %>value="<%=dsPesquisaServico %>"<% }%>  size="40" maxlength="40"></td>
+  </tr>
+  <tr>
+    <th class="label">Status</th>
+    <td class="label_radio">
+      <input type="radio" class="radio" name="status" value="" <%= (status.equals("")? "checked": "") %>>Todos
+      <input type="radio" class="radio" name="status" value="A" <%= (status.equals("A")? "checked": "") %>>Ativo
+      <input type="radio" class="radio" name="status" value="I" <%= (status.equals("I")? "checked": "") %>>Inativo
+    </td>
+     <td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+    <td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+</table>
+<hr>
+
+<%} %>
+
+<%
+if(idOrdemServicoObjeto == null){
+	
+	// Objetos - Campos ConfigServiços
+
+	//CAMPOS de CONFIG SERVICO
+	daoConfig = new ConfigServicoDAO(conn);
+	configServico = new ConfigServico();
+	configServico = daoConfig.procurarConfigServico(" WHERE idLoja = "+idLoja);
+	%>
+	<table border="0" width="100%">
+		<tr>
+			<th class="label" colspan="7">Selecione o Objeto</th>
+		</tr>
+		<tr>
+			<th class="grid"><%="Adic."%></th>
+			<%if(!configServico.getDsCmpOb1().equalsIgnoreCase("")){ %>
+				<th class="grid"><%=configServico.getDsCmpOb1() %></th>
+			<%} %>
+			<%if(!configServico.getDsCmpOb2().equalsIgnoreCase("")){ %>
+				<th class="grid"><%=configServico.getDsCmpOb2() %></th>
+			<%} %>
+			<%if(!configServico.getDsCmpOb3().equalsIgnoreCase("")){ %>
+				<th class="grid"><%=configServico.getDsCmpOb3() %></th>
+			<%} %>
+			<%if(!configServico.getDsCmpOb4().equalsIgnoreCase("")){ %>
+				<th class="grid"><%=configServico.getDsCmpOb4() %></th>
+			<%} %>
+			<th class="grid">Data da Garantia</th>
+			<th class="grid">Controle</th>
+		</tr>
+		
+	<% //seleciona todos os registros do banco de dados
+	
+	List listObjeto;
+	daoObj = new OrdemServicoObjetoDAO(conn);
+	clausulaObj = clausulaObj +" WHERE idOrdemServico = "+idOrdemServico;
+	listObjeto = daoObj.listar(clausulaObj);
+	int cont = 0;
+
+	for ( Iterator it = listObjeto.iterator(); it.hasNext(); ) {
+		ordemServicoObjeto = (OrdemServicoObjeto) it.next();
+		cont++;
+	%>
+		<tr>
+			<td class="grid" width="10%"><a href="consultarOrdemServicoItem.jsp?acao=<%=acao %>&idOrdemServico=<%=idOrdemServico %>&idOrdemServicoObjeto=<%=ordemServicoObjeto.getIdOrdemServicoObjeto() %>" ><img border = "0" src="../images/soma.jpg"></a></td>
+			<%if(!configServico.getDsCmpOb1().equalsIgnoreCase("")){ %>
+				<td class="grid"><%=ordemServicoObjeto.getCampo1() %></td>
+			<%} %>
+			<%if(!configServico.getDsCmpOb2().equalsIgnoreCase("")){ %>
+				<td class="grid"><%=ordemServicoObjeto.getCampo2() %></td>
+			<%} %>
+			<%if(!configServico.getDsCmpOb3().equalsIgnoreCase("")){ %>
+				<td class="grid"><%=ordemServicoObjeto.getCampo3() %></td>			
+			<%} %>
+			<%if(!configServico.getDsCmpOb4().equalsIgnoreCase("")){ %>
+				<td class="grid"><%=ordemServicoObjeto.getCampo4() %></td>
+			<%} %>
+			<td class="grid"><%if(ordemServicoObjeto.getDtGarantia() != null){ %><%=ConverteDate.dateToString(ordemServicoObjeto.getDtGarantia()) %><%} else { %> - <%} %></td>
+			<td class="grid"><%=ordemServicoObjeto.getNrControle() %></td>
+		</tr>
+	<% }
+}// fim do objeto %>
+	</table>
+
+<% 
+	// SELECIONAR SERVIÇO
+	
+	if((idOrdemServicoObjeto != null) && idListaServico == null){
+		if(dsPesquisaServico != null){
+			clausulaServico += " WHERE dsListaServico like '"+dsPesquisaServico+"%' ";
+		}
+
+		if((status != null && status != "") && (dsPesquisaServico != null)){
+			clausulaServico += " AND status = '"+status+"'";
+		}else if( status != "" && dsPesquisaServico == null){
+			clausulaServico += " WHERE status = '"+status+"'";
+		}
+		List listServico;
+		daoServico = new ListaServicoDAO(conn);
+		clausulaServico += " ORDER BY idListaServico ";
+		listServico = daoServico.listarListaServico(clausulaServico);
+		int cont2 = 0;
+		%>
+		
+		<table border="0" width="100%">
+			<tr>
+				<th colspan="4" class="label" align="center">Selecione o serviço</th>
+			</tr>
+			<tr>
+				<th class="grid">&nbsp;</th>
+				<th class="grid"><%="Adic."%></th>
+				<th class="grid"><center>Descrição </center></th>
+				<th class="grid">Preço </th>
+				<th class="grid">Status </th>
+			</tr>
+			
+		<%
+		String msgStatus = "";
+		
+		for ( Iterator it = listServico.iterator(); it.hasNext(); ) {
+			listaServico = (ListaServico) it.next();
+			
+			if(listaServico.getStatus().equalsIgnoreCase("I")){
+				msgStatus = "INATIVO";
+			}else{
+				msgStatus = "ATIVO";
+			}
+			cont2++;
+		%>
+			<tr>
+				<td class = "grid" width="2%"><center><%=cont2%></center></td>
+				<td class="grid" width="10%"><a href="formOrdemServicoItem.jsp?acao=inc&idOrdemServicoObjeto=<%=idOrdemServicoObjeto %>&idListaServico=<%=listaServico.getIdListaServico() %>" ><img border = "0" src="../images/soma.jpg"></a></td>
+				<td class = "grid"><center><%=listaServico.getDsListaServico() %></center></td>
+				<td class = "grid" width="5%"><center><%=Utilitaria.formatarNumero(listaServico.getPreco(), 2) %></center></td>
+				<td class = "grid" width="5%"><center><%=msgStatus%></center></td>
+			</tr>
+		<%} //  FIM DA LISTAGEM %>
+		</table>
+	<%
+	}//FIM SERVIÇOS
+%>
+</form>
+</body>

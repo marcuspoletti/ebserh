@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Entidade" %>
+<%@page import ="afero.persistence.EntidadeDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EntidadeDAO daoEntidade;
+List listEntidade;
+daoEntidade = new EntidadeDAO(conn);
+String clausulaEntidade = "  WHERE status='A' ORDER BY nome";
+listEntidade = daoEntidade.listarEntidade(clausulaEntidade);
+Iterator itEntidade = listEntidade.iterator();
+while (itEntidade.hasNext()) { 
+	Entidade entidade = (Entidade) itEntidade.next();
+%>
+
+<option value="<%=entidade.getCdEntidade()%>"><%=entidade.getNome()%></option>
+<%
+}
+%>

@@ -1,0 +1,447 @@
+package afero.integracao.xprocess.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import afero.integracao.xprocess.Nfe;
+import afero.integracao.xprocess.RelatorioNota;
+import afero.persistence.AferoDAOException;
+import afero.util.Produtos;
+
+public class NfeDAO {
+	
+	private Connection conn;
+	public NfeDAO(Connection conn) throws AferoDAOException {
+		this.conn = conn;
+	}
+
+	public void incluir(Nfe nfe) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (nfe == null)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+
+		try {
+			String sql = "INSERT INTO tbnfe (idPedidoSaida, cuf, cnf, natop, indpag, modi, serie, nnf, demi, dsaient, tpnf, cmunfg, tpimp, tpemis, tpamb, finnfe, "+ 
+                                             "procemi, emit_cnpj, emit_xnome, emit_xfant, emit_xlgr, emit_nro, emit_xcpl, emit_xbairro, emit_cmun, "+ 
+                                             "emit_xmun, emit_uf, emit_cep, emit_fone, emit_ie, emit_iest, emit_im, emit_cnae, dest_cnpj, dest_cpf, "+ 
+                                             "dest_xnome, dest_xlgr, dest_nro, dest_xcpl, dest_xbairro, dest_cmun, dest_xmun, dest_uf, dest_cep, dest_fone, "+ 
+                                             "dest_ie, dest_isuf, retirada_cnpj, retirada_xlgr, retirada_nro, retirada_xcpl, retirada_xbairro, retirada_cmun, "+ 
+                                             "retirada_xmun, entrega_cnpj, entrega_xlgr, entrega_nro, entrega_xcpl, entrega_xbairro, entrega_cmun, entrega_xmun, "+ 
+                                             "icmstot_vbc, icmstot_vicms, icmstot_vbcst, icmstot_vst, icmstot_vprod, icmstot_vfrete, icmstot_vseg, icmstot_vdesc, "+
+                                             "icmstot_vii, icmstot_vipi, icmstot_vpis, icmstot_vcofins, icmstot_voutro, icmstot_vnf, rettrib_vretpis, rettrib_vretcofins, "+ 
+                                             "rettrib_vretcsll, rettrib_vbcirrf, rettrib_virrf, rettrib_vbcretprev, rettrib_vretprev, transp_modfrete, transp_cnpj, transp_cpf, "+ 
+                                             "transp_xnome, transp_ie, transp_xender, transp_xmun, transp_uf, transp_vserv, transp_vbcret, transp_picmsret, transp_vicmsret, "+
+                                             "transp_cfop, transp_cmunfg, transp_placa, transp_uf_placa, transp_rntc, cobr_nfat, cobr_vorig, cobr_vdesc, cobr_vliq, compra_xnemp, "+ 
+                                             "compra_xped, compra_xcont, chnfe, nprot, id_empresa, cstat, xmotivo, dtprot, in_status, cd_barras_contigencia, id_contingencia, nm_usuario, "+
+                                             "dt_registro, emit_crt, dhcont, xjust, dest_email, retirada_cpf, entrega_cpf, dest_cpais, dest_xpais, transp_qvol, transp_pesol, transp_pesob, "+
+                                             "dt_envio_email, email_enviado, ufembarq, xlocembarq, dest_iddest, indfinal, indpres, dt_inicio_transacao, dt_termino_transacao, nr_pedido, "+
+                                             "nr_os, id_entidade_vendedor, digval, icmstot_vtottrib, nr_tempo_gasto_solicitacao, verproc, ds_xml, link_portal_nfc, link_qrcode_nfc) "+
+					                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "+ 
+					                         		"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "+
+					                         		"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, nfe.getIdPedidoSaida());
+			ps.setString(2, nfe.getCuf());
+			ps.setString(3, nfe.getCnf());
+			ps.setString(4, nfe.getNatop());
+			ps.setString(5, nfe.getIndpag());
+			ps.setString(6, nfe.getMod());
+			ps.setString(7, nfe.getSerie());
+			ps.setString(8, nfe.getNnf());
+			ps.setString(9, nfe.getDemi());
+			ps.setString(10, nfe.getDsaient());
+			ps.setString(11, nfe.getTpnf());
+			ps.setString(12, nfe.getCmunfg());
+			ps.setString(13, nfe.getTpimp());
+			ps.setString(14, nfe.getTpemis());
+			ps.setString(15, nfe.getTpamb());
+			ps.setString(16, nfe.getFinnfe());
+			ps.setString(17, nfe.getProcemi());
+			ps.setString(18, nfe.getEmit_cnpj());
+			ps.setString(19, nfe.getEmit_xnome());
+			ps.setString(20, nfe.getEmit_xfant());
+			ps.setString(21, nfe.getEmit_xlgr());
+			ps.setString(22, nfe.getEmit_nro());
+			ps.setString(23, nfe.getEmit_xcpl());
+			ps.setString(24, nfe.getEmit_xbairro());
+			ps.setString(25, nfe.getEmit_cmun());
+			ps.setString(26, nfe.getEmit_xmun());
+			ps.setString(27, nfe.getEmit_uf());
+			ps.setString(28, nfe.getEmit_cep());
+			ps.setString(29, nfe.getEmit_fone());
+			ps.setString(30, nfe.getEmit_ie());
+			ps.setString(31, nfe.getEmit_iest());
+			ps.setString(32, nfe.getEmit_im());
+			ps.setString(33, nfe.getEmit_cnae());
+			ps.setString(34, nfe.getDest_cnpj());
+			ps.setString(35, nfe.getDest_cpf());
+			ps.setString(36, nfe.getDest_xnome());
+			ps.setString(37, nfe.getDest_xlgr());
+			ps.setString(38, nfe.getDest_nro());
+			ps.setString(39, nfe.getDest_xcpl());
+			ps.setString(40, nfe.getDest_xbairro());
+			ps.setString(41, nfe.getDest_cmun());
+			ps.setString(42, nfe.getDest_xmun());
+			ps.setString(43, nfe.getDest_uf());
+			ps.setString(44, nfe.getDest_cep());
+			ps.setString(45, nfe.getDest_fone());
+			ps.setString(46, nfe.getDest_ie());
+			ps.setString(47, nfe.getDest_isuf());
+			ps.setString(48, nfe.getRetirada_cnpj());
+			ps.setString(49, nfe.getRetirada_xlgr());
+			ps.setString(50, nfe.getRetirada_nro());
+			ps.setString(51, nfe.getRetirada_xcpl());
+			ps.setString(52, nfe.getRetirada_xbairro());
+			ps.setString(53, nfe.getRetirada_cmun());
+			ps.setString(54, nfe.getRetirada_xmun());
+			ps.setString(55, nfe.getEntrega_cnpj());
+			ps.setString(56, nfe.getEntrega_xlgr());
+			ps.setString(57, nfe.getEntrega_nro());
+			ps.setString(58, nfe.getEntrega_xcpl());
+			ps.setString(59, nfe.getEntrega_xbairro());
+			ps.setString(60, nfe.getEntrega_cmun());
+			ps.setString(61, nfe.getEntrega_xmun());
+			ps.setString(62, nfe.getIcmstot_vbc());
+			ps.setString(63, nfe.getIcmstot_vicms());
+			ps.setString(64, nfe.getIcmstot_vbcst());
+			ps.setString(65, nfe.getIcmstot_vst());
+			ps.setString(66, nfe.getIcmstot_vprod());
+			ps.setString(67, nfe.getIcmstot_vfrete());
+			ps.setString(68, nfe.getIcmstot_vseg());
+			ps.setString(69, nfe.getIcmstot_vdesc());
+			ps.setString(70, nfe.getIcmstot_vii());
+			ps.setString(71, nfe.getIcmstot_vipi());
+			ps.setString(72, nfe.getIcmstot_vpis());
+			ps.setString(73, nfe.getIcmstot_vcofins());
+			ps.setString(74, nfe.getIcmstot_voutro());
+			ps.setString(75, nfe.getIcmstot_vnf());
+			ps.setString(76, nfe.getRettrib_vretpis());
+			ps.setString(77, nfe.getRettrib_vretcofins());
+			ps.setString(78, nfe.getRettrib_vretcsll());
+			ps.setString(79, nfe.getRettrib_vbcirrf());
+			ps.setString(80, nfe.getRettrib_virrf());
+			ps.setString(81, nfe.getRettrib_vbcretprev());
+			ps.setString(82, nfe.getRettrib_vretprev());
+			ps.setString(83, nfe.getTransp_modfrete());
+			ps.setString(84, nfe.getTransp_cnpj());
+			ps.setString(85, nfe.getTransp_cpf());
+			ps.setString(86, nfe.getTransp_xnome());
+			ps.setString(87, nfe.getTransp_ie());
+			ps.setString(88, nfe.getTransp_xender());
+			ps.setString(89, nfe.getTransp_xmun());
+			ps.setString(90, nfe.getTransp_uf());
+			ps.setString(91, nfe.getTransp_vserv());
+			ps.setString(92, nfe.getTransp_vbcret());
+			ps.setString(93, nfe.getTransp_picmsret());
+			ps.setString(94, nfe.getTransp_vicmsret());
+			ps.setString(95, nfe.getTransp_cfop());
+			ps.setString(96, nfe.getTransp_cmunfg());
+			ps.setString(97, nfe.getTransp_placa());
+			ps.setString(98, nfe.getTransp_uf_placa());
+			ps.setString(99, nfe.getTransp_rntc());
+			ps.setString(100, nfe.getCobr_nfat());
+			ps.setString(101, nfe.getCobr_vorig());
+			ps.setString(102, nfe.getCobr_vdesc());
+			ps.setString(103, nfe.getCobr_vliq());
+			ps.setString(104, nfe.getCompra_xnemp());
+			ps.setString(105, nfe.getCompra_xped());
+			ps.setString(106, nfe.getCompra_xcont());
+			ps.setString(107, nfe.getChnfe());
+			ps.setString(108, nfe.getNprot());
+			ps.setString(109, nfe.getId_empresa());
+			ps.setString(110, nfe.getCstat());
+			ps.setString(111, nfe.getXmotivo());
+			ps.setString(112, nfe.getDtprot());
+			ps.setString(113, nfe.getIn_status());
+			ps.setString(114, nfe.getCd_barras_contigencia());
+			ps.setString(115, nfe.getId_contingencia());
+			ps.setString(116, nfe.getNm_usuario());
+			ps.setString(117, nfe.getDt_registro());
+			ps.setString(118, nfe.getEmit_crt());
+			ps.setString(119, nfe.getDhcont());
+			ps.setString(120, nfe.getXjust());
+			ps.setString(121, nfe.getDest_email());
+			ps.setString(122, nfe.getRetirada_cpf());
+			ps.setString(123, nfe.getEntrega_cpf());
+			ps.setString(124, nfe.getDest_cpais());
+			ps.setString(125, nfe.getDest_xpais());
+			ps.setString(126, nfe.getTransp_qvol());
+			ps.setString(127, nfe.getTransp_pesol());
+			ps.setString(128, nfe.getTransp_pesob());
+			ps.setString(129, nfe.getDt_envio_email());
+			ps.setString(130, nfe.getEmail_enviado());
+			ps.setString(131, nfe.getUfembarq());			
+			ps.setString(132, nfe.getXlocembarq());
+			ps.setString(133, nfe.getDest_iddest());
+			ps.setString(134, nfe.getIndfinal());
+			ps.setString(135, nfe.getIndpres());
+			ps.setString(136, nfe.getDt_inicio_transacao());
+			ps.setString(137, nfe.getDt_termino_transacao());
+			ps.setString(138, nfe.getNr_pedido());
+			ps.setString(139, nfe.getNr_os());
+			ps.setString(140, nfe.getId_entidade_vendedor());
+			ps.setString(141, nfe.getDigval());
+			ps.setString(142, nfe.getIcmstot_vtottrib());
+			ps.setString(143, nfe.getNr_tempo_gasto_solicitacao());
+			ps.setString(144, nfe.getVerproc());
+			ps.setString(145, nfe.getDs_xml());
+			ps.setString(146, nfe.getLink_portal_nfc());
+			ps.setString(147, nfe.getLink_qrcode_nfc());
+			ps.executeUpdate();
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} 
+	}
+	
+	public String obterIdNfe(String chnfe)throws AferoDAOException{
+		
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String idNfe = "0";
+		
+		
+		try {
+			String sql = "SELECT nnf " +
+		     "FROM tbnfe WHERE chnfe = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, chnfe);
+			rs = ps.executeQuery();
+			
+			while (rs.next()) {
+				idNfe = rs.getString(1);
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return idNfe;
+	}
+	
+	public List RelatorioNfe(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<RelatorioNota> list = null;
+		RelatorioNota relatorioNota = new RelatorioNota();
+		
+		try {
+			String sql = "SELECT distinct(n.nnf), n.demi, n.idPedidoSaida, n.natop, n.serie, dest_xnome, icmstot_vnf, n.nm_usuario "+
+                         "FROM tbnfe n ";
+													
+		    if (clausula != null) sql = sql + clausula;	
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<RelatorioNota>();
+			while (rs.next()) {
+				relatorioNota.setNnf(rs.getString(1));
+				relatorioNota.setDemi(rs.getString(2));
+				relatorioNota.setIdPedidoSaida(rs.getString(3));
+				relatorioNota.setNatop(rs.getString(4));
+				relatorioNota.setSerie(rs.getString(5));
+				relatorioNota.setDest_xnome(rs.getString(6));
+				relatorioNota.setIcmstot_vnf(rs.getString(7));
+				relatorioNota.setNm_usuario(rs.getString(8));
+				list.add(new RelatorioNota(relatorioNota.getDemi(), relatorioNota.getIdPedidoSaida(),
+						relatorioNota.getNatop(), relatorioNota.getNnf(), relatorioNota.getSerie(),
+						relatorioNota.getDest_xnome(),relatorioNota.getIcmstot_vnf(), relatorioNota.getNm_usuario()));			
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	
+	public boolean existeNota(Integer idNfe, String serie) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean id = false;
+		
+		try {
+			String sql = "select n.nnf "+
+			             "from tbnfe n "+
+			             "where n.nnf = ? And n.serie = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idNfe);
+			ps.setString(2, serie);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				id =true;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return id;
+	}
+	
+	public Produtos RelatorioNfeIdProduto(Integer idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+        Produtos produtos = new Produtos();		
+		try {
+			String sql = "SELECT p.cdBarra, p.dsProduto, e.qtEstoque, round(pr.preco), 0 as 'Desconto Máx', p.idProduto, u.dsUnidade, round(pr.custoDireto), "+ 
+						"round(pr.custoMedioGeral), 0 as 'Markup', round(t.aliquotaIcms), 0 as 'Valor Comissao', csti.cdCstIcms, 0 as 'CST. Orig. Mercadoria', "+
+						"csti.cdCstIcms as 'CST. Trib. ICMS', t.pReduBCIcms as 'Reducao', pis.cdCstPis as 'Cód. CST PIS', con.cdCstCofins as 'Cód. CST COFINS', "+
+						"0 as 'Alíquota PIS', 0 as 'Alíquota COFINS', p.cdNcm as 'NCM',cfopDentro.cdCfop as 'CFOP P. Física', cfopFora.cdCfop as 'CFOP P. Juridica', "+
+						"round(t.percCargaTrib), p.idDivisao as 'idSecao', divi.dsDivisao as 'Divisao' "+
+						"FROM tbproduto p "+
+						"JOIN tbdivisao d on p.idDivisao = d.idDivisao AND p.status = 'A' "+
+					    "JOIN tbestoque e on p.idProduto = e.idProduto AND e.idLoja = 1 "+
+						"JOIN tbpreco pr on e.idEstoque = pr.idEstoque AND pr.precoPadrao = 'S' "+  
+						"JOIN tbunidade u on pr.idUnidade = u.idUnidade "+
+						"JOIN tbcattributaria cat on p.idCatTributaria = cat.idCatTributaria "+ 
+						"JOIN tbtributacao t on cat.idCatTributaria = t.idCatTributaria "+
+						"JOIN tbcstpis pis on cat.cdCstPis = pis.cdCstPis "+
+						"JOIN tbcstcofins con on cat.cdCstCofins = con.cdCstCofins "+ 
+						"JOIN tbcsticms csti on t.cdCstIcms = csti.cdCstIcms "+
+						"JOIN tbcfop cfopDentro on p.cdCfopSaidaDentro = cfopDentro.cdCfop "+
+						"JOIN tbcfop cfopFora on p.cdCfopSaidaFora = cfopFora.cdCfop "+
+						"JOIN tbdivisao divi on p.idDivisao = divi.idDivisao "+
+						"WHERE p.idProduto = ? ";
+													
+		    
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				produtos.setCoddBarras(rs.getString(1));
+				produtos.setDescProduto(rs.getString(2));
+				produtos.setQtdEstoque(rs.getString(3));
+				produtos.setValorVarejo(rs.getString(4));
+				produtos.setDescontoMax(rs.getString(5));
+				produtos.setCoddProduto(rs.getString(6));
+				produtos.setUnidadeVenda(rs.getString(7));
+				produtos.setCusto(rs.getString(8));
+				produtos.setCustoMedio(rs.getString(9));
+				produtos.setMarkup(rs.getString(10));
+				produtos.setAliquotaICMS(rs.getString(11));
+				produtos.setValorComissão(rs.getString(12));
+				produtos.setCSTTribICMS(rs.getString(13));
+				produtos.setCSTOrigMercadoria(rs.getString(14));
+				produtos.setCSTTribICMS(rs.getString(15));
+				produtos.setReducao(rs.getString(16));
+				produtos.setCodCSTPIS(rs.getString(17));
+				produtos.setCodCSTCOFINS(rs.getString(18));
+				produtos.setAlquotaPIS(rs.getString(19));
+				produtos.setAliquotaCOFINS(rs.getString(20));
+				produtos.setCodNCM(rs.getString(21));
+				produtos.setCFOPPFisica(rs.getString(22));
+				produtos.setCFOPPJuridica(rs.getString(23));
+				produtos.setPercentualCargaTributária(rs.getString(24));
+				produtos.setIdSecao(rs.getString(25));
+				
+				new Produtos("P",produtos.getCdBarra(), produtos.getDsProduto(),
+						produtos.getQtdEstoque(), produtos.getValorVarejo(), produtos.getDescontoMax(),
+						produtos.getNaoUsado1(), produtos.getCoddProduto(), produtos.getUnidadeVenda(),
+						produtos.getCusto(), produtos.getCustoMedio(), produtos.getMarkup(), produtos.getNaoUsado2(),
+						produtos.getAliquotaICMS(),produtos.getValorComissão(),
+						produtos.getCSTOrigMercadoria(),produtos.getCSTTribICMS(), produtos.getNaoUsado3(),
+						produtos.getNaoUsado4(), produtos.getReducao(),produtos.getCodCSTPIS(),
+						produtos.getCodCSTCOFINS(), produtos.getAlquotaPIS(),produtos.getAliquotaCOFINS(),
+						produtos.getNaoUsado5(), produtos.getNaoUsado6(),produtos.getNaoUsado7(),
+						produtos.getNaoUsado8(), produtos.getCodNCM(), produtos.getCFOPPFisica(),
+						produtos.getCFOPPJuridica(),produtos.getPercentualCargaTributária(),
+						produtos.getNaoUsado10(), produtos.getNaoUsado11(), produtos.getIdSecao());			
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return produtos;
+	}
+	public Produtos procurarProduto(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produtos produto = null;
+
+		try {
+			String sql = "SELECT idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("NÃ£o foi encontrado nenhum "
+						+ "registro com o cod.setor: " + idProduto);
+			}
+
+			int idDivisao = rs.getInt(1);
+			int idSubGrupo = rs.getInt(2);
+			int idGrupo = rs.getInt(3);
+			String nmProduto = rs.getString(4);
+			String dsProduto = rs.getString(5);
+			String tipoProduto = rs.getString(6);
+			String status = rs.getString(7);
+			Date dtCad = rs.getDate(8);
+			Date dtMod = rs.getDate(9);
+			String usuario = rs.getString(10);
+			String cdBarra = rs.getString(11);
+
+			produto = new Produtos(idProduto, idDivisao, idSubGrupo, idGrupo,
+					nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod,
+					usuario, cdBarra);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return produto;
+	}
+
+	public Produtos procurarProdutoNCM(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produtos produto = null;
+
+		try {
+			String sql = "SELECT idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra, cdNcm FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("NÃ£o foi encontrado nenhum "
+						+ "registro com o cod.setor: " + idProduto);
+			}
+
+			int idDivisao = rs.getInt(1);
+			int idSubGrupo = rs.getInt(2);
+			int idGrupo = rs.getInt(3);
+			String nmProduto = rs.getString(4);
+			String dsProduto = rs.getString(5);
+			String tipoProduto = rs.getString(6);
+			String status = rs.getString(7);
+			Date dtCad = rs.getDate(8);
+			Date dtMod = rs.getDate(9);
+			String usuario = rs.getString(10);
+			String cdBarra = rs.getString(11);
+			String cdNcm = rs.getString(12);
+
+			produto = new Produtos(idProduto, idDivisao, idSubGrupo, idGrupo,
+					nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod,
+					usuario, cdBarra, cdNcm);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return produto;
+	}
+
+}

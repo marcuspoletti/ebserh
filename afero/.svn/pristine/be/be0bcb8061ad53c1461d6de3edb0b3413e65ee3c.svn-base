@@ -1,0 +1,220 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.Mesa" %>
+<%@ page import="afero.model.Entidade" %>
+<%@ page import="afero.model.PedidoSaida" %>
+<%@ page import="afero.persistence.MesaDAO" %>
+<%@ page import="afero.persistence.PedidoSaidaDAO" %>
+<%@ page import="afero.persistence.EntidadeDAO" %>
+<%@ page import="afero.util.Utilitaria" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@include file="../../seguranca.jsp"%>
+<%@include file="../../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../../css/afero.css" />
+<script type="text/javascript">
+function recarregar() {
+	window.location.reload();
+}
+</script>
+<%
+MesaDAO dao = null;
+PedidoSaidaDAO daoPedidoSaida = new PedidoSaidaDAO(conn);
+String acao = request.getParameter("acao");
+if (acao == null) acao = "listar";
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null) mensagem="";
+String clausula = "";
+//seleciona todos os registros do banco de dados
+List list;
+dao = new MesaDAO(conn);
+clausula = clausula+" ORDER BY dsMesa";
+list = dao.listarMesa(clausula);
+
+int cont = 0;
+%>
+<body onload="document.forms[0].elements[0].focus();" >
+<%-- mostra todos os registros do banco de dados --%>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Atualizar" onClick="javascript:recarregar();" /></td>
+</tr>
+</table>
+<table border="0" width="100%">
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+// Se cont == 1
+String statusMesa1 = "";
+String imagem1 = "";
+String dscMesa1 = "";
+String  alt1 = "";
+String link1 = "";
+String user1 = "AO CONSUMIDOR";
+String duracao1 = "00:00:00";
+double valorPed1 = 0;
+//Se cont == 2 
+String statusMesa2 = "";
+String imagem2 = "";
+String dscMesa2 = "";
+String  alt2 = "";
+String link2 = "";
+String user2 = "AO CONSUMIDOR";
+String duracao2 = "00:00:00";
+double valorPed2 = 0;
+//
+PedidoSaida pedido=null;
+Entidade entidade = null;
+%>
+<%
+int dec = list.size();
+for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	cont++;
+	dec = dec - 1;
+	Mesa mesa = (Mesa) it.next();
+	if(daoPedidoSaida.existePedidoMesa(mesa.getIdMesa())){
+			String idPedido = daoPedidoSaida.procurarPedidoMesa(mesa.getIdMesa());
+			if(!idPedido.equalsIgnoreCase("0") || idPedido != null){
+				pedido = daoPedidoSaida.procurarPedidoSaida(Integer.parseInt(idPedido));
+				if(pedido !=null){
+					EntidadeDAO daoEntidade = new EntidadeDAO(conn);
+					entidade = daoEntidade.procurarEntidade(pedido.getCdEntidade());
+					if(entidade != null){
+						//if(cont == 1){
+							user1 = entidade.getNome();
+							valorPed1 = pedido.getVlPed();
+						//}//else{
+						//	if(cont == 2){
+						//		user2 = entidade.getNome();
+						//		valorPed2 = pedido.getVlPed();
+						//	}
+						//}
+					 
+					}
+				}
+				//if(cont == 1){
+				    duracao1 = daoPedidoSaida.duracaoDoPedido(mesa.getIdMesa());
+				//}//else if(cont == 2){
+				//	duracao2 = daoPedidoSaida.duracaoDoPedido(Integer.parseInt(idPedido));
+				//}
+				
+				
+			}
+	}
+  //if(cont == 1){
+	if(mesa.getStatus().equalsIgnoreCase("A")){
+		statusMesa1 = "ABERTA";
+		imagem1 = "aberta.png";
+		alt1 = "Mesa Aberta.";
+		link1 = "editarFormPedido.jsp?idMesa="+mesa.getIdMesa()+"&idPedidoSaida="+pedido.getIdPedidoSaida()+"&acao=atu";
+		dscMesa1 = mesa.getDsMesa();
+	}else if(mesa.getStatus().equalsIgnoreCase("C")){
+		statusMesa1 = "CONSUMINDO";
+		imagem1 = "consumindo.png";
+		alt1 = "Mesa Consumindo";
+		link1 ="editarFormPedido.jsp?idMesa="+mesa.getIdMesa()+"&idPedidoSaida="+pedido.getIdPedidoSaida()+"&acao=atu";
+		dscMesa1 = mesa.getDsMesa();
+	}else if(mesa.getStatus().equalsIgnoreCase("F")){
+		statusMesa1 = "FECHADA";
+		imagem1 = "fechada.png";
+		alt1 = "Mesa Fechada";
+		link1 = "formPedido.jsp?idMesa="+mesa.getIdMesa()+"&acao=inc";
+		dscMesa1 = mesa.getDsMesa();
+	}else if(mesa.getStatus().equalsIgnoreCase("R")){
+		statusMesa1 = "RESERVADA";
+		imagem1 = "reservada.png";
+		alt1 = "Mesa Reservada";
+		link1 = "formPedido.jsp?idMesa="+mesa.getIdMesa()+"&acao=inc";
+		dscMesa1 = mesa.getDsMesa();
+	} if(mesa.getStatus().equalsIgnoreCase("L")){
+		statusMesa1 = "LIVRE";
+		imagem1="livre.png";
+		alt1 = "Mesa Livre";
+		link1 = "formPedido.jsp?idMesa="+mesa.getIdMesa()+"&acao=inc";
+		dscMesa1 = mesa.getDsMesa();
+	}if(mesa.getStatus().equalsIgnoreCase("I")){
+		statusMesa1 = "INDISPONÌVEL";
+		imagem1 = "indisponivel.png";
+		alt1 = "Mesa Indisponível";
+		link1 = "#";
+		dscMesa1 = mesa.getDsMesa();
+	}
+	/*
+  }else if(cont == 2){
+	  if(mesa.getStatus().equalsIgnoreCase("A")){
+			statusMesa2 = "ABERTA";
+			imagem2 = "aberta.png";
+			alt2 = "Mesa Aberta.";
+			link2 = "editarFormPedido.jsp?idMesa="+mesa.getIdMesa()+"&idPedidoSaida="+pedido.getIdPedidoSaida()+"&acao=atu";
+			dscMesa2 = mesa.getDsMesa();
+		}else if(mesa.getStatus().equalsIgnoreCase("C")){
+			statusMesa2 = "CONSUMINDO";
+			imagem2 = "consumindo.png";
+			alt2 = "Mesa Consumindo";
+			link2 = "editarFormPedido.jsp?idMesa="+mesa.getIdMesa()+"&idPedidoSaida="+pedido.getIdPedidoSaida()+"&acao=atu";
+			dscMesa2 = mesa.getDsMesa();
+		}else if(mesa.getStatus().equalsIgnoreCase("F")){
+			statusMesa2 = "FECHADA";
+			imagem2 = "fechada.png";
+			alt2 = "Mesa Fechada";
+			link2 = "formPedido.jsp?idMesa="+mesa.getIdMesa()+"&acao=inc";
+			dscMesa2 = mesa.getDsMesa();
+		}else if(mesa.getStatus().equalsIgnoreCase("R")){
+			statusMesa2 = "RESERVADA";
+			imagem2 = "reservada.png";
+			alt2 = "Mesa Reservada";
+			link2 = "formPedido.jsp?idMesa="+mesa.getIdMesa()+"&acao=inc";
+			dscMesa2 = mesa.getDsMesa();
+		} if(mesa.getStatus().equalsIgnoreCase("L")){
+			statusMesa2 = "LIVRE";
+			imagem2="livre.png";
+			alt2 = "Mesa Livre";
+			link2 = "formPedido.jsp?idMesa="+mesa.getIdMesa()+"&acao=inc";
+			dscMesa2 = mesa.getDsMesa();
+		}if(mesa.getStatus().equalsIgnoreCase("I")){
+			statusMesa2 = "INDISPONÌVEL";
+			imagem2 = "indisponivel.png";
+			alt2 = "Mesa Indisponível";
+			link2 = "#";
+			dscMesa2 = mesa.getDsMesa();
+		}
+	  
+  }
+  */
+  if(cont <= 5 && dec >= 0 ){
+%>     
+
+    <%if(cont==1){ %>
+     <tr>
+    <% }%>
+    <%@include file="tabelaDuplaLinha.jsp"%>
+    <%if(cont == 5){%>
+    </tr>
+    <%cont=0;} %>
+    <%
+    duracao1 = "00:00:00";
+    //duracao2 = "00:00:00";
+    valorPed1= 0;
+    //valorPed2= 0;
+    %>   
+<%
+  }//else if(dec == 0 && cont == 1){
+%>
+ <%--<%@include file="tabelaLinha.jsp"%> --%>
+ <%
+    //cont=0;
+    //duracao1 ="00:00:00";
+   // valorPed1= 0;
+   
+ %>
+<%	  
+  //}
+  
+}
+%>   
+
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Atualizar" onClick="javascript:recarregar();" /></td>
+</tr>
+</table>
+<%@include file="../../fimConexao.jsp"%>

@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Cidade" %>
+<%@page import ="afero.persistence.CidadeDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CidadeDAO daoCidade;
+List listCidade;
+daoCidade = new CidadeDAO(conn);
+String clausulaCidade = "  WHERE status='A' ORDER BY nmCidade";
+listCidade = daoCidade.listarCidade(clausulaCidade);
+Iterator itCidade = listCidade.iterator();
+while (itCidade.hasNext()) { 
+	Cidade cidade = (Cidade) itCidade.next();
+%>
+
+<option value="<%=cidade.getIdCidade()%>"><%=cidade.getNmCidade()%></option>
+<%
+}
+%>

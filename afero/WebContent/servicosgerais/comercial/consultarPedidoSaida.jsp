@@ -1,0 +1,256 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.PedidoSaida" %>
+<%@ page import="afero.model.Orcamento" %>
+<%@ page import="afero.model.Entidade" %>
+<%@ page import="afero.persistence.OrcamentoDAO" %>
+<%@ page import="afero.persistence.EntidadeDAO" %>
+<%@ page import="afero.persistence.OrdemServicoDAO" %>
+<%@ page import="afero.persistence.PedidoSaidaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="afero.util.ConverteDate" %>
+<%@include file="../../seguranca.jsp"%>
+<%@include file="../../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../../css/afero.css" />
+
+<script>
+function abrirPopup(URL) {
+
+	  var width = 420;
+	  var height = 420;
+
+	  var left = 0;
+	  var top = 0;
+
+	  window.open(URL,'janela', 'width='+width+', height='+height+', top='+top+', left='+left+', scrollbars=yes, status=no, toolbar=no, location=no, directories=no, menubar=no, resizable=no, fullscreen=no');
+
+}
+
+function localizar() {
+  document.forms[0].submit();
+}  
+
+function novaPesquisa() {
+  document.all.idPedidoLocalizar.value = '';
+  document.all.nomeLocalizar.value = '';
+  document.all.statusLocalizar.value = ''; //não está limpando
+  document.forms[0].submit();
+}  
+</script>
+
+<%
+String idUsuario = (String) session.getAttribute("idUsuario");
+String idLojaUsuario = (String)session.getAttribute("idLoja");
+int idLoja = Integer.parseInt((String)session.getAttribute("idLoja"));
+PedidoSaidaDAO dao = null;
+int idPedidoLocalizar;
+if(request.getParameter("idPedidoLocalizar") == null || request.getParameter("idPedidoLocalizar") == ""){
+	idPedidoLocalizar = 0;
+} else {
+	idPedidoLocalizar = Integer.parseInt(request.getParameter("idPedidoLocalizar"));
+}
+String nomeLocalizar = request.getParameter("nomeLocalizar");
+if(nomeLocalizar == null) nomeLocalizar = "";
+String statusLocalizar = request.getParameter("statusLocalizar");
+if(statusLocalizar == null) statusLocalizar = "";
+String acao = request.getParameter("acao");
+if(acao == null) acao="listar";
+String clausula = "";
+
+if (nomeLocalizar!= null) {
+  clausula = " WHERE e.nome LIKE '"+nomeLocalizar+"%'";
+} 
+if (!statusLocalizar.isEmpty()) {
+  if (clausula.isEmpty()) {
+    clausula = " WHERE ps.status='"+statusLocalizar+"'";
+  } else {
+    clausula = clausula+" AND ps.status='"+statusLocalizar+"'";
+  }
+}
+if(idPedidoLocalizar!= 0) { 
+  clausula = clausula+" AND  ps.idPedidoSaida = "+idPedidoLocalizar;
+}
+
+clausula = clausula+" AND ps.tipoPedido = 'P' AND ps.operacao='S' AND ps.idLoja = "+Integer.parseInt(idLojaUsuario);
+
+//seleciona todos os registros do banco de dados
+List list;
+dao = new PedidoSaidaDAO(conn);
+clausula = clausula+" ORDER BY ps.dtPed desc";
+list = dao.listarPedidoSaida(clausula);
+
+%>
+<h1 class="cabecalho_pagina">Consulta de Vendas</h1>
+<body onload="document.forms[0].elements[0].focus();" >
+<form method="post" action="consultarPedidoSaida.jsp">
+<table colspan="2">
+  <tr>
+    <th class='label'>Número do Pedido</th>
+    <td><input type="text" name="idPedidoLocalizar" <%if (idPedidoLocalizar != 0) { %>value="<%=idPedidoLocalizar%>"<% }%>  size="20" maxlength="20"></td>
+  </tr>
+  <tr>
+    <th class='label'>Nome do Cliente</th>
+    <td><input type="text" name="nomeLocalizar" <%if (nomeLocalizar != null) { %>value="<%=nomeLocalizar %>"<% }%>  size="40" maxlength="40" style="width: 403px"></td>
+    <td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+    <td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+  <tr>
+    <th class="label" colspan="1">Status</th>
+    <td class="label_radio">
+      <input type="radio" class="radio" name="statusLocalizar" value="" <%= (statusLocalizar.equals("")? "checked": "") %>>Todos
+      <input type="radio" class="radio" name="statusLocalizar" value="P" <%= (statusLocalizar.equals("P")? "checked": "") %>>Pendente
+      <input type="radio" class="radio" name="statusLocalizar" value="A" <%= (statusLocalizar.equals("A")? "checked": "") %>>Atendido
+      <input type="radio" class="radio" name="statusLocalizar" value="F" <%= (statusLocalizar.equals("F")? "checked": "") %>>Faturado
+      <input type="radio" class="radio" name="statusLocalizar" value="C" <%= (statusLocalizar.equals("C")? "checked": "") %>>Cancelado
+    </td>
+  </tr>
+</table>
+<hr>
+
+<%-- mostra todos os registros do banco de dados --%>
+<table border="0" width="100%">
+    <tr>
+      <th class="grid" width="2%">&nbsp;</th>
+      <th class="grid" width="4%"><center>Ordem de Serviço</center></th>
+      <th class="grid" width="2%"><center>Núm. do Orçamento</center></th>
+      <th class="grid" width="2%"><center>Núm. do Pedido</center></th>
+      <th class="grid" width="2%"><center>Data do Pedido</center></th>
+      <th class="grid" width="5%"><center>Nome do Cliente</center></th>
+      <th class="grid" width="5%"><center>Bobina</center></th>
+      <th class="grid" width="2%"><center>Imprimir</center></th>
+      <th class="grid" width="2%"><center>Impresso</center></th>
+      <th class="grid" width="2%">Editar</th>
+      <th class="grid" width="2%">Status</th>
+      <th class="grid" width="2%">Integração Financeiro</th> 
+    </tr>
+<%
+int cont = 0;
+int gridSize = 20;
+String rowNumStr = request.getParameter("rowNum");
+int rowNum = (rowNumStr == null ? 0: Integer.parseInt(rowNumStr));
+if (rowNum < 0) rowNum = 0;
+boolean hasNext = false;
+int rowCount = list.size();
+int rowLast = 0;
+if (rowCount > 0) {
+  if (rowCount > gridSize) {
+    rowLast = rowNum+gridSize+1; 
+    if (rowLast >= rowCount && rowCount > 0) rowLast = rowCount;
+    if (rowNum > rowLast) rowNum = 0;
+    list = list.subList(rowNum, rowLast);
+  }
+  hasNext = true;
+}
+
+//Utiliza o ResultSet para trazer os registros do banco de dados
+String dsStatus = "";
+String impressao = "";
+int numOrcamento = 0;
+int numOrdemServico = 0;
+String statusPagamento = "";
+for ( Iterator it = list.iterator(); hasNext && cont < gridSize; hasNext = it.hasNext()) {
+	PedidoSaida pedidoSaida = (PedidoSaida) it.next();
+	PedidoSaida pedSaida = dao.procurarPedidoSaida(pedidoSaida.getIdPedidoSaida());
+	numOrdemServico = dao.ProcurarOrdemDeServico(pedidoSaida.getIdPedidoSaida(), idLoja);
+	impressao = dao.statusImpressao(pedidoSaida.getIdPedidoSaida());
+	numOrcamento = dao.getIdOrcamento(pedidoSaida.getIdPedidoSaida());
+	EntidadeDAO daoEntidade = new EntidadeDAO(conn);
+	Entidade entidade = null;
+	entidade = daoEntidade.procurarEntidade(pedSaida.getCdEntidade());
+	cont++;
+	if(pedSaida.getStatus().equalsIgnoreCase("A")){
+		dsStatus="Atendido";
+	}else if(pedSaida.getStatus().equalsIgnoreCase("P")){
+		dsStatus="Pendente";
+	}else if(pedSaida.getStatus().equalsIgnoreCase("F")){
+		dsStatus="Faturado";
+	}else if(pedSaida.getStatus().equalsIgnoreCase("C")){
+		dsStatus="Cancelado";
+	}
+	if(impressao.equalsIgnoreCase("S")){
+		impressao="SIM";
+		
+	}else{
+		impressao = "NÃO";
+	}
+	if(dao.statusPag(pedidoSaida.getIdPedidoSaida()) != null){
+		statusPagamento = dao.statusPag(pedidoSaida.getIdPedidoSaida());
+	}else{
+		statusPagamento = "N";
+	}
+
+%>
+  
+   <tr>
+      <td class = "grid" width="2%"><center><%=rowNum+cont%></center></td>
+      <%if(numOrdemServico == 0){ %>
+      	<td class = "grid" width="4%"><font color="red"><center><%="SEM ORDEM DE SERVIÇO"%></center></font></td>
+      <%}else if(numOrdemServico != 0){ %>
+      	 <td class = "grid" width="4%"><center><a target="_blank" href="../formAddObjetosOS.jsp?idOrdemServico=<%=numOrdemServico%>"><%=numOrdemServico%></a></center></td>
+      <%} %>
+      <%if(numOrcamento == 0){ %>
+      	<td class = "grid" width="2%"><font color="red"><center><%="PEDIDO"%></center></font></td>
+      <%}else{ %>
+      	 <td class = "grid" width="2%"><center><%=numOrcamento%></center></td>
+      <%} %>
+      <td class = "grid" width="2%"><center><a target="_blank" href="exibirPedido.jsp?idPedidoSaida=<%=pedSaida.getIdPedidoSaida()%>"><%=pedSaida.getIdPedidoSaida()%></a></center></td>
+      <td class = "grid" width="5%"><center><%=ConverteDate.dateToString(pedSaida.getDtPed())%></center></td>
+      <td class = "grid" width="30%"><center><%=entidade.getNome()%></center></td>
+       <td class = "grid" width="2%"><center><a href="javascript:abrirPopup('impressaoBobina.jsp?idPedidoSaida=<%=pedSaida.getIdPedidoSaida()%>');"><img border = "0" src="../../images/ficha.gif"></a></center></td>
+      <%if(pedSaida.getStatus().equalsIgnoreCase("A") || pedSaida.getStatus().equalsIgnoreCase("P") || pedSaida.getStatus().equalsIgnoreCase("F")){%>
+        	<td class = "grid" width="2%"><center><a target="_blank" href="impPedido.jsp?idPedidoSaida=<%=pedSaida.getIdPedidoSaida()%>"><img border = "0" src="../../images/imprimir.gif"></a></center></td>
+      <%}else{ %>
+           <td class = "grid" width="2%"><center>-</center></td>
+      <%} %>
+      <td class = "grid" width="3%"><font color="red"><center><%=impressao%></center></font></td>
+       <%if((!pedSaida.getStatus().equalsIgnoreCase("A"))){%>
+         <%if(statusPagamento.equalsIgnoreCase("N")) {%>
+      		<td class = "grid" width="2%"><a target="_blank" href="editarFormPedido.jsp?idPedidoSaida=<%=pedSaida.getIdPedidoSaida()%>&acao=<%="atu"%>"><img border="0"src="../../images/edit.gif"></a></img></td>
+      	<%}else{ %>
+      	     <td class = "grid" width="2%"><font color="red"><center><%="PAGO"%></center></font></td>
+      	<%} %>
+      	
+      <%}else{ %>
+      	<td class = "grid" width="2%"><center>-</center></td>
+      <%}%>
+      <td class = "grid" width="3%"><font color="red"><center><%=dsStatus%></center></font></td>
+      <%if(statusPagamento.equalsIgnoreCase("S")) {%>
+           	<td class = "grid" width="2%"><center>-</center></td>
+           
+       <%}else{ %>
+       		<td class = "grid" width="2%"><a target="_blank" href="../../integracaofinanceiro/integracaoFinanceiro.jsp?idPedidoSaida=<%=pedSaida.getIdPedidoSaida()%>&acao=<%="listar"%>&cdEntidade=<%=entidade.getCdEntidade()%>&dsEntidade=<%=entidade.getNome()%>&idUsuario=<%=idUsuario%>"><img border="0"src="../../images/calculadora.jpg"></a></img></td>
+       <%} %>
+  	</tr>
+<%
+}
+%>      
+</table>
+</form>
+
+
+   
+   
+   
+ 
+ 
+ 
+ 
+<br>
+<%  if (rowNum != 0 || hasNext) { %>
+        <center>
+<%      if (rowNum != 0) { %>
+<a class="link" href="consultarPedidoSaida.jsp?rowNum=<%=0%>&nomeLocalizar=<%=nomeLocalizar%>&statusLocalizar=<%=statusLocalizar%>">Primeira</a>&nbsp&nbsp
+|&nbsp&nbsp<a class="link" href="consultarPedidoSaida.jsp?rowNum=<%=rowNum-gridSize%>&nomeLocalizar=<%=nomeLocalizar%>&statusLocalizar=<%=statusLocalizar%>">< Anterior</a>&nbsp&nbsp
+<%      } else { %>
+Primeira&nbsp&nbsp|&nbsp&nbsp< Anterior&nbsp
+<%      } %>
+<%      if (hasNext) { %>
+|&nbsp&nbsp<a class="link" href="consultarPedidoSaida.jsp?rowNum=<%=rowNum+gridSize%>&nomeLocalizar=<%=nomeLocalizar%>&statusLocalizar=<%=statusLocalizar%>">Próxima ></a>&nbsp&nbsp
+|&nbsp&nbsp<a class="link" href="consultarPedidoSaida.jsp?rowNum=<%=rowCount-gridSize%>&nomeLocalizar=<%=nomeLocalizar%>&statusLocalizar=<%=statusLocalizar%>">Última</a>
+<%      } else { %>
+|&nbsp&nbsp Próxima >&nbsp&nbsp|&nbsp&nbspÚltima
+<%      } %>
+        </center>
+<%  } %>
+<%@include file="../../fimConexao.jsp"%>

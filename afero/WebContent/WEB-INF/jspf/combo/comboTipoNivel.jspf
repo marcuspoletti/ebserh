@@ -1,0 +1,19 @@
+<%@page import="afero.model.TipoNivel"%>
+<%@page import ="afero.persistence.TipoNivelDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoNivelDAO daoTipoNivel;
+List listTipoNivel;
+daoTipoNivel = new TipoNivelDAO(conn);
+String clausulaTipoNivel = "  WHERE status='A' ";
+listTipoNivel = daoTipoNivel.listarTipoNivel(clausulaTipoNivel);
+Iterator itTipoNivel = listTipoNivel.iterator();
+while (itTipoNivel.hasNext()) { 
+	TipoNivel tipoNivel = (TipoNivel) itTipoNivel.next();
+%>
+
+<option value="<%=tipoNivel.getCdTipoNivel()%>"><%=tipoNivel.getDsTipoNivel()%></option>
+<%
+}
+%>

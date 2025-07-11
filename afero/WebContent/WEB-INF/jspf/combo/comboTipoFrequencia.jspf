@@ -1,0 +1,20 @@
+<%@page import ="afero.model.TipoFrequencia" %>
+<%@page import ="afero.persistence.TipoFrequenciaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoFrequenciaDAO daoTipoFrequencia;
+List listTipoFrequencia;
+daoTipoFrequencia = new TipoFrequenciaDAO(conn);
+String clausulaTipoFrequencia = "  WHERE status='A' ORDER BY dsTipoFrequencia";
+listTipoFrequencia = daoTipoFrequencia.listarTipoFrequencia(clausulaTipoFrequencia);
+Iterator itTipoFrequencia = listTipoFrequencia.iterator();
+while (itTipoFrequencia.hasNext()) { 
+	TipoFrequencia tipoFrequencia = (TipoFrequencia) itTipoFrequencia.next();
+	
+%>
+
+<option value="<%=tipoFrequencia.getCdTipoFrequencia()%>"><%=tipoFrequencia.getDsTipoFrequencia()%></option>
+<%
+}
+%>

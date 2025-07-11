@@ -1,0 +1,233 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.Loja"%>
+<%@page import="afero.model.Estado"%>
+<%@page import="afero.model.Cidade"%>
+<%@page import="afero.util.ConverteDate"%>
+<%@page import="afero.persistence.LojaDAO"%>
+<%@page import="afero.persistence.EstadoDAO"%>
+<%@page import="afero.persistence.CidadeDAO"%>
+<%@page import ="java.util.*" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/></script>
+<script>
+function salvar() {
+  if (document.all.apelido.value == '') {
+    	    window.alert("O campo Apelido é obrigatório.");
+    	    document.all.apelido.focus();
+   }else if (document.all.razaoSocial.value == '') {
+    	    window.alert("O campo Razão Social é obrigatório.");
+    	    document.all.razaoSocial.focus();
+   }else if (document.all.cnpj.value == '') {
+    	    window.alert("O campo CNPJ/CEI é obrigatório.");
+   	    document.all.cnpj.focus();
+   }else {
+  	document.forms[0].submit();
+  }
+}
+
+function cancelar() {
+  document.forms[0].action="formLoja.jsp";
+  document.forms[0].submit();
+}
+
+function voltar() {
+  document.forms[0].action = 'listarLoja.jsp?acao=voltar';
+  document.forms[0].submit();
+}  
+</script>
+</head>
+<%
+//variáveis capturadas da página listarTipoEntidae.jsp
+String acao = request.getParameter("acao");
+String idLoja = request.getParameter("idLoja");
+ConverteDate converte = new ConverteDate();
+
+if (acao == null) acao = "inc";
+if (idLoja == null) idLoja = "";
+String apelido = "";
+String razaoSocial = "";
+String cnpj = "";
+String inscEstadual = "";
+String inscMunicipal = "";
+String endereco = "";
+String cmpEndereco = "";
+String bairro = "";
+String cep = "";
+String nro = "";
+int idCidade = 0;
+//String cidade = "";
+String estado = "";
+int idCrt = 0;
+int idCnae = 0;
+String nroTelefone = "";
+String nroFax = "";
+String pessoaResponsavel = "";
+String dtMod = "";
+String dtCad = "";
+String status ="A";
+
+//verifica se acao foi atualizar
+if (acao.equalsIgnoreCase("atu")){
+	    LojaDAO dao = new LojaDAO(conn);
+		Loja loja = dao.procurarLoja(Integer.parseInt(idLoja));
+		apelido = loja.getApelido();
+		razaoSocial = loja.getRazaoSocial();
+		cnpj = loja.getCnpj();
+		inscEstadual = loja.getInscEstadual();
+		inscMunicipal = loja.getInscMunicipal();
+		endereco = loja.getEndereco();
+		cmpEndereco = loja.getCmpEndereco();
+		cep = loja.getCep();
+		bairro = loja.getBairro();
+		idCidade = loja.getIdCidade();
+		if(idCidade > 0){
+			CidadeDAO daoCidadeBusca = new CidadeDAO(conn);
+			Cidade cidadeBusca = daoCidadeBusca.procurarCidade(idCidade);
+			EstadoDAO daoEstadoBusca = new EstadoDAO(conn);
+			Estado estadoBusca = daoEstadoBusca.procurarEstado(cidadeBusca.getCdEstado());
+			estado = estadoBusca.getSiglaEstado();
+		}
+		nro = loja.getNro();
+		if(loja.getNroTelefone() == null){
+			nroTelefone = "";	
+		}else{
+			nroTelefone =  loja.getNroTelefone();	
+		}
+		if(loja.getNroFax() == null){
+			nroFax = "";
+		}else{
+			nroFax =  loja.getNroFax();
+		}
+		
+		dtMod = loja.getDtMod().toString();
+		dtCad = loja.getDtCad().toString();
+		if(loja.getPessoaResponsavel() == null){
+			pessoaResponsavel = "";
+		}else{
+			pessoaResponsavel = loja.getPessoaResponsavel();
+		}
+		
+	         status = loja.getStatus();
+	         idCrt = loja.getIdCrt();
+	         idCnae = loja.getIdCnae();
+}
+%>
+<body onload="document.forms[0].elements[2].focus();" >
+<h1 class="cabecalho_pagina">Cadastro de Loja</h1>
+<form method="post" action="listarLoja.jsp?acao=<%=acao%>&idLoja=<%=idLoja%>">
+<input type="hidden" name="acao" value="<%=acao%>"/>
+<input type="hidden" name="idLoja" value="<%=idLoja%>"/>
+
+<table border="0" width="100%">
+  <tr>
+    <th class="label">Apelido*</th>
+    <td><input type="text" id="apelido" name="apelido" <%if (apelido != null) { %>value="<%=apelido%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+  <tr>
+    <th class="label">Razão Social*</th>
+    <td><input type="text" id="razaoSocial" name="razaoSocial" <%if (razaoSocial != null) { %>value="<%=razaoSocial%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+   <tr>
+    <th class="label">CNPJ*</th>
+    <td><input type="text" id="cnpj" name="cnpj" <%if (cnpj != null) { %>value="<%=cnpj%>"<% }%>  size="20" maxlength="18" onblur="chkCPFCNPJ(this)"></td>
+  </tr>
+  <tr>
+    <th class="label">Inscrição Estadual</th>
+    <td><input type="text" id="inscEstadual" name="inscEstadual" <%if (inscEstadual!= null) { %>value="<%=inscEstadual%>"<% }%>  size="20" maxlength="15" ></td>
+  </tr>
+  <tr>
+    <th class="label">Inscrição Municipal</th>
+    <td><input type="text" id="inscMunicipal" name="inscMunicipal" <%if (inscMunicipal!= null) { %>value="<%=inscMunicipal%>"<% }%>  size="20" maxlength="15" ></td>
+  </tr>
+  <tr>
+    <th class="label">Endereço</th>
+    <td><input type="text" id="endereco" name="endereco" <%if (endereco!= null) { %>value="<%=endereco %>"<% }%>  size="60" maxlength="40" ></td>
+    </tr>
+    <tr>
+    <th class="label">Número (Caso não tenha informar S/N)</th>
+    <td><input type="text" id="nro" name="nro" <%if (nro!= null) { %>value="<%=nro %>"<% }%>  size="7" maxlength="7" ></td>
+  </tr>
+  <tr>
+    <th class="label">Complemento</th>
+    <td><input type="text" id="cmpEndereco" name="cmpEndereco" <%if (cmpEndereco!= null) { %>value="<%=cmpEndereco%>"<% }%>  size="40" maxlength="20" ></td>
+  </tr>
+  <tr>
+    <th class="label">Bairro</th>
+    <td><input type="text" id="bairro" name="bairro" <%if (bairro!= null) { %>value="<%=bairro%>"<% }%>  size="40" maxlength="40" ></td>
+  </tr>
+   <tr>
+    <th class="label">Cep</th>
+    <td><input type="text" id="cep" name="cep" <%if (cep!= null) { %>value="<%=cep%>"<% }%>  size="20" maxlength="10" ></td>
+  </tr>
+  <tr>
+      <th class="label">Cidade*</th>
+      <td><select name="idCidade">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboCidade.jspf"  %></select>
+          <script>comboSelect(document.forms[0].idCidade, '<%= idCidade %>');</script>
+      </td>
+  </tr>
+  <tr>
+     <th class="label">Estado</th>
+    <td><input type="text" id="estado" name="estado" <%if (estado!= null) { %>value="<%=estado %>"<% }%>  size="7" maxlength="7" ></td>
+  </tr>
+  <tr>
+    <th class="label">Telefone</th>
+    <td><input type="text" id="nroTelefone" name="nroTelefone" <%if (nroTelefone!= null) { %>value="<%=nroTelefone%>"<% }%>  size="20" maxlength="15" ></td>
+  </tr>
+  <tr>
+    <th class="label">Fax</th>
+    <td><input type="text" id="nroFax" name="nroFax" <%if (nroFax!= null) { %>value="<%=nroFax%>"<% }%>  size="20" maxlength="15" ></td>
+  </tr>
+   <tr>
+    <th class="label">Pessoa Responsável</th>
+    <td><input type="text" id="pessoaResponsavel" name="pessoaResponsavel" <%if (pessoaResponsavel!= null) { %>value="<%=pessoaResponsavel%>"<% }%>  size="60" maxlength="60" ></td>
+  </tr>
+  <tr>
+    <th class="label">Ativo</th>
+      <td class="label_radio"><input type="radio" class="radio" name="status" value="A" <%= (status.equals("A")? "checked": "") %>>Sim
+      <input type="radio" class="radio" name="status" value="I" <%= (status.equals("I")? "checked": "") %>>Não</td>    
+  </tr>
+  <tr>
+      <th class="label">CRT</th>
+      <td><select name="idCrt">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboCrt.jspf"%></select>
+          <script>comboSelect(document.forms[0].idCrt, '<%= idCrt %>');</script>
+      </td>
+  </tr>
+  <tr>
+      <th class="label">CNAE</th>
+      <td><select name="idCnae">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboCnae.jspf"  %></select>
+          <script>comboSelect(document.forms[0].idCnae, '<%= idCnae %>');</script>
+      </td>
+  </tr>
+  <%if(acao.equals("atu")){%>
+  
+  	<tr>
+  	    <th class="label">Registros:</th>
+   	 	<td class="label_menor"><center>&nbsp Registro: <%if (dtCad != null) { %><%=converte.DMYToYMD(dtCad)%><% }%>&nbsp</center></td>
+  	    <td class="label_menor"><center>&nbsp Modificação: <%if (dtMod != null) { %><%=converte.DMYToYMD(dtMod)%><% }%>&nbsp</center></td>
+	</tr>
+
+  <% }%>
+</table><hr>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Salvar" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" />
+	<input class="button" type="button" value="Voltar" onClick="javascript: voltar();" /></td>
+	<td class="campo_obrigatorio">* Campos Obrigatórios</td>
+</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+
+</body>
+</html>

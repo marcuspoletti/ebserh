@@ -1,0 +1,82 @@
+package afero.util;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import javax.print.PrintException;  
+import javax.swing.JOptionPane; 
+
+
+public class ImpressaoBobina {
+	
+	public  ImpressaoBobina(){
+		
+	}
+	
+	public static void Impressao(String textoBobina)throws Exception{
+	FileOutputStream fos = null;
+	PrintStream ps = null;
+	try{ 
+		fos = new FileOutputStream("LPT1:");
+	}catch (Exception ex) {
+	   ex.printStackTrace();   
+	}
+	try {
+		ps = new PrintStream(fos);
+	}catch (Exception exception) {
+		exception.printStackTrace();
+	} 
+		ps.println((textoBobina));
+
+}
+	public final boolean ImpLine( String msg ) {
+	     File fporta = new File("LPT1:");
+	     byte[] buf = new byte[ msg.length() ];
+	     msg.getBytes(0, msg.length(), buf, 0);
+	     try {
+	       FileOutputStream porta = new FileOutputStream( fporta );
+	       porta.write( buf );
+	       porta.flush();
+	       porta.close();
+	     } catch (IOException ioe) {
+	         fporta.exists();
+	         return false;
+	        }
+	     fporta.exists();
+	   return true;
+	  }
+	
+	public static void imprimirTextoBobina(String textoBobina) throws PrintException {    
+	       
+	     FileOutputStream fos = null;  
+	     PrintStream ps = null;  
+	  
+	  try  
+	  {  
+	    fos = new FileOutputStream("LPT1:");  
+	  }  
+	  catch (Exception ex)  
+	  {  
+	      JOptionPane.showMessageDialog(null,"Erro porta"+"n/"+ex);  
+	  }  
+	  
+	  try  
+	  {  
+	   ps = new PrintStream(fos);  
+	     
+	  }  
+	  catch (Exception exception)  
+	  {  
+	    JOptionPane.showMessageDialog(null,"Erro Saida"+"n/"+exception);  
+	  }  
+	    
+	    
+	     ps.print(textoBobina);  
+	       
+	  
+	} 
+	
+	
+	
+
+}

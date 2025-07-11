@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Estado" %>
+<%@page import ="afero.persistence.EstadoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+
+<%
+	EstadoDAO daoEstado;
+	List listEstado;
+	daoEstado = new EstadoDAO(conn);
+	String clausulaEstado = "  WHERE status='A' ORDER BY ufEstado";
+	listEstado = daoEstado.listarEstado(clausulaEstado);
+	Iterator itEstado = listEstado.iterator();
+    while (itEstado.hasNext()) { 
+		Estado comboEstado = (Estado) itEstado.next();
+%>
+<option value="<%=comboEstado.getSiglaEstado()%>"><%= comboEstado.getSiglaEstado()%></option>
+<%
+    }
+%>

@@ -1,0 +1,216 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.Loja" %>
+<%@ page import="afero.persistence.LojaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="afero.util.ConverteDate" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+
+<script>
+function confirmaExcluir(cont, id) {  
+  if (confirm("Deseja mesmo apagar o registro [" + cont + "]?")) {  
+       location.href = 'listarLoja.jsp?acao=exc&idLoja=' + id;   
+  }  
+}
+
+function localizar() {
+  document.forms[0].submit();
+}  
+
+function novaPesquisa() {
+  document.all.nomeLoja.value = '';
+  document.all.status.value = ''; //não está limpando
+  document.forms[0].submit();
+}  
+</script>
+<script src="../js/common.js"/>"></script>
+<%
+LojaDAO dao;
+ConverteDate conDate = new ConverteDate();
+
+String acao = request.getParameter("acao");
+if (acao == null) acao = "listar";
+
+String nomeLoja = ""; 
+String apelido = "";
+String razaoSocial = "";
+String cnpj = "";
+String inscEstadual = "";
+String endereco = "";
+String cmpEndereco = "";
+String cep = "";
+String bairro = "";
+String cidade = "";
+String estado = "";
+String nroTelefone = "";
+String nroFax = "";
+String pessoaResponsavel = "";
+String status ="A";
+String usuario ="";
+String clausula = "";
+String dataIni = "";
+String dataFim = "";
+
+if (acao.equalsIgnoreCase("inc") || acao.equalsIgnoreCase("atu") || acao.equalsIgnoreCase("exc")) {
+  nomeLoja = request.getParameter("nomeLoja");
+  String idLoja = request.getParameter("idLoja");
+  apelido = request.getParameter("apelido");
+  razaoSocial = request.getParameter("razaoSocial");
+  cnpj = request.getParameter("cnpj");
+  inscEstadual = request.getParameter("inscEstadual");
+  endereco = request.getParameter("endereco");
+  cmpEndereco = request.getParameter("cmpEndereco");
+  bairro = request.getParameter("bairro");
+  cep = request.getParameter("cep");
+  cidade = request.getParameter("cidade");
+  estado = request.getParameter("estado");
+  nroTelefone = request.getParameter("nroTelefone");
+  nroFax = request.getParameter("nroFax");
+  pessoaResponsavel = request.getParameter("pessoaResponsavel");
+  status =request.getParameter("status");
+  usuario = request.getParameter("usuario");
+  if (idLoja == null) idLoja = "";
+  if (apelido == null) apelido = "";
+  if (razaoSocial == null) razaoSocial = "";
+  if (cnpj == null) cnpj= "";
+  if (status == null) status = "A";
+  if (inscEstadual == null)inscEstadual = "";
+  if (endereco == null) endereco = "";
+  if (cmpEndereco == null) cmpEndereco = "";
+  if (bairro == null) bairro = "";
+  if (cep == null) cep = "";
+  if (cidade == null) cidade = "";
+  if (estado == null) estado = "";
+  if (nroTelefone == null) nroTelefone = "";
+  if (nroFax == null) nroFax = "";
+  if (pessoaResponsavel == null) pessoaResponsavel = "";
+  
+  usuario = (String)session.getAttribute("Login");
+  Loja loja = new Loja();
+
+	try {
+	  if (!acao.equalsIgnoreCase("inc")){
+		  loja.setIdLoja(Integer.parseInt(idLoja));
+	  }
+	  loja.setApelido(apelido);
+	  loja.setRazaoSocial(razaoSocial);
+	  loja.setBairro(bairro);
+	  loja.setCep(cep);
+	  loja.setCidade(cidade);
+	  loja.setCmpEndereco(cmpEndereco);
+	  loja.setCnpj(cnpj);
+	  loja.setEndereco(endereco);
+	  loja.setEstado(estado);
+	  loja.setInscEstadual(inscEstadual);
+	  loja.setNroFax(nroFax);
+	  loja.setNroTelefone(nroTelefone);
+	  loja.setPessoaResponsavel(pessoaResponsavel);
+	  loja.setStatus(status);
+	  loja.setUsuario(usuario);
+	  
+	} catch (NumberFormatException nfe) {
+		throw new Exception("Código inválido");
+	}
+
+  dao = new LojaDAO(conn);
+
+  if (acao.equalsIgnoreCase("inc")) {
+	  //inclui no banco de dados
+  	dao.incluir(loja);
+
+  } else if (acao.equalsIgnoreCase("atu")) {
+	  //atualiza no banco de dados
+	  dao.atualizar(loja);
+
+  } else if (acao.equalsIgnoreCase("exc")){
+	  //exclui no banco de dados
+	  dao.excluir(loja);
+  }
+} else {
+ if (!acao.equalsIgnoreCase("voltar")) {
+    nomeLoja  = request.getParameter("nomeLoja");
+    status = request.getParameter("status");
+    if (status == null) status = "";
+  }
+
+  if (nomeLoja!= null) {
+    clausula = " WHERE apelido LIKE '"+nomeLoja+"%'";
+  } 
+  if (!status.isEmpty()) {
+    if (clausula.isEmpty()) {
+      clausula = " WHERE status='"+status+"'";
+    } else {
+      clausula = clausula+" AND status='"+status+"'";
+    }
+  }
+}
+
+//seleciona todos os registros do banco de dados
+List list;
+dao = new LojaDAO(conn);
+clausula = clausula+" ORDER BY apelido ";
+list = dao.listarLoja(clausula);
+
+int cont = 0;
+%>
+<h1 class="cabecalho_pagina">Cadastro de Loja</h1>
+
+|<a class="button" href="formLoja.jsp?acao=inc">Novo Cadastro</a>|<br>
+<hr>
+<body onload="document.forms[0].elements[0].focus();" >
+<form action="listarLoja.jsp">
+<table colspan="2">
+  <tr>
+    <th class='label'>Nome da Loja</th>
+    <td><input type="text" name="nomeLoja" <%if (nomeLoja != null) { %>value="<%=nomeLoja %>"<% }%>  size="40" maxlength="40"></td>
+    <td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+    <td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+  <tr>
+    <th class="label">Status</th>
+    <td class="label_radio">
+      <input type="radio" class="radio" name="status" value="" <%= (status.equals("")? "checked": "") %>>Todos
+      <input type="radio" class="radio" name="status" value="A" <%= (status.equals("A")? "checked": "") %>>Ativo
+      <input type="radio" class="radio" name="status" value="I" <%= (status.equals("I")? "checked": "") %>>Inativo</td>
+  </tr>
+</table>
+<hr>
+
+<%-- mostra todos os registros do banco de dados --%>
+<table border="0" width="100%">
+    <tr">
+      <th class="grid">&nbsp;</th>
+      <th class="grid"><center>Loja</center></th>
+      <th class="grid">Status</th>
+     <!-- <th class="grid">Excluir</th> --> 
+    </tr>
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	Loja loja = (Loja) it.next();
+	cont++;
+
+%>
+    <tr>
+      <td class = "grid" width="2%"><center><%=cont%></center></td>
+      <td class = "grid"><center><a href="formLoja.jsp?acao=atu&idLoja=<%=loja.getIdLoja()%>"><%=loja.getApelido()%> / <%=loja.getRazaoSocial()%></a></center></td>
+      <td class = "grid" width="5%"><center><%=loja.getStatus()%></center></td>
+     <!--  <td class = "grid" width="3%"><center><a href="javascript: confirmaExcluir(<%=cont%>,<%=loja.getIdLoja()%>);"><img border = "0" src="../images/delete.gif"></a></center></td> -->
+  	</tr>
+<%
+}
+%>   
+</table>
+</form>
+</br>
+<div>
+  <div style="width:50%; text-align: left; float:left;">
+|<a class="button" href="../exportacao/formGerarArquivoEmitente.jsp?acao=exp">Exportar</a>|  </div>
+  <div style="width:50%; text-align: right; float:left;">
+|<a class="button" href="formLoja.jsp?acao=inc">Novo Cadastro</a>|
+  </div>
+</div>
+<%@include file="../fimConexao.jsp"%>

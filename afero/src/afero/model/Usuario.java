@@ -1,0 +1,85 @@
+package afero.model;
+import java.util.Date;
+public class Usuario {
+	
+	private int idUsuario;
+	private int idGrupoUsuario;
+	private String email;
+	private String login;
+	private String senha;
+	private String status;
+	private Date dtCad;
+	private Date dtMod;
+	private String usuario;
+	
+	
+	public Usuario(){}
+	public Usuario(int idUsuario, int idGrupoUsuario, String email, String login, String senha,
+			String status, Date dtCad, Date dtMod, String usuario) {		
+		this.idUsuario = idUsuario;
+		this.idGrupoUsuario = idGrupoUsuario;
+		this.email = email;
+		this.login = login;
+		this.senha = senha;
+		this.status = status;
+		this.dtCad = dtCad;
+		this.dtMod = dtMod;
+		this.usuario = usuario;
+	}	
+
+	public int getIdUsuario() {
+		return idUsuario;
+	}
+	public void setIdUsuario(int idUsuario) {
+		this.idUsuario = idUsuario;
+	}
+	public int getIdGrupoUsuario() {
+		return idGrupoUsuario;
+	}
+	public void setIdGrupoUsuario(int idGrupoUsuario) {
+		this.idGrupoUsuario = idGrupoUsuario;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getLogin() {
+		return login;
+	}
+	public void setLogin(String login) {
+		this.login = login;
+	}
+	public String getSenha() {
+		return senha;
+	}
+	public void setSenha(String senha) {
+		this.senha = senha;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	public Date getDtCad() {
+		return dtCad;
+	}
+	public void setDtCad(Date dtCad) {
+		this.dtCad = dtCad;
+	}
+	public Date getDtMod() {
+		return dtMod;
+	}
+	public void setDtMod(Date dtMod) {
+		this.dtMod = dtMod;
+	}
+	public final String getUsuario() {
+		return usuario;
+	}
+	public final void setUsuario(String usuario) {
+		this.usuario = usuario;
+	}
+
+}

@@ -1,0 +1,1439 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import afero.model.Produto;
+import afero.model.EstoqueProdutoPreco;
+
+public class ProdutoDAO {
+	private Connection conn;
+
+	public ProdutoDAO(Connection conn) throws AferoDAOException {
+		this.conn = conn;
+	}
+
+	public void incluir(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "INSERT INTO tbproduto (idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra) "
+					+ "VALUES (?, ?, ?, ?, ?, ?, ?, now(), now(), ?, ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, produto.getIdDivisao());
+			ps.setInt(2, produto.getIdSubGrupo());
+			ps.setInt(3, produto.getIdGrupo());
+			ps.setString(4, produto.getNmProduto());
+			ps.setString(5, produto.getDsProduto());
+			ps.setString(6, produto.getTipoProduto());
+			ps.setString(7, produto.getStatus());
+			ps.setString(8, produto.getUsuario());
+			ps.setString(9, produto.getCdBarra());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados " + sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public int incluirProd(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		int idProduto = 0;
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "INSERT INTO tbproduto (idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra) "
+					+ "VALUES (?, ?, ?, ?, ?, ?, ?, now(), now(), ?, ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, produto.getIdDivisao());
+			ps.setInt(2, produto.getIdSubGrupo());
+			ps.setInt(3, produto.getIdGrupo());
+			ps.setString(4, produto.getNmProduto());
+			ps.setString(5, produto.getDsProduto());
+			ps.setString(6, produto.getTipoProduto());
+			ps.setString(7, produto.getStatus());
+			ps.setString(8, produto.getUsuario());
+			ps.setString(9, produto.getCdBarra());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados " + sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+		if (produto.getIdProduto() == 0) {
+			idProduto = proximoIdProduto();
+			produto.setIdProduto(idProduto);
+		}
+		return idProduto;
+	}
+
+	public void atualizar(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET idDivisao = ?, idSubGrupo = ?, idGrupo = ?, nmProduto = ?, dsProduto = ?, tipoProduto = ?, status = ?, dtMod = now(), usuario = ?, cdBarra = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, produto.getIdDivisao());
+			ps.setInt(2, produto.getIdSubGrupo());
+			ps.setInt(3, produto.getIdGrupo());
+			ps.setString(4, produto.getNmProduto());
+			ps.setString(5, produto.getDsProduto());
+			ps.setString(6, produto.getTipoProduto());
+			ps.setString(7, produto.getStatus());
+			ps.setString(8, produto.getUsuario());
+			ps.setString(9, produto.getCdBarra());
+			ps.setInt(10, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public void excluir(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn
+					.prepareStatement("DELETE FROM tbproduto WHERE idProduto=?");
+			ps.setInt(1, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+
+	public Produto procurarProduto(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+
+		try {
+			String sql = "SELECT idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o cod.setor: " + idProduto);
+			}
+
+			int idDivisao = rs.getInt(1);
+			int idSubGrupo = rs.getInt(2);
+			int idGrupo = rs.getInt(3);
+			String nmProduto = rs.getString(4);
+			String dsProduto = rs.getString(5);
+			String tipoProduto = rs.getString(6);
+			String status = rs.getString(7);
+			Date dtCad = rs.getDate(8);
+			Date dtMod = rs.getDate(9);
+			String usuario = rs.getString(10);
+			String cdBarra = rs.getString(11);
+
+			produto = new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+					nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod,
+					usuario, cdBarra);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return produto;
+	}
+
+	public List listarProduto(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Produto> list = null;
+
+		try {
+			String sql = "SELECT idProduto, idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra FROM tbproduto ";
+			if (clausula != null)
+				sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+
+			rs = ps.executeQuery();
+			list = new ArrayList<Produto>();
+			while (rs.next()) {
+				int idProduto = rs.getInt(1);
+				int idDivisao = rs.getInt(2);
+				int idSubGrupo = rs.getInt(3);
+				int idGrupo = rs.getInt(4);
+				String nmProduto = rs.getString(5);
+				String dsProduto = rs.getString(6);
+				String tipoProduto = rs.getString(7);
+				String status = rs.getString(8);
+				Date dtCad = rs.getDate(9);
+				Date dtMod = rs.getDate(10);
+				String usuario = rs.getString(11);
+				String cdBarra = rs.getString(12);
+
+				list.add(new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+						nmProduto, dsProduto, tipoProduto, status, dtCad,
+						dtMod, usuario, cdBarra));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+
+	public List listarProcurarProduto(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Produto> list = null;
+
+		try {
+			String sql = "SELECT idProduto, idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra "
+					+ "FROM tbproduto where idProduto = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			list = new ArrayList<Produto>();
+			while (rs.next()) {
+
+				int idDivisao = rs.getInt(2);
+				int idSubGrupo = rs.getInt(3);
+				int idGrupo = rs.getInt(4);
+				String nmProduto = rs.getString(5);
+				String dsProduto = rs.getString(6);
+				String tipoProduto = rs.getString(7);
+				String status = rs.getString(8);
+				Date dtCad = rs.getDate(9);
+				Date dtMod = rs.getDate(10);
+				String usuario = rs.getString(11);
+				String cdBarra = rs.getString(12);
+
+				list.add(new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+						nmProduto, dsProduto, tipoProduto, status, dtCad,
+						dtMod, usuario, cdBarra));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+
+	public boolean exclusaoIdProduto(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+
+		try {
+			String sql = "select p.idProduto from tbproduto p "
+					+ "join tbestoque es on(p.idProduto = es.idProduto) "
+					+ "where p.idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				ok = true;
+			} else {
+				ok = false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+
+	public boolean exclusaoIdProdutoOrcamentoItem(int idProduto)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+
+		try {
+			String sql = "select distinct(p.idProduto) from tbproduto p "
+					+ "join tborcamentoitem oi on(p.idProduto = oi.idProduto) "
+					+ "where p.idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				ok = true;
+			} else {
+				ok = false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+
+	public boolean exclusaoIdProdutoPedidoItem(int idProduto)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+
+		try {
+			String sql = "select distinct(p.idProduto) from tbproduto p "
+					+ "join tbpedidosaidaitem pi on(p.idProduto = pi.idProduto) "
+					+ "where p.idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				ok = true;
+			} else {
+				ok = false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+
+	public boolean exclusaoIdProdutoComprarItem(int idProduto)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+
+		try {
+			String sql = "select distinct(p.idProduto) from tbproduto p "
+					+ "join tbpedidoentradaitem ei on(p.idProduto = ei.idProduto) "
+					+ "where p.idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				ok = true;
+			} else {
+				ok = false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+
+	public boolean exclusaoIdProdutoOrcamentoSubItem(int idProduto)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+
+		try {
+			String sql = "select distinct(p.idProduto) from tbproduto p "
+					+ "join tborcamentosubitem ei on(p.idProduto = ei.idProduto) "
+					+ "where p.idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				ok = true;
+			} else {
+				ok = false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+
+	public boolean exclusaoIdProdutoPedidoSubItem(int idProduto)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+
+		try {
+			String sql = "select distinct(p.idProduto) from tbproduto p "
+					+ "join tbpedidosaidasubitem ei on(p.idProduto = ei.idProduto) "
+					+ "where p.idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				ok = true;
+			} else {
+				ok = false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+
+	public List listarProdutoPreco(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Produto> list = null;
+
+		try {
+			String sql = "SELECT p.idProduto, p.idDivisao, p.idSubGrupo, p.idGrupo, p.nmProduto, p.dsProduto, p.tipoProduto, p.status, p.dtCad, p.dtMod, p.usuario, p.cdBarra "
+					+ "FROM tbproduto p "
+					+ "JOIN tbestoque e on (e.idProduto = p.idProduto) "
+					+ "JOIN tbpreco pr on (e.idEstoque = pr.idEstoque)";
+			if (clausula != null)
+				sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+
+			rs = ps.executeQuery();
+			list = new ArrayList<Produto>();
+			while (rs.next()) {
+				int idProduto = rs.getInt(1);
+				int idDivisao = rs.getInt(2);
+				int idSubGrupo = rs.getInt(3);
+				int idGrupo = rs.getInt(4);
+				String nmProduto = rs.getString(5);
+				String dsProduto = rs.getString(6);
+				String tipoProduto = rs.getString(7);
+				String status = rs.getString(8);
+				Date dtCad = rs.getDate(9);
+				Date dtMod = rs.getDate(10);
+				String usuario = rs.getString(11);
+				String cdBarra = rs.getString(12);
+
+				list.add(new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+						nmProduto, dsProduto, tipoProduto, status, dtCad,
+						dtMod, usuario, cdBarra));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+
+	public List listarProdutoPrecoLoja(String clausula, int idLoja)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Produto> list = null;
+
+		try {
+			String sql = "SELECT p.idProduto, p.idDivisao, p.idSubGrupo, p.idGrupo, p.nmProduto, p.dsProduto, p.tipoProduto, p.status, p.dtCad, p.dtMod, p.usuario, p.cdBarra "
+					+ "FROM tbproduto p "
+					+ "JOIN tbestoque e on (e.idProduto = p.idProduto)  AND e.idLoja = "+ idLoja+ " "
+					+ "JOIN tbpreco pr on e.idEstoque = pr.idEstoque AND pr.precoPadrao = 'S' ";
+			if (clausula != null)
+				sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<Produto>();
+			while (rs.next()) {
+				int idProduto = rs.getInt(1);
+				int idDivisao = rs.getInt(2);
+				int idSubGrupo = rs.getInt(3);
+				int idGrupo = rs.getInt(4);
+				String nmProduto = rs.getString(5);
+				String dsProduto = rs.getString(6);
+				String tipoProduto = rs.getString(7);
+				String status = rs.getString(8);
+				Date dtCad = rs.getDate(9);
+				Date dtMod = rs.getDate(10);
+				String usuario = rs.getString(11);
+				String cdBarra = rs.getString(12);
+
+				list.add(new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+						nmProduto, dsProduto, tipoProduto, status, dtCad,
+						dtMod, usuario, cdBarra));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+
+	private int proximoIdProduto() throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int idProduto = 0;
+
+		try {
+			String sql = "SELECT MAX(idProduto) FROM tbproduto ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException(
+						"N�o foi encontrado nenhum registro");
+			}
+
+			idProduto = rs.getInt(1);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return idProduto;
+	}
+
+	public List listarProdutoEstoquePreco(String clausula)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<EstoqueProdutoPreco> list = null;
+
+		try {
+			String sql = "SELECT p.idProduto, p.idDivisao, p.idSubGrupo, p.idGrupo, p.nmProduto, p.dsProduto, p.tipoProduto, p.status, p.dtCad, p.dtMod, p.usuario, p.cdBarra, "
+					+ "e.idEstoque, e.idLoja, e.qtEstoque, e.qtMinimo, e.qtMaxima, pr.idPreco, pr.idUnidade, pr.dtInicioPreco, pr.dtFimPreco, pr.preco, "
+					+ "u.dsUnidade, l.apelido , (e.qtMinimo - e.qtEstoque) as ordem "
+					+ "FROM tbloja l  "
+					+ "JOIN tbestoque e on (l.idLoja = e.idLoja) "
+					+ "JOIN tbproduto p on (e.idProduto = p.idProduto) "
+					+ "JOIN tbpreco pr on (e.idEstoque = pr.idEstoque) "
+					+ "JOIN tbunidade u on (pr.idUnidade = u.idUnidade) ";
+			if (clausula != null)
+				sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+
+			rs = ps.executeQuery();
+			list = new ArrayList<EstoqueProdutoPreco>();
+			while (rs.next()) {
+				int idProduto = rs.getInt(1);
+				int idDivisao = rs.getInt(2);
+				int idSubGrupo = rs.getInt(3);
+				int idGrupo = rs.getInt(4);
+				String nmProduto = rs.getString(5);
+				String dsProduto = rs.getString(6);
+				String tipoProduto = rs.getString(7);
+				String status = rs.getString(8);
+				Date dtCad = rs.getDate(9);
+				Date dtMod = rs.getDate(10);
+				String usuario = rs.getString(11);
+				String cdBarra = rs.getString(12);
+				int idEstoque = rs.getInt(13);
+				int idLoja = rs.getInt(14);
+				double qtEstoque = rs.getDouble(15);
+				double qtMinimo = rs.getDouble(16);
+				double qtMaximo = rs.getDouble(17);
+				int idPreco = rs.getInt(18);
+				int idUnidade = rs.getInt(19);
+				Date dtInicioPreco = rs.getDate(20);
+				Date dtFimPreco = rs.getDate(21);
+				float preco = rs.getFloat(22);
+				String dsUnidade = rs.getString(23);
+				String apelidoLoja = rs.getString(24);
+
+				list.add(new EstoqueProdutoPreco(idProduto, idDivisao,
+						idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto,
+						dtCad, dtMod, cdBarra, idEstoque, idLoja, qtEstoque,
+						qtMinimo, qtMaximo, idPreco, idUnidade, dtInicioPreco,
+						dtFimPreco, preco, usuario, status, apelidoLoja,
+						dsUnidade));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+
+	public void impProducaoQuantFatias(Produto produto)
+			throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET impProducao = ?, quantFatias = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, produto.getImpProducao());
+			ps.setInt(2, produto.getQuantFatias());
+			ps.setInt(3, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public String getImpProducao(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String impProducao = "";
+
+		try {
+			String sql = "SELECT impProducao FROM tbproduto WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException(
+						"N�o foi encontrado nenhum registro");
+			}
+
+			impProducao = rs.getString(1);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return impProducao;
+	}
+
+	public int getQuantFatias(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int quantFatias = 0;
+
+		try {
+			String sql = "SELECT quantFatias FROM tbproduto WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException(
+						"N�o foi encontrado nenhum registro");
+			}
+
+			quantFatias = rs.getInt(1);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return quantFatias;
+	}
+	
+	public void incluirImpProducaoQuantFatias(Produto produto, int idProduto) throws AferoDAOException {
+         PreparedStatement ps = null;
+         Connection conn = null;
+         if (produto == null)
+	      throw new AferoDAOException("O valor passado n�o pode ser nulo");
+         try {
+        	 String sql = "UPDATE tbproduto SET impProducao = ?, quantFatias = ? WHERE idProduto = ?";
+        	 conn = this.conn;
+        	 ps = conn.prepareStatement(sql);
+        	 ps.setString(1, produto.getImpProducao());
+        	 ps.setInt(2, produto.getQuantFatias());
+        	 ps.setInt(3, idProduto);
+        	 ps.executeUpdate();
+        }catch (SQLException sqle) {
+	       throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+	    } 
+     }
+	public List listarProdutoDeletados(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Produto> list = null;
+
+		try {
+			String sql = "SELECT p.idProduto, p.idDivisao, p.idSubGrupo, p.idGrupo, p.nmProduto, p.dsProduto, p.tipoProduto, p.status, p.dtCad, p.dtMod, p.usuario, p.cdBarra " +
+					     "from tbproduto p "+
+			             "join tbestoque e on p.idProduto = e.idProduto "+
+			             "join tbpreco pr on e.idEstoque = pr.idEstoque ";
+      
+			if (clausula != null)
+				sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+
+			rs = ps.executeQuery();
+			list = new ArrayList<Produto>();
+			while (rs.next()) {
+				int idProduto = rs.getInt(1);
+				int idDivisao = rs.getInt(2);
+				int idSubGrupo = rs.getInt(3);
+				int idGrupo = rs.getInt(4);
+				String nmProduto = rs.getString(5);
+				String dsProduto = rs.getString(6);
+				String tipoProduto = rs.getString(7);
+				String status = rs.getString(8);
+				Date dtCad = rs.getDate(9);
+				Date dtMod = rs.getDate(10);
+				String usuario = rs.getString(11);
+				String cdBarra = rs.getString(12);
+
+				list.add(new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+						nmProduto, dsProduto, tipoProduto, status, dtCad,
+						dtMod, usuario, cdBarra));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public List listarProdutoDeletadosEstoque(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Produto> list = null;
+
+		try {
+			String sql = "SELECT p.idProduto, p.idDivisao, p.idSubGrupo, p.idGrupo, p.nmProduto, p.dsProduto, p.tipoProduto, p.status, p.dtCad, p.dtMod, p.usuario, p.cdBarra " +
+					     "from tbproduto p "+
+			             "join tbestoque e on p.idProduto = e.idProduto ";
+			           
+			if (clausula != null)
+				sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+
+			rs = ps.executeQuery();
+			list = new ArrayList<Produto>();
+			while (rs.next()) {
+				int idProduto = rs.getInt(1);
+				int idDivisao = rs.getInt(2);
+				int idSubGrupo = rs.getInt(3);
+				int idGrupo = rs.getInt(4);
+				String nmProduto = rs.getString(5);
+				String dsProduto = rs.getString(6);
+				String tipoProduto = rs.getString(7);
+				String status = rs.getString(8);
+				Date dtCad = rs.getDate(9);
+				Date dtMod = rs.getDate(10);
+				String usuario = rs.getString(11);
+				String cdBarra = rs.getString(12);
+
+				list.add(new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+						nmProduto, dsProduto, tipoProduto, status, dtCad,
+						dtMod, usuario, cdBarra));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public List consultarProdutosEst(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Produto> list = null;
+
+		try {
+			String sql = "SELECT p.idProduto, p.idDivisao, p.idSubGrupo, p.idGrupo, p.nmProduto, p.dsProduto, p.tipoProduto, p.status, p.dtCad, p.dtMod, p.usuario, p.cdBarra " +
+					     "from tbproduto p "+
+			             "join tbestoque e on (p.idProduto = e.idProduto) "+
+			             "join tbpreco pr on (e.idEstoque = pr.idEstoque) ";
+      
+			if (clausula != null)
+				sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+
+			rs = ps.executeQuery();
+			list = new ArrayList<Produto>();
+			while (rs.next()) {
+				int idProduto = rs.getInt(1);
+				int idDivisao = rs.getInt(2);
+				int idSubGrupo = rs.getInt(3);
+				int idGrupo = rs.getInt(4);
+				String nmProduto = rs.getString(5);
+				String dsProduto = rs.getString(6);
+				String tipoProduto = rs.getString(7);
+				String status = rs.getString(8);
+				Date dtCad = rs.getDate(9);
+				Date dtMod = rs.getDate(10);
+				String usuario = rs.getString(11);
+				String cdBarra = rs.getString(12);
+
+				list.add(new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+						nmProduto, dsProduto, tipoProduto, status, dtCad,
+						dtMod, usuario, cdBarra));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	public boolean existeIdProduto(String cdBarra)throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+
+		try {
+				String sql = "select distinct(p.idProduto) from tbproduto p where status = 'A' AND p.cdBarra = ?";
+		conn = this.conn;
+		ps = conn.prepareStatement(sql);
+		ps.setString(1, cdBarra);
+		rs = ps.executeQuery();
+		if (rs.next()) {
+			ok = true;
+		} else {
+			ok = false;
+		}
+
+		}catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return ok;
+	}
+	
+	public Produto procurarProdutoFront(String cdBarra, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+
+		try {
+			String sql = "SELECT p.idDivisao, p.idSubGrupo, p.idGrupo, p.nmProduto, p.dsProduto, p.tipoProduto, p.status, p.dtCad, p.dtMod, p.usuario, p.cdBarra, p.idProduto "+
+                         "FROM tbproduto p "+
+                         "JOIN tbestoque e on (p.idProduto = e.idProduto) "+ 
+                         "JOIN tbpreco pr  on (e.idEstoque = pr.idEstoque) "+
+                         "WHERE pr.precoPadrao = 'S' AND e.status = 'A' AND p.status='A' AND e.idLoja = ? AND p.cdBarra = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			ps.setString(2, cdBarra);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("N�o foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + cdBarra);
+			}
+
+			int idDivisao = rs.getInt(1);
+			int idSubGrupo = rs.getInt(2);
+			int idGrupo = rs.getInt(3);
+			String nmProduto = rs.getString(4);
+			String dsProduto = rs.getString(5);
+			String tipoProduto = rs.getString(6);
+			String status = rs.getString(7);
+			Date dtCad = rs.getDate(8);
+			Date dtMod = rs.getDate(9);
+			String usuario = rs.getString(10);
+			cdBarra = rs.getString(11);
+			int idProduto = rs.getInt(12);
+
+			produto = new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+					nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod,
+					usuario, cdBarra);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return produto;
+	}
+	public void atualizarDadosFiscal(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET idCatTributaria = ?, cdNcm = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, produto.getIdCatTributaria());
+			ps.setString(2, produto.getCdNcm());
+			ps.setInt(3, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	public void atualizarDadosFiscalIdCatTributaria(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET idCatTributaria = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, produto.getIdCatTributaria());
+			ps.setInt(2, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	public void atualizarDadosFiscalCdNcm(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET cdNcm = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, produto.getCdNcm());
+			ps.setInt(2, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	
+	public void atualizarDadosFiscalCdCest(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET cdCest = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, produto.getCdCest());
+			ps.setInt(2, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	public Produto procurarDadosFiscalProduto(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+
+		try {
+			String sql = "SELECT idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra, idCatTributaria, cdNcm FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("N�o foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + idProduto);
+			}
+
+			int idDivisao = rs.getInt(1);
+			int idSubGrupo = rs.getInt(2);
+			int idGrupo = rs.getInt(3);
+			String nmProduto = rs.getString(4);
+			String dsProduto = rs.getString(5);
+			String tipoProduto = rs.getString(6);
+			String status = rs.getString(7);
+			Date dtCad = rs.getDate(8);
+			Date dtMod = rs.getDate(9);
+			String usuario = rs.getString(10);
+			String cdBarra = rs.getString(11);
+			int idCatTributaria = rs.getInt(12);
+			String cdNcm = rs.getString(13);
+
+			produto = new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+					nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod,
+					usuario, cdBarra, idCatTributaria, cdNcm);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return produto;
+	}
+	
+	public int procurarIdCatTributaria(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+		int idCatTributaria = 0;
+		try {
+			String sql = "SELECT idCatTributaria FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("N�o foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + idProduto);
+			}
+			idCatTributaria = rs.getInt(1);
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return idCatTributaria;
+	}
+	public String procurarCdNcm(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String cdNcm = "0";
+		try {
+			String sql = "SELECT cdNcm FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("N�o foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + idProduto);
+			}
+			cdNcm = rs.getString(1);
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return cdNcm;
+	}
+	public String procurarCdCest(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String cdCest = "0";
+		try {
+			String sql = "SELECT cdCest FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("N�o foi encontrado nenhum "
+						+ "registro com o cod.setor: " + idProduto);
+			}
+			cdCest = rs.getString(1);
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return cdCest;
+	}
+	public int procurarCfopSaidaDentro(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+		int cdFopSaidaDentro = 0;
+		try {
+			String sql = "SELECT cdCfopSaidaDentro FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("N�o foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + idProduto);
+			}
+			cdFopSaidaDentro = rs.getInt(1);
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return cdFopSaidaDentro;
+	}
+	public int procurarCfopSaidaFora(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+		int cdFopSaidaFora = 0;
+		try {
+			String sql = "SELECT cdCfopSaidaFora FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("N�o foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + idProduto);
+			}
+			cdFopSaidaFora = rs.getInt(1);
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return cdFopSaidaFora;
+	}
+	
+	public void atualizarDadosFiscalCdCfopSaidaDentro(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET cdCfopSaidaDentro = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, produto.getCdCfopSaidaDentro());
+			ps.setInt(2, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	
+	public void atualizarDadosFiscalCdCfopSaidaFora(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET cdCfopSaidaFora = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, produto.getCdCfopSaidaFora());
+			ps.setInt(2, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	
+	public Produto pesquisarProduto(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+
+		try {
+			String sql = "SELECT idDivisao, idSubGrupo, idGrupo, nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod, usuario, cdBarra FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o cod.setor: " + idProduto);
+			}
+
+			int idDivisao = rs.getInt(1);
+			int idSubGrupo = rs.getInt(2);
+			int idGrupo = rs.getInt(3);
+			String nmProduto = rs.getString(4);
+			String dsProduto = rs.getString(5);
+			String tipoProduto = rs.getString(6);
+			String status = rs.getString(7);
+			Date dtCad = rs.getDate(8);
+			Date dtMod = rs.getDate(9);
+			String usuario = rs.getString(10);
+			String cdBarra = rs.getString(11);
+
+			produto = new Produto(idProduto, idDivisao, idSubGrupo, idGrupo,
+					nmProduto, dsProduto, tipoProduto, status, dtCad, dtMod,
+					usuario, cdBarra);
+
+		}catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return produto;
+	}
+	
+	public void atualizarDadosFiscalCdBarraTrib(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET cdBarraTrib = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, produto.getCdBarraTrib());
+			ps.setInt(2, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	public void atualizarDadosFiscalCdExTipi(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET cdExTipi = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, produto.getCdExTipi());
+			ps.setInt(2, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	public void atualizarDadosFiscalCdGenero(Produto produto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (produto == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbproduto SET cdGenero = ? WHERE idProduto = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, produto.getCdGenero());
+			ps.setInt(2, produto.getIdProduto());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		}
+	}
+	public String procurarCdBarraTrib(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+		String cdBarraTrib = "";
+		try {
+			String sql = "SELECT cdBarraTrib FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + idProduto);
+			}
+			cdBarraTrib = rs.getString(1);
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return cdBarraTrib;
+	}
+	public String procurarExTipi(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+		String cdExTipi = "";
+		try {
+			String sql = "SELECT cdExTipi FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + idProduto);
+			}
+			cdExTipi = rs.getString(1);
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return cdExTipi;
+	}
+	public String procurarCdGenero(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+		String cdGenero = "";
+		try {
+			String sql = "SELECT cdGenero FROM tbproduto "
+					+ "WHERE idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o c�d.setor: " + idProduto);
+			}
+			cdGenero = rs.getString(1);
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return cdGenero;
+	}
+
+	public String procurarAutoCompleteCdNcm(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+		String autoComplete = null;
+		try {
+			String sql = "SELECT p.cdNcm, n.dsNcm " +
+					     "FROM tbproduto p "+
+					     "JOIN tbncm n on p.cdNcm = n.cdNcm " +
+					     "WHERE p.idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				autoComplete = null;
+			}else{
+				autoComplete = rs.getString(1)+"-"+rs.getString(2);
+			}
+			
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return autoComplete;
+	}
+	
+	public String procurarAutoCompleteCdCeset(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Produto produto = null;
+		String autoComplete = null;
+		try {
+			String sql = "SELECT p.cdCest, n.nr_Cest, n.ds_Cest " +
+					     "FROM tbproduto p "+
+					     "JOIN tbcest n on p.cdCest = n.nr_Cest " +
+					     "WHERE p.idProduto=?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				autoComplete = null;
+			}else{
+				autoComplete = rs.getString(2)+"-"+rs.getString(3);
+			}
+			
+			
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+		return autoComplete;
+	}
+}

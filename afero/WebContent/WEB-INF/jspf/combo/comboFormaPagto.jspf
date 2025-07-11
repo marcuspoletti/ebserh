@@ -1,0 +1,21 @@
+<%@page import="afero.model.FormaPagto"%>
+<%@page import ="afero.persistence.FormaPagtoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+FormaPagtoDAO daoFormaPagto;
+List listFormaPagto;
+daoFormaPagto = new FormaPagtoDAO(conn);
+String clausulaFormaPagto = "  WHERE status='A' ORDER BY dsFormaPagto ";
+listFormaPagto = daoFormaPagto.listarFormaPagto(clausulaFormaPagto);
+Iterator itFormaPagto = listFormaPagto.iterator();
+while (itFormaPagto.hasNext()) { 
+	FormaPagto formaPagto = (FormaPagto) itFormaPagto.next();
+%>
+
+
+
+<option value="<%=formaPagto.getCdFormaPagto()%>"><%=formaPagto.getDsFormaPagto()%></option>
+<%
+}
+%>

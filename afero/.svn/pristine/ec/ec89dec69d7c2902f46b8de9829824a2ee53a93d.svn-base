@@ -1,0 +1,651 @@
+@charset "iso-8859-1";
+A:VISITED, A:LINK, A:FOCUS {
+	color : #8B0000;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+.label_form {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: #000000;
+	border : none;
+}
+
+FORM {
+	display : inline;
+}
+
+A:HOVER, A:ACTIVE {
+	color : Black;
+	font-size: 8pt;
+	text-decoration : underline;
+}
+
+A.link_menu_opcao_azul:VISITED, A.link_menu_opcao_azul:LINK, A.link_menu_opcao_azul:FOCUS {
+	color : White;
+}
+
+BODY {
+	background-color:#ECE9D8;
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 8pt;
+}
+
+.grid_sem_background
+{
+        font-family: Verdana, Geneva, Arial,
+        Helvetica, sans-serif;
+        font-size: 8pt;
+        color: Black;
+        background-color: none;
+        text-align: center;
+        vertical-align: top;
+        border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+        border-style : solid solid solid solid;
+        border : 1px solid #E4E4E4;
+}
+
+.fundo_menu {
+     background-color: #8C8C8C;
+	color: White;
+}
+
+.pagina_login {
+	background-color: Silver;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: #000080
+}
+
+.menu_cabecalho, A.menu_cabecalho:VISITED, A.menu_cabecalho:LINK, A.menu_cabecalho:FOCUS {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	color: #FFFFFF;
+	font-size: 9pt;
+	background: #7F7F7F;
+	background-color: #7F7F7F;
+	border-color : #9E9E9E #9E9E9E #9E9E9E Black;
+	border-style : solid solid solid solid;
+	border : 1px solid #9E9E9E;
+	margin: auto;
+	text-align: center;
+}
+
+.menu_opcao {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: #FFFFFF;
+	text-align: center;
+	background-color: #8E8E8E;
+	text-align: center;
+	vertical-align: top;
+	border-color : #9E9E9E #9E9E9E #9E9E9E Black;
+	border-style : solid solid solid solid;
+	border : 1px solid #9E9E9E;
+}	  
+
+.link {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	font: bolder;
+}
+
+.cabecalho_pagina {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: #FFFFFF;
+	background-color: #B3B3B3;
+	border-color: #999999 black;
+	border-top-width: thin;
+	border-bottom-width: thin;
+	text-align: center;
+	font-weight : bolder;
+	width: 100%;
+}
+
+INPUT.botao {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	border-color: White;
+	border-width: 1;
+	border-style: solid;
+	background-color: #9E9E9E;
+	color : White;
+}
+INPUT.teste{
+	font-family: white;
+	font-size: 5pt;
+	border-color: White;
+	border-width: 0;
+	border-style: solid;
+	background-color: white;
+	color : White;
+        vertical-align: middle;
+        
+}
+
+INPUT, TEXTAREA, SELECT, TD.campo {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	border-width: 1;
+	background-color: White;
+	border-color : #9E9E9E #9E9E9E #9E9E9E Black;
+	border-style : solid solid solid solid;
+	border : 1px solid #9E9E9E;
+	
+	color : #8B0000;
+}
+
+.input_pgto {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 15pt;
+	border-width: 1;
+	background-color: White;
+	border-color : #9E9E9E #9E9E9E #9E9E9E Black;
+	border-style : solid solid solid solid;
+	border : 1px solid #9E9E9E;
+	color : #8B0000;
+}
+.complemento,.normal {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+}
+
+LEGEND {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color : #8B0000;
+}
+
+ .painel_controle {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	background-color: #E0E0E0;
+	border-color: #999999 black;
+	border-top-width: thin;
+	border-bottom-width: thin;
+	text-align: center
+}
+
+TH.grid,TH.grid_left,TH.grid_right,TH.dossie  {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	background-color: silver; <!-- cor antiga: #B8B8B8 -->
+	border-color: #999999 black;
+	border-top-width: thin;
+	border-bottom-width: thin;
+	text-align: center;
+	font: bolder;
+}
+
+TH.dossie {
+	vertical-align : middle;
+	width : 25%;
+}
+
+TH.grid_left {
+	text-align : left;
+}
+
+TH.grid_right {
+	text-align : right;
+}
+
+TABLE.carne_table {
+        border-collapse: collapse;
+        border: 1px solid #AAAAAA;
+        border-color: black;
+        padding: 0px;
+        border-spacing: 0px;
+
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 7pt;
+	color: Black;
+	text-align: left;
+	vertical-align: top;
+
+}
+TABLE.carne_table_none {
+        border-collapse: collapse;
+        border: 0px;
+        border-color: black;
+        padding: 0px;
+        border-spacing: 0px;
+}
+
+TD.carne_geral {
+	text-align: left;
+}
+TD.carne_geral_right {
+	text-align: right;
+}
+TD.carne_geral_center {
+	text-align: center;
+}
+
+TD.carne_borda_center, TD.carne_borda_right, TD.carne_borda {
+        border-collapse: collapse;
+        border: 1px solid #AAAAAA;
+        border-color: black;
+        padding: 0px;
+        border-spacing: 0px;
+}
+
+TD.carne_borda {
+	text-align: left;
+}
+TD.carne_borda_right {
+	text-align: right;
+}
+TD.carne_borda_center {
+	text-align: center;
+}
+
+TD.destaque1, TD.destaque2, TD.destaque3, TD.grid_nome, 
+TD.destaque1_left, TD.destaque2_left, TD.destaque3_left,
+TD.destaque1_right, TD.destaque2_right, TD.destaque3_right,
+TD.relatorio_linha_escuro, TD.relatorio_meta_escuro, TD.relatorio_pago_escuro, TD.relatorio_nao_pago_escuro,
+TD.relatorio_linha_claro, TD.relatorio_meta_claro, TD.relatorio_pago_claro, TD.relatorio_nao_pago_claro,
+TD.grid,TD.grid_left,TD.grid_right, TD.grid_radio,TD.grid_radio_left, TD.dossie {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	text-align: center;
+	vertical-align: top;
+	background-color: White;
+	border-color : #9E9E9E #9E9E9E #9E9E9E Black;
+	border-style : solid solid solid solid;
+	border : 1px solid #9E9E9E;
+}
+
+TD.grid_nome {
+	text-align : left;
+}
+TD.relatorio_linha_escuro {
+        background-color: #e6e6e6;
+	text-align : left;
+}
+TD.relatorio_linha_claro {
+	text-align : left;
+}
+TD.relatorio_meta_escuro {
+        background-color: #e6e6e6;
+	text-align : right;
+}
+TD.relatorio_meta_claro {
+	text-align : right;
+}
+TD.relatorio_pago_claro {
+        background-color: #c2ffc6;
+	text-align : right;
+}
+
+TD.relatorio_pago_variacao {
+        background-color: yellow;
+	text-align : right;
+        border-color : #9E9E9E #9E9E9E #9E9E9E Black;
+	border-style : solid solid solid solid;
+	border : 1px solid #9E9E9E;
+        font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	text-align: center;
+	vertical-align: top;
+}
+TD.relatorio_naopago_variacao {
+        background-color: yellow;
+	text-align : right;
+        border-color : #9E9E9E #9E9E9E #9E9E9E Black;
+	border-style : solid solid solid solid;
+	border : 1px solid #9E9E9E;
+        font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	text-align: center;
+	vertical-align: top;
+}
+TD.relatorio_pago_escuro {
+        background-color: #b3e6ad;
+	text-align : right;
+}
+
+TD.relatorio_nao_pago_claro {
+        background-color: #ffb1b1;
+	text-align : right;
+}
+TD.relatorio_nao_pago_escuro {
+        background-color: #e69898;
+	text-align : right;
+}
+
+TD.destaque3, TD.destaque3_left, TD.destaque3_right  {
+	background-color: #FF0606;
+	color: White;
+}
+
+TD.destaque2, TD.destaque2_left, TD.destaque2_right  {
+	background-color: #FF4A3A;
+}
+
+TD.destaque1, TD.destaque1_left, TD.destaque1_right  {
+	background-color: #FF6D6D;
+}
+
+TD.destaque1_right, TD.destaque2_right, TD.destaque3_right {
+	text-align : right;
+}
+TD.destaque1_left, TD.destaque2_left, TD.destaque3_left {
+	text-align : left;
+}
+
+A.grid_livre:VISITED, A.grid_livre:LINK, A.grid_livre:FOCUS {
+	color : Black;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_livre {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+	background-color: #89FF81;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+
+A.grid_reservado:VISITED, A.grid_reservado:LINK, A.grid_reservado:FOCUS {
+	color : yellow;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_reservado {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: yellow;
+	background-color: #F80000;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+
+A.grid_ausente:VISITED, A.grid_ausente:LINK, A.grid_ausente:FOCUS {
+	color : Black;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_ausente {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+	background-color: #8D8D8D;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+
+A.grid_ferias:VISITED, A.grid_ferias:LINK, A.grid_ferias:FOCUS {
+	color : Black;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_ferias {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+	background-color: #738DFF;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+
+A.grid_almoco:VISITED, A.grid_ferias:LINK, A.grid_ferias:FOCUS {
+	color : Black;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_almoco {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+	background-color: #1D34FF;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+
+A.grid_folga:VISITED, A.grid_ferias:LINK, A.grid_ferias:FOCUS {
+	color : Black;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_folga {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+	background-color: #18B2FF;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+A.grid_doente:VISITED, A.grid_doente:LINK, A.grid_doente:FOCUS {
+	color : Black;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_doente {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+	background-color: #606060;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+
+A.grid_licenca:VISITED, A.grid_doente:LINK, A.grid_doente:FOCUS {
+	color : Black;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_licenca {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+	background-color: #FF13B4;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+A.grid_lista_espera:VISITED, A.grid_doente:LINK, A.grid_doente:FOCUS {
+	color : Black;
+	font-size: 8pt;	
+	font-weight : normal;
+}
+
+TD.grid_lista_espera {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Black;
+	background-color: #FFF708;
+	text-align: center;
+	vertical-align: top;
+	border-color : #E4E4E4 #E4E4E4 #E4E4E4 #E4E4E4;
+	border-style : solid solid solid solid;
+	border : 1px solid #E4E4E4;
+}
+TD.dossie {
+	vertical-align : middle;
+	width : 25%;
+}
+
+TD.grid_left,TD.grid_radio_left {
+	text-align : left;
+}
+
+TD.grid_right {
+	text-align : right;
+}
+
+.label {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: Navy;
+	background-color: #CCCCCC;
+	width: 160px;
+	border: none;
+}
+
+.texto {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: Navy;
+	width: 150px;
+	border: none;
+}
+
+
+.textob {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	font-weight: bold;
+	color: Navy;
+	width: 150px;
+	border: none;
+}
+.textoLogin {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: Black;
+	width: 150px;
+	border: none;
+}
+.label_nosize {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: Navy;
+	background-color: #CCCCCC;
+	border: none;
+}
+
+.label_pgto {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size:13pt;
+	color: Navy;
+	background-color: #CCCCCC;
+	width: 150px;
+	border: none;
+}
+
+.label_menor {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: White;
+	background-color: #9E9E9E;
+	border : none;
+}
+
+.mensagem {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: #FFFFFF;
+	background-color: #FF4512;
+	width: 100%;
+}
+
+HR {
+    color: #8B0000; 
+	height:1px; 
+    text-align: center 
+}
+
+.campo_obrigatorio {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 7pt;
+	color: Navy;
+	text-decoration: none;
+	text-align : right;
+	font-weight : bolder;
+	font-style : italic;
+}
+
+INPUT.radio {
+	border: none;
+	background-color: #FFFFF;
+}
+
+INPUT.grid_radio{
+	border: none;
+	background-color: #CCCCCC;
+}
+.grid_erro {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color : red;
+	border: none;
+	background-color: #CCCCCC;
+}
+.grid_semborda {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color : #8B0000;
+	border: none;
+	background-color: #ECE9D8;
+}
+
+.label_radio {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color : #8B0000;
+	background-color: #FFFFFF;
+}
+
+.titulo_aplicacao {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 16pt;
+	color : black;
+	text-align : left;
+	font-weight : bold;
+        background-color: #CCCCCC;
+}
+
+.dados_cabecalho {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color : WHITE;
+}
+
+.titulo_erro {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 14pt;
+	color : black;
+	text-align : center;
+	font-weight : bold;
+	font-style : italic;
+}

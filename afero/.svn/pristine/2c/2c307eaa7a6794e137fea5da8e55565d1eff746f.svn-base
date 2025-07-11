@@ -1,0 +1,20 @@
+<%@page import ="afero.model.Conta" %>
+<%@page import ="afero.persistence.ContaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+ContaDAO daoContaPara;
+List listContaPara;
+daoContaPara = new ContaDAO(conn);
+String clausulaContaPara = "  WHERE status='A' ORDER BY nmConta";
+listContaPara = daoContaPara.listarConta(clausulaContaPara);
+Iterator itContaPara = listContaPara.iterator();
+while (itContaPara.hasNext()) { 
+	Conta contaPara = (Conta) itContaPara.next();
+	
+%>
+
+<option value="<%=contaPara.getIdConta()%>"><%=contaPara.getNmConta()%></option>
+<%
+}
+%>

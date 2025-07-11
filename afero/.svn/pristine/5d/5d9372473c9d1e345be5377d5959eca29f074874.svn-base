@@ -1,0 +1,462 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+
+<%@page import="afero.model.Orcamento"%>
+<%@page import="afero.model.EntidadeEndereco"%>
+<%@page import="afero.model.EntidadeFisica"%>
+<%@page import="afero.model.Cidade"%>
+<%@page import="afero.model.Estado"%>
+<%@page import="afero.model.EntidadeJuridica"%>
+<%@page import="afero.model.EntidadeTelefone"%>
+<%@page import="afero.model.TipoLogradouro"%>
+<%@page import="afero.model.PedidoSaida"%>
+<%@page import="afero.model.PedidoSaidaItem"%>
+<%@page import="afero.model.OrcamentoPedidoSaida"%>
+<%@page import="afero.model.OrdemServico"%>
+<%@page import="afero.model.OrcamentoItem"%>
+<%@page import="afero.model.Entidade"%>
+<%@page import="afero.model.EntidadeFisica"%>
+<%@page import="afero.model.Entrega"%>
+<%@page import="afero.model.Colaborador"%>
+<%@page import="afero.model.Loja"%>
+<%@page import="afero.persistence.LojaDAO"%>
+<%@page import="afero.persistence.EntidadeDAO"%>
+<%@page import="afero.persistence.EntidadeFisicaDAO"%>
+<%@page import="afero.persistence.EntidadeJuridicaDAO"%>
+<%@page import="afero.persistence.CidadeDAO"%>
+<%@page import="afero.persistence.EstadoDAO"%>
+<%@page import="afero.persistence.EntidadeTelefoneDAO"%>
+<%@page import="afero.persistence.TipoLogradouroDAO"%>
+<%@page import="afero.persistence.PedidoSaidaDAO"%>
+<%@page import="afero.persistence.EntregaDAO"%>
+<%@page import="afero.persistence.OrcamentoDAO"%>
+<%@page import="afero.persistence.EntidadeEnderecoDAO"%>
+<%@page import="afero.persistence.ColaboradorDAO"%>
+<%@page import="afero.persistence.OrcamentoPedidoSaidaDAO"%>
+<%@page import="afero.persistence.OrdemServicoDAO"%>
+<%@page import="afero.persistence.PedidoSaidaItemDAO"%>
+<%@page import="afero.persistence.EntidadeFisicaDAO"%>
+<%@ page import="afero.util.Utilitaria"%>
+<%@ page import="afero.util.ConverteDate"%>
+<%@ page import="afero.model.Produto"%>
+<%@ page import="afero.model.Unidade"%>
+<%@ page import="afero.model.Estoque"%>
+<%@ page import="afero.model.Preco"%>
+<%@ page import="afero.persistence.ProdutoDAO"%>
+<%@ page import="afero.persistence.UnidadeDAO"%>
+<%@ page import="afero.persistence.EstoqueDAO"%>
+<%@ page import="afero.persistence.PrecoDAO"%>
+<%@ page import="afero.persistence.OrcamentoItemDAO"%>
+<%@ page import="java.util.List"%>
+<%@ page import="java.util.Iterator"%>
+<%@page import="afero.util.Utilitaria"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<style type="text/css">
+<!--
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+}
+.style5 {
+	color: #000066;
+	font-weight: bold;
+}
+-->
+.texto {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	border: none;
+}
+.texto_or {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: Black;
+	border: none;
+	text-align: left;
+}
+function Impressao(pedido){
+  location.href="impPedido.jsp?impressao=ok&idPedidoSaida="+pedido;
+  window.print();
+}
+
+</style></head>
+<%
+String cpfCnpj = "";
+String cidadeUf = "";
+String usuario = (String)session.getAttribute("Login");
+String impressao = request.getParameter("impressao");
+if(impressao == null)impressao = "";
+String idLojaUsuario = (String)session.getAttribute("idLoja");
+List listar;
+TipoLogradouroDAO logradouro = new TipoLogradouroDAO(conn);
+PedidoSaidaDAO daoPedidoSaida = new PedidoSaidaDAO(conn);
+String acao = request.getParameter("acao");
+if(acao == null)acao="listar";
+List list = null;
+List listarEstoque = null;
+List listarOrcamentoDAO = null;
+List listUpdate = null;
+ProdutoDAO dao;
+EstoqueDAO daoEstoque;
+PedidoSaidaItemDAO daoPedidoSaidaItem;
+Produto prod = null;
+Estoque estoque =null;
+PedidoSaidaItem pedidoSaidaItem = null;
+int cont = 0;
+String preco = "0";
+ConverteDate converte = new ConverteDate();
+String idPedidoSaida = request.getParameter("idPedidoSaida");
+PedidoSaida pedidoSaida = daoPedidoSaida.procurarPedidoSaidaItem(Integer.parseInt(idPedidoSaida));
+int idColaborador =pedidoSaida.getIdColaborador();
+Colaborador colaborador = new Colaborador();
+ColaboradorDAO daoColaborador = new ColaboradorDAO(conn);
+colaborador = daoColaborador.procurarColaborador(idColaborador);
+String dsColaborador = colaborador.getApelido();
+String motorista = "";
+if(daoPedidoSaida.getIdMotorista(Integer.parseInt(idPedidoSaida))>0){
+colaborador = daoColaborador.procurarColaborador(daoPedidoSaida.getIdMotorista(Integer.parseInt(idPedidoSaida)));
+motorista = colaborador.getApelido();
+}
+int idLoja = pedidoSaida.getIdLoja();
+Loja lojaListar = new Loja();
+LojaDAO daoLoja = new LojaDAO(conn);
+lojaListar = daoLoja.procurarLoja(idLoja);
+String dsLoja = lojaListar.getApelido() +" / "+ lojaListar.getRazaoSocial(); 
+int idEntrega = pedidoSaida.getIdEntrega();
+String pessResp = pedidoSaida.getPessoaResponsavel();
+if(pessResp == null)pessResp = "";
+Entrega entrega = new Entrega();
+EntregaDAO daoEntrega = new EntregaDAO(conn);
+entrega = daoEntrega.procurarEntrega(idEntrega);
+String dsEntrega = entrega.getDsEntrega();
+float valorEntrega = entrega.getTxEntrega();
+int cdEntidade =pedidoSaida.getCdEntidade();
+Entidade entidade = new Entidade();
+EntidadeDAO daoEntidade = new EntidadeDAO(conn);
+entidade = daoEntidade.procurarEntidade(cdEntidade);
+String dsEntidade = entidade.getNome();
+if(entidade.getTpInsc().equalsIgnoreCase("F")){
+	EntidadeFisicaDAO daoEntidadeFisica = new EntidadeFisicaDAO(conn);
+	EntidadeFisica entidadeFisica = daoEntidadeFisica.procurarEntidadeFisica(cdEntidade);
+	if(entidadeFisica.getCpf() == null){
+		cpfCnpj = "Não Cadastrado";
+	}else{
+		cpfCnpj = entidadeFisica.getCpf();	
+	}
+	
+	
+}else if(entidade.getTpInsc().equalsIgnoreCase("J")){
+	EntidadeJuridicaDAO daoEntidadeJuridica = new EntidadeJuridicaDAO(conn);
+	EntidadeJuridica entidadeJuridica = daoEntidadeJuridica.procurarEntidadeJuridica(cdEntidade);
+	if(entidadeJuridica.getCnpj() == null){
+		cpfCnpj = "Não Cadastrado";
+	}else{
+		cpfCnpj = entidadeJuridica.getCnpj();	
+	}
+	
+}
+
+EntidadeEndereco entidadeEndereco = null;
+EntidadeEnderecoDAO daoEntidadeEndereco= new EntidadeEnderecoDAO(conn);
+entidadeEndereco = daoEntidadeEndereco.procurarEntidadeEnderecoPadrao(cdEntidade);
+EntidadeTelefoneDAO daoEntidadeFone = new EntidadeTelefoneDAO(conn);
+EntidadeTelefone entidadeFone = null;
+listar = daoEntidadeFone.listarTelefone(cdEntidade);
+String telefone = "";
+int contador = 0;
+for ( Iterator it = listar.iterator(); it.hasNext(); ) {
+	entidadeFone = (EntidadeTelefone) it.next();
+	if(entidadeFone.getNroTelefone() != null){
+		contador++;
+		if(contador <= 2){
+			telefone = telefone + " " +entidadeFone.getNroTelefone();
+		}
+		
+	}
+	
+}
+TipoLogradouro logra = logradouro.procurarTipoLogradouro(entidadeEndereco.getCdTipoLogradouro());
+
+String dsLogradouro = logra.getDsTipoLogradouro();
+String endereco = dsLogradouro + " " +entidadeEndereco.getDsEndereco() + " " +"nº"+ " "+entidadeEndereco.getNroEndereco();
+String cmpEndereco = entidadeEndereco.getCmpEndereco();
+String cep = entidadeEndereco.getCepEndereco();
+String bairro =entidadeEndereco.getBaiEndereco();
+String referencia = entidadeEndereco.getRefEndereco();
+if(entidadeEndereco.getIdCidade() > 0){
+	CidadeDAO daoCidade = new CidadeDAO(conn);
+	Cidade cidade = daoCidade.procurarCidade(entidadeEndereco.getIdCidade());
+	if(cidade.getCdEstado() > 0){
+		EstadoDAO daoEstado = new EstadoDAO(conn);
+		Estado estado = daoEstado.procurarEstado(cidade.getCdEstado());
+		cidadeUf = cidade.getNmCidade()+"/"+estado.getSiglaEstado();
+	}
+	
+}else{
+	cidadeUf = "Não Cadastrado";
+}
+String status = pedidoSaida.getStatus();
+String operacao = pedidoSaida.getOperacao();
+String dtPed =converte.dateToStr(pedidoSaida.getDtPed(),"dd/MM/yyyy HH:mm:ss");
+String dtEntrega =converte.dateToString(pedidoSaida.getDtEntrega());
+String anotacao = pedidoSaida.getAnotacao();
+String hrEntrega = pedidoSaida.getHrEntrega();
+if(hrEntrega == null)hrEntrega="";
+if(anotacao == null)anotacao="";
+String observacao = pedidoSaida.getObservacao();
+double valorTotal = pedidoSaida.getVlPed();
+float desconto = pedidoSaida.getVlDesc();
+%>
+<body>
+<div align="center"></div>
+<table width="700" border="0" cellpadding="0" cellspacing="0" bordercolor="#000000">
+  <tr>
+    <td><table width="700" border="0" cellpadding="0" cellspacing="0" bordercolor="#000000">
+      <tr>
+        
+        <td width="580"><table width="580" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td width="9" align="left" valign="top">&nbsp;</td>
+              <td width="427" class="texto"><strong><%=lojaListar.getRazaoSocial()%></strong></td>
+              <td width="132" align="right" class="texto" valign="top"><p><strong><span class="style5">Afero</span></strong></p></td>
+              <td width="12" align="right" valign="top">&nbsp;</td>
+            </tr>
+            <tr>
+              <td align="left">&nbsp;</td>
+              <td class="texto"><%=lojaListar.getEndereco()+" "%><%=lojaListar.getCmpEndereco()+" "%><%=lojaListar.getBairro()%></td>
+              <td align="right" valign="top" class="texto"><strong>Data: </strong><%=dtPed%></td>
+              <td align="right" valign="top">&nbsp;</td>
+            </tr>
+            <tr>
+              <td valign="top">&nbsp;</td>
+              <td class="texto"><%="Telefone: " + lojaListar.getNroTelefone() %></td>
+              <!-- <td align="right" valign="top"><strong>Hora:</strong> 00:00:00</td> -->
+              <td align="right" valign="top">&nbsp;</td>
+            </tr>
+             <tr>
+              <td valign="top">&nbsp;</td>
+              <td class="texto"><%="Vend./Atend.: " + pedidoSaida.getUsuario() %></td>
+              <!-- <td align="right" valign="top"><strong>Hora:</strong> 00:00:00</td> -->
+              <td align="right" valign="top">&nbsp;</td>
+            </tr>
+        </table></td>
+      </tr>
+    </table></td>
+  </tr>
+</table>
+<hr>
+<br>
+<table border="0" width="700" style="width: 720px">
+  <tr>
+    <th align="right" class="texto" width="120" >Cliente:</th>
+    <td class="texto_or" name="dsEntidade" colspan="2"><b><%=dsEntidade.toUpperCase()%></b></td>
+    <th align="right" class="texto" width="120">Pedido nº: </th>
+    <td class="texto_or" name="dsEntidade" ><b><%="00"+idPedidoSaida %></b></td>
+  </tr> 
+  <tr>
+    <th align="right" class="texto" width="120">CPF/CNPJ:</th>
+    <td class="texto_or" name="endereco" colspan="2"><b><%=cpfCnpj%></b></td>
+    <th align="right" class="texto" width="120">Cidade/UF:</th>
+    <td class="texto_or" name="cep"><b><%=cidadeUf%></b></td>
+  </tr>
+  <tr>
+    <th align="right" class="texto" width="120">Endereço:</th>
+    <td class="texto_or" name="endereco" colspan="2"><b><%=endereco%></b></td>
+    <th align="right" class="texto" width="120">Cep:</th>
+    <td class="texto_or" name="cep"><b><%=cep%></b></td>
+  </tr>
+  <tr>
+    <th align="right" class="texto" width="120">Complemento:</th>
+    <td class="texto_or" name="cmpEndereco" colspan="2"><b><%=cmpEndereco%></b></td>
+    <th align="right" class="texto" width="120">Bairro:</th>
+    <td class="texto_or" name="bairro" ><b><%=bairro%></b></td>
+  </tr>
+  <tr>
+    <th align="right" class="texto" width="120">Pessoa Resp.:</th>
+    <td class="texto_or" name="pessResp" colspan="2"><b><%=pessResp%></b></td>
+    <th align="right" class="texto">Telefone:</th>
+    <td class="texto_or" name="telefone" style="width: 174px"><b><%=telefone%></b></td>
+  </tr>
+  <tr>
+    <th align="right" class="texto" width="120">Referência:</th>
+    <td class="texto_or" name="referencia" colspan="2"><b><%=referencia%></b></td>
+    <th align="right" class="texto" width="120">Atendente:</th>
+    <td class="texto_or" name="dsColaborador" ><b><%=dsColaborador%></b></td>
+  </tr>
+  <tr>
+    <th align="right" class="texto" width="120">Local da Entrega:</th>
+    <td class="texto_or" name="dsEntrega" colspan="2"><b><%=dsEntrega%></b></td>
+    <th align="right" class="texto" width="120">Data da Entrega:</th>
+    <td class="texto_or" name="dtEntrega" width="120"><b><%=dtEntrega%></b></td>
+  </tr>  
+  <tr>
+    <th align="right" class="texto" width="120">Observações:</th>
+    <td class="texto_or" name="observacao" cols="60" rows="5" colspan="2"><b><%=observacao%></b></td>
+    <th align="right" class="texto" width="120">Hora da Entrega:</th>
+    <td class="texto_or" name="hrEntrega" ><b><%=hrEntrega%></b></td>
+  </tr>
+   <tr>
+    <th align="right" class="texto" width="120">Usuário:</th>
+    <td class="texto_or" name="usuario" ><b><%=usuario%></b></td>
+    </tr>
+    <tr>
+    <th align="right" class="texto" width="120">Motorista:</th>
+    <td class="texto_or" name="motorista" ><b><%=motorista%></b></td>
+    </tr>
+</table><hr>
+<table border="0" width="100%">
+	<tr>
+		<th class="texto">
+		<center>Quant.</center>
+		</th>
+		<th class="texto">
+		<center>Descrição do Produto</center>
+		</th>
+		<th class="texto">
+		<center>Vl.Unit.(R$)</center>
+		</th>
+		<th class="texto">
+		<center>Desc.(%)</center>
+		</th>
+		<th class="texto">
+		<center>Vl.Item(R$)</center>
+		</th>
+		<th class="texto">
+		<center>Und</center>
+		</th>
+	</tr>
+	<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+ float total = 0;
+ daoPedidoSaidaItem = new PedidoSaidaItemDAO(conn);
+ list = daoPedidoSaidaItem.procurarPedidoSaidaItem(Integer.parseInt(idPedidoSaida));
+ if(list != null){
+  for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	pedidoSaidaItem = (PedidoSaidaItem) it.next();
+	dao = new ProdutoDAO(conn);
+	prod = dao.procurarProduto(pedidoSaidaItem.getIdProduto());
+	daoEstoque = new EstoqueDAO(conn);
+	listarEstoque = daoEstoque.procurarEstoquePreco(prod.getIdProduto(), Integer.parseInt(idLojaUsuario));
+	if(listarEstoque != null){
+	for (Iterator itListar = listarEstoque.iterator(); itListar.hasNext();){
+		cont++;
+		estoque = (Estoque) itListar.next();
+		LojaDAO loja = new LojaDAO(conn);
+		Loja lojaEstoque = loja.procurarLoja(estoque.getIdLoja());
+		PrecoDAO daoPrecoListar = new PrecoDAO(conn);
+		Preco precoListar = daoPrecoListar.procurarPrecoEstoque(estoque.getIdEstoque());
+		if(precoListar!=null){
+			
+			//preco = Utilitaria.formatarNumero(precoListar.getPreco(), 2).toString();
+			preco = Utilitaria.formatarNumero(pedidoSaidaItem.getVlUni(), 2).toString();
+			UnidadeDAO daoUnidade = new UnidadeDAO(conn);
+			Unidade unidadeListar = daoUnidade.procurarUnidade(precoListar.getIdUnidade());	
+%>
+	<tr>
+		<td class="texto" width="3%" name="quantidade" size="10"
+			maxlength="10">
+		<center><%=pedidoSaidaItem.getQuant()%></center>
+		</td>
+		<td class="texto" width="20%">
+		<center><b><%=prod.getDsProduto()+". "+pedidoSaidaItem.getDsCompProduto() %></b></center>
+		</td>
+		<td class="texto" width="5%">
+		<center><%=Utilitaria.formatarNumero(Utilitaria.toNumber(preco).floatValue(),2)%></center>
+		</td>
+		<td class="texto" width="3%" name="pDesc" size="10" maxlength="10">
+		<center><%=Utilitaria.formatarNumero(pedidoSaidaItem.getPDesc(),2)%><center>
+		</td>
+		<%float precoItem = Utilitaria.toNumber(preco).floatValue() * pedidoSaidaItem.getQuant(); %>
+		<td class="texto" width="3%"
+			name="preco_<%=precoListar.getIdPreco()%>" size="10" maxlength="10">
+		<center><%=Utilitaria.formatarNumero(precoItem,2)%></center>
+		</td>
+		<td class="texto" width="3%">
+		<center><%=unidadeListar.getDsUnidade()%></center>
+		</td>
+		<%total = total +  precoItem;%>
+	</tr>
+	<input type="hidden" name="idPreco"
+		value="<%=precoListar.getIdPreco()%>" />
+	<%
+		}
+	}
+	}
+}
+%>
+
+	<input type="hidden" id="cont" value="<%=cont%>" />
+	<% 
+ }
+%>
+	<tr>
+
+		<th align="right" class="texto" width="5%">TOTAL DO PEDIDO:</th>
+		<td class="texto_or"><b>R$ <%=Utilitaria.formatarNumero(total,2)%></b></td>
+	</tr>
+	<tr>
+		<th align="right" class="texto" width="5%">
+		<center style="width: 132px">DESCONTO (%):</center>
+		</th>
+		<td class="texto_or"><b><%=desconto%></b></td>
+	</tr>
+	<tr>
+		<th align="right" class="texto" width="5%">
+		<center>VALOR C/ O DESCONTO :</center>
+		</th>
+		<td class="texto_or"><b>R$ <%=Utilitaria.formatarNumero(valorTotal,2)%></b></td>
+	</tr>
+	<tr>
+
+		<th align="right" class="texto" width="5%">TAXA DE ENTREGA:</th>
+		<td class="texto_or"><b>R$ <%=Utilitaria.formatarNumero(valorEntrega,2)%></b></td>
+	</tr>
+	<tr>
+		<th align="right" class="texto" width="5%">VALOR TOTAL:</th>
+		<td class="texto_or"><b>R$ <%=Utilitaria.formatarNumero((valorTotal + valorEntrega),2)%></b></td>
+	</tr>
+	<tr>
+		<br>
+		<th align="right" class="texto">Anotações:</th>
+		<td class="texto_or" name="anotacao" cols="80" rows="3"><b><%=anotacao%></b></td>
+	</tr>
+	
+</table>
+<br>
+<br>
+<table align='center'>
+<tr>
+    <th align="center" class="texto"><%="_____________________________________________"%></th>
+</tr>
+<tr>
+  <th align="center" class="texto"><%=dsEntidade.toUpperCase()%></th>
+</tr>
+
+</table>
+<br>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+    <br>
+	<td class="texto_or"><b><a href="impPedido.jsp?impressao=ok&idPedidoSaida=<%=idPedidoSaida%>">Imprimir</b></td>
+</tr>
+</table>
+<%
+  if(impressao.equalsIgnoreCase("ok")){
+	  daoPedidoSaida.atualizarImpressaoPedido(Integer.parseInt(idPedidoSaida));
+%>  <script type="text/javascript">
+           javascript:window.print();
+    </script>
+
+<% 
+
+  }
+%>
+<%@include file="../fimConexao.jsp"%>
+
+</body>
+</html>

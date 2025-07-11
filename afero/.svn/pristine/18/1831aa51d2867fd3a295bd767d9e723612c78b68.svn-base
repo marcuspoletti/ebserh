@@ -1,0 +1,183 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.OrdemServicoTarefa" %>
+<%@ page import="afero.persistence.OrdemServicoTarefaDAO" %>
+<%@ page import="afero.util.Utilitaria" %>
+<%@ page import="afero.util.ConverteDate" %>
+
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+
+<script>
+function confirmaExcluir(cont, id) {  
+  if (confirm("Deseja mesmo apagar o registro [" + cont + "]?")) {  
+       location.href = 'listarOrdemServicoTarefa.jsp?acao=exc&idOrdemServicoTarefa=' + id;   
+  }  
+}
+
+function localizar() {
+  document.forms[0].submit();
+}  
+
+function novaPesquisa() {
+  document.all.dsPesquisaTarefa.value = '';
+  document.all.status.value = ''; //não está limpando
+  document.forms[0].submit();
+}  
+</script>
+
+<%
+OrdemServicoTarefaDAO dao;
+OrdemServicoTarefaDAO daoExclusao;
+
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null)mensagem = "";
+String acao = request.getParameter("acao");
+if (acao == null) acao = "listar";
+String dsPesquisaTarefa = request.getParameter("dsPesquisaTarefa");
+String clausula = "";
+
+String idOrdemServicoTarefa;
+String idOrdemServicoItem;
+String idListaTarefa;
+String dsCompTarefa;
+String comp;
+String larg;
+String quant;
+String valor;
+String pDesc;
+String idColaborador;
+String dtMod;
+String usuario = (String) session.getAttribute("Login");
+
+if (acao.equalsIgnoreCase("inc") || acao.equalsIgnoreCase("atu") || acao.equalsIgnoreCase("exc")) {
+	
+	idOrdemServicoTarefa = request.getParameter("idOrdemServicoTarefa");
+	idOrdemServicoItem = request.getParameter("idOrdemServicoItem");
+	idListaTarefa = request.getParameter("idListaTarefa");
+	dsCompTarefa = request.getParameter("dsCompTarefa");
+	comp = request.getParameter("comp");
+	larg = request.getParameter("larg");
+	quant = request.getParameter("quant");
+	valor = request.getParameter("valor");
+	pDesc = request.getParameter("pDesc");
+	idColaborador = request.getParameter("idColaborador");
+	dtMod = request.getParameter("dtMod");
+		
+	if(idOrdemServicoTarefa == null) idOrdemServicoTarefa = "0";
+	if(idOrdemServicoItem == null) idOrdemServicoItem = "0";
+	if(idListaTarefa == null) idListaTarefa = "0";
+	if(dsCompTarefa == null) dsCompTarefa = "";
+	if(quant == null) quant = "0";
+	if(valor == null) valor = "0";
+	if(pDesc == null) pDesc = "0";
+	if(idColaborador == null) idColaborador = "0";
+	if(dtMod == null) dtMod = "";
+	
+
+	OrdemServicoTarefa ordemServicoItem = new OrdemServicoTarefa();
+  
+	try {
+	  if (!acao.equalsIgnoreCase("inc")){
+		  ordemServicoItem.setIdOrdemServicoTarefa(Integer.parseInt(idOrdemServicoTarefa));
+	  }
+	  
+	  	ordemServicoItem.setIdOrdemServicoItem(Integer.parseInt(idOrdemServicoItem));
+	  	ordemServicoItem.setIdListaTarefa(Integer.parseInt(idListaTarefa));
+	  	ordemServicoItem.setDsCompTarefa(dsCompTarefa);
+	  	ordemServicoItem.setQuant(Float.parseFloat(quant));
+	  	ordemServicoItem.setValor(Float.parseFloat(valor));
+	  	ordemServicoItem.setpDesc(Float.parseFloat(pDesc));
+	  	ordemServicoItem.setIdColaborador(Integer.parseInt(idColaborador));
+	  	ordemServicoItem.setUsuario(usuario);
+	  	
+	  	if(dtMod != ""){
+	  	//	ordemServicoItem.setDtMod(ConverteDate.stringToDate(dtMod));
+	  	}
+	  		
+	  	
+      if (!acao.equalsIgnoreCase("exc")){
+    	 ordemServicoItem.setIdOrdemServicoTarefa(Integer.parseInt(idOrdemServicoTarefa));
+      }      
+      
+	} catch (NumberFormatException nfe) {
+		throw new Exception("Código inválido");
+	}
+
+	dao = new OrdemServicoTarefaDAO(conn);
+	daoExclusao = new OrdemServicoTarefaDAO(conn);
+
+  if (acao.equalsIgnoreCase("inc")) {  
+	  //inclui no banco de dados
+  	dao.incluir(ordemServicoItem);
+
+  } else if (acao.equalsIgnoreCase("atu")) {
+	  //atualiza no banco de dados
+    	 dao.atualiza(ordemServicoItem);
+  }else if (acao.equalsIgnoreCase("exc")){
+	  //exclui no banco de dados
+		  dao.excluir(ordemServicoItem);
+  }
+}else {
+ if (!acao.equalsIgnoreCase("voltar")) {
+	 dsPesquisaTarefa = request.getParameter("dsPesquisaTarefa");
+	 
+	 if(dsPesquisaTarefa != null){
+		 clausula = " WHERE dsCompTarefa LIKE '"+dsPesquisaTarefa+"%'";
+	 }
+ }
+}
+
+//seleciona todos os registros do banco de dados
+List list;
+dao = new OrdemServicoTarefaDAO(conn);
+clausula = clausula +" ORDER BY dsCompTarefa ";
+list = dao.listar(clausula);
+int cont = 0;
+%>
+<h1 class="cabecalho_pagina">Lista de Tarefa</h1>
+
+|<a class="button" href="formOrdemServicoTarefa.jsp?acao=inc">Novo Cadastro</a>|<br>
+
+<body onload="document.forms[0].elements[0].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<form action="listarOrdemServicoTarefa.jsp">
+<table colspan="2">
+  <tr>
+    <th class='label'>Descrição de Tarefa</th>
+    <td><input type="text" name="dsPesquisaTarefa" <%if (dsPesquisaTarefa != null) { %>value="<%=dsPesquisaTarefa %>"<% }%>  size="40" maxlength="40"></td>
+    <td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+    <td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+</table>
+<hr>
+<%-- mostra todos os registros do banco de dados --%>
+<table border="0" width="100%">
+    <tr>
+      <th class="grid">&nbsp;</th>
+      <th class="grid"><center>Descrição da Tarefa</center></th>
+      <th class="grid">Valor</th>
+      <th class="grid">Excluir</th>
+    </tr>
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+String msgStatus = "";
+for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	OrdemServicoTarefa ordemServicoItem = (OrdemServicoTarefa) it.next();
+    cont++;
+
+%>
+    <tr>
+      <td class = "grid" width="2%"><center><%=cont%></center></td>
+      <td class = "grid"><center><a href="formOrdemServicoTarefa.jsp?acao=atu&idOrdemServicoTarefa=<%=ordemServicoItem.getIdOrdemServicoTarefa() %>"><%=ordemServicoItem.getDsCompTarefa()%> </a></center></td>
+      <td class = "grid" width="5%"><center><%=ordemServicoItem.getValor() %></center></td>
+      <td class = "grid" width="3%"><center><a href="javascript: confirmaExcluir(<%=cont%>,<%=ordemServicoItem.getIdOrdemServicoTarefa() %>);"><img border = "0" src="../images/delete.gif"></a></center></td>
+  	</tr>
+<%
+}
+%>   
+</table>
+</form>
+<p align="right">|<a class="button" href="formTipoConta.jsp?acao=inc">Novo Cadastro</a>|

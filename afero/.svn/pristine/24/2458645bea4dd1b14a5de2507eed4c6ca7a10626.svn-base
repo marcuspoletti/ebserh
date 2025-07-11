@@ -1,0 +1,256 @@
+package afero.persistence;
+
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+
+import afero.model.ConfigGeral;
+
+public class ConfigGeralDAO {
+	
+	
+public Connection conn;
+	
+	public ConfigGeralDAO(Connection conn){
+		this.conn = conn;
+	}
+	
+	// INSERIR
+	public void incluir(ConfigGeral configGeral) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (configGeral == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+		
+		try {
+			String sql = "INSERT INTO tbconfiggeral (idLoja, menuModulo, emailServidor, emailPorta, emailUsuario, emailSenha) " +
+						 "VALUES (?, ?, ?, ?, ?, ?)";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, configGeral.getIdLoja());
+			ps.setString(2, configGeral.getMenuModulo());
+			ps.setString(3, configGeral.getEmailServidor());
+			ps.setString(4, configGeral.getEmailPorta());
+			ps.setString(5, configGeral.getEmailUsuario());
+			ps.setString(6, configGeral.getEmailSenha());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} 
+	}
+
+	// ATUALIZAR 
+	
+	public void atualiza(ConfigGeral configGeral) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (configGeral == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+		
+		try {
+			String sql = "UPDATE tbconfiggeral set menuModulo = ?, emailServidor = ?, emailPorta = ?, emailUsuario = ?, emailSenha = ? " +
+						"WHERE idLoja = ?";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			
+			ps.setString(1, configGeral.getMenuModulo());
+			ps.setString(2, configGeral.getEmailServidor());
+			ps.setString(3, configGeral.getEmailPorta());
+			ps.setString(4, configGeral.getEmailUsuario());
+			ps.setString(5, configGeral.getEmailSenha());
+			ps.setInt(6, configGeral.getIdLoja());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} 
+	}
+	
+	// EXCLUIR
+	
+	public void excluir(ConfigGeral configGeral) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (configGeral == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbconfiggeral WHERE idLoja = ?");
+			ps.setInt(1, configGeral.getIdLoja());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+		} 
+	}
+	
+	// BUSCAR
+	
+	public ConfigGeral  procurarConfigGeral (String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		ConfigGeral configGeral = null;
+		
+		try {
+			String sql = "SELECT idLoja, menuModulo, emailServidor, emailPorta, emailUsuario, emailSenha " +
+						 "FROM tbconfiggeral";
+			
+			if(clausula != null)
+				sql += clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				
+				configGeral = new ConfigGeral();
+				
+				configGeral.setIdLoja(rs.getInt(1));
+				configGeral.setMenuModulo(rs.getString(2));
+				configGeral.setEmailServidor(rs.getString(3));
+				configGeral.setEmailPorta(rs.getString(4));
+				configGeral.setEmailUsuario(rs.getString(5));
+				configGeral.setEmailSenha(rs.getString(6));
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao procurar dados:" + sqle);
+		}catch (Exception e){
+			throw new AferoDAOException ("Erro ao procurar dados:" + e);
+		} 
+		return configGeral;
+	}
+	public ConfigGeral procurarConfigGeral (int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		ConfigGeral configGeral = null;
+		
+		try {
+			String sql = "SELECT idLoja, menuModulo, emailServidor, emailPorta, emailUsuario, emailSenha " +
+			 			 "FROM tbconfiggeral WHERE idLoja = ?";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				
+				configGeral = new ConfigGeral();
+				
+				configGeral.setIdLoja(rs.getInt(1));
+				configGeral.setMenuModulo(rs.getString(2));
+				configGeral.setEmailServidor(rs.getString(3));
+				configGeral.setEmailPorta(rs.getString(4));
+				configGeral.setEmailUsuario(rs.getString(5));
+				configGeral.setEmailSenha(rs.getString(6));
+				
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao procurar dados:" + sqle);
+		}catch (Exception e){
+			throw new AferoDAOException ("Erro ao procurar dados:" + e);
+		} 
+		return configGeral;
+	}
+	
+	// LISTAR
+	
+	public List<ConfigGeral> listarConfigGeral(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<ConfigGeral> list = null;
+
+		try {
+			String sql = "SELECT idLoja, menuModulo, emailServidor, emailPorta, emailUsuario, emailSenha " +
+			 			 "FROM tbconfiggeral ";
+			
+			if (clausula != null)
+				sql += clausula;
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<ConfigGeral>();
+			
+			while (rs.next()){
+				
+				int idLoja = rs.getInt(1);
+				String menuModulo= rs.getString(2);
+				String emailServidor = rs.getString(3);
+				String emailPorta = rs.getString(4);
+				String emailUsuario = rs.getString(5);
+				String emailSenha = rs.getString(6);
+				
+				list.add( new ConfigGeral(idLoja, menuModulo, emailServidor, emailPorta, emailUsuario, emailSenha));
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao listar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao listar dados: " + e);
+		} 
+		return list;
+	}	
+	public void atualizaIntegraPedidoSaidaFinan(int idLoja, String integracao) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (idLoja == 0)
+			throw new AferoDAOException("Selecionar uma Loja");
+		
+		try {
+			String sql = "UPDATE tbconfiggeral set integraPedidoSaidaFinan = ? " +
+						"WHERE idLoja = ?";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, integracao);
+			ps.setInt(2, idLoja);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} 
+	}
+	public String procurarIntegracaoPedSaidaFinan(Integer idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String integracao = "N";
+
+		try {
+			String sql = "SELECT integraPedidoSaidaFinan " +
+			 			 "FROM tbconfiggeral "+
+			 			 "WHERE idLoja = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			rs = ps.executeQuery();
+			if (rs.next()){
+				integracao = rs.getString("integraPedidoSaidaFinan");
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao listar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao listar dados: " + e);
+		} 
+		return integracao;
+	}	
+
+}

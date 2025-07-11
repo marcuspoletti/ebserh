@@ -1,0 +1,13 @@
+<%@page import="afero.persistence.AferoDAOException"%>
+<%@page import="afero.util.ConnectionFactory"%>
+<%@page import="java.sql.Connection"%>
+
+<%
+
+
+
+	ConnectionFactory.closeConnection(conn);
+
+
+ 
+%>

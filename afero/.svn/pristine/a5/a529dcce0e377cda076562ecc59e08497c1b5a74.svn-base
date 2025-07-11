@@ -1,0 +1,150 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.Unidade" %>
+<%@ page import="afero.model.Estoque" %>
+<%@ page import="afero.model.Preco" %>
+<%@ page import="afero.model.Loja" %>
+<%@ page import="afero.persistence.ProdutoDAO" %>
+<%@ page import="afero.persistence.UnidadeDAO" %>
+<%@ page import="afero.util.ConverteDate" %>
+<%@ page import="afero.persistence.EstoqueDAO" %>
+<%@ page import="afero.persistence.LojaDAO" %>
+<%@ page import="afero.persistence.PedidoSaidaDAO" %>
+<%@ page import="afero.persistence.PedidoSaidaSubItemDAO" %>
+<%@ page import="afero.model.PedidoSaidaSubItem" %>
+<%@ page import="afero.persistence.OrcamentoDAO" %>
+<%@ page import="afero.persistence.OrcamentoItemDAO" %>
+<%@ page import="afero.persistence.OrcamentoPedidoSaidaDAO" %>
+<%@ page import="afero.model.OrcamentoPedidoSaida" %>
+<%@ page import="afero.persistence.PedidoSaidaItemDAO" %>
+<%@ page import="afero.persistence.PrecoDAO" %>
+<%@ page import="afero.model.PedidoEntrada" %>
+<%@ page import="afero.model.Orcamento" %>
+<%@ page import="afero.model.OrcamentoItem" %>
+<%@ page import="afero.model.PedidoSaidaItem" %>
+<%@ page import="afero.model.PedidoSaida" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@page import="afero.util.Utilitaria"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/></script>
+
+<script>
+
+function atualizar() {
+ document.forms[0].action='apagarRegistrosSaidasSemDtEntregaPorLoja.jsp';
+ document.forms[0].submit();
+}  
+
+
+</script>
+
+<%
+String acao = "";
+if(request.getParameter("acao") != null){
+  acao = request.getParameter("acao");
+}else{
+  acao="not";	
+}
+
+
+
+String mensagem = "";
+int idLoja = 0;
+if (request.getParameter("idLoja") == null) {
+	idLoja = Integer.parseInt((String)session.getAttribute("idLoja"));
+} else {
+	idLoja = Integer.parseInt(request.getParameter("idLoja"));
+}
+ConverteDate converte = new ConverteDate();
+if(acao.equals("ok")){
+	List listItem;
+	OrcamentoItem orcamentoItem;
+	OrcamentoPedidoSaida orcPedidoSaida = new OrcamentoPedidoSaida(); 
+	OrcamentoPedidoSaidaDAO daoOrcamentoPedidoSaida = new OrcamentoPedidoSaidaDAO(conn); 
+	OrcamentoDAO daoOrcamento = new OrcamentoDAO(conn); 
+	OrcamentoItemDAO daoOrcamentoItem = new OrcamentoItemDAO(conn);
+	PedidoSaidaSubItem pedidoSaidaItem  = new PedidoSaidaSubItem();
+	PedidoSaidaDAO dao = new PedidoSaidaDAO(conn);
+	List listOrc;
+	PedidoSaidaSubItemDAO daoPedidoSaidaItem = new PedidoSaidaSubItemDAO(conn);  
+	String clausula = " WHERE ps.status in ('P', 'C', 'A') AND ps.operacao in ('S', 'T', 'ES', 'AS') AND ps.dtEntrega is null AND ps.idLoja ="+idLoja;
+	List list = dao.listarPedidoSaida(clausula);
+	int numOrcamento = 0;
+	try{
+		for (Iterator it = list.iterator(); it.hasNext();) {
+			PedidoSaida pedidoSaida = (PedidoSaida) it.next();
+			numOrcamento = dao.getIdOrcamento(pedidoSaida.getIdPedidoSaida());
+			if(numOrcamento != 0){
+				Orcamento orc = daoOrcamento.procurarOrcamento(numOrcamento);
+				listOrc = daoOrcamentoItem.procurarOrcamentoItem(numOrcamento);
+				if(listOrc != null){
+					for ( Iterator itOrcItem = listOrc.iterator(); itOrcItem.hasNext(); ) {
+						orcamentoItem = (OrcamentoItem) itOrcItem.next();
+						daoOrcamentoItem.excluir(orcamentoItem);
+				      }
+					
+				}
+				orcPedidoSaida = daoOrcamentoPedidoSaida.procurarOrcamentoPedidoSaida(numOrcamento);
+				if(orcPedidoSaida != null){
+					daoOrcamentoPedidoSaida.excluir(orcPedidoSaida);
+				}
+				daoOrcamento.excluir(orc);
+			}
+			listItem = daoPedidoSaidaItem.procurarPedidoSaidaItem(pedidoSaida.getIdPedidoSaida());
+			 if(listItem != null){
+			  for ( Iterator itItem = listItem.iterator(); itItem.hasNext(); ) {
+				pedidoSaidaItem = (PedidoSaidaSubItem) itItem.next();
+				daoPedidoSaidaItem.excluir(pedidoSaidaItem);
+		      }
+			 }
+			 dao.excluir(pedidoSaida);
+		}
+		System.out.println("Sucesso....");
+		mensagem = "SUCESSO...";
+	}catch(Exception e){
+		mensagem = "ERRO: "+ e.getMessage();
+	}
+	
+   
+}
+%>
+
+<h1 class="cabecalho_pagina">Apagar Registros de Saídas Por Loja</h1>
+
+<hr>
+
+<body onload="document.forms[0].elements[0].focus();" >
+<form method="get" action="apagarRegistrosSaidasSemDtEntregaPorLoja.jsp">
+<table colspan="2">
+  <tr>
+      <th class="label">Loja</th>
+      <td><select name="idLoja" >
+          <%@include file="../WEB-INF/jspf/combo/comboLoja.jspf" %></select>
+          <script>comboSelect(document.forms[0].idLoja, '<%= idLoja %>');</script>
+      </td>
+  </tr>
+  </table>
+  <table border="0" width="100%">
+     <tr>
+    <td align="center">
+        <input type="button" value="Atualizar" class="botao" onclick="atualizar();">
+        <input type="hidden" name="acao" value="<%="ok"%>">
+    </td>
+    </tr>
+    </table>
+    <br>
+    <br>
+    <br>
+    <table border="0" width="100%" align="center">
+    <tr colspan = "5">
+		<td  align="center" class="grid_erro"><font size="5" ><center><%="Todos os Pedidos de Saída serão apagados, ou seja, os que estão com os status: Atendido, Pendente e Cancelado. Serão apagados todos os pedidos que estão sem data de Entrega."%></center></font></td>
+    </tr>
+    <tr colspan = "5">
+		<td  align="center" class="grid_erro"><font size="5" ><center><%=mensagem%></center></font></td>
+    </tr>
+    </table>
+<hr>
+</form>
+<%@include file="../fimConexao.jsp"%>

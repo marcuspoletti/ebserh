@@ -1,0 +1,158 @@
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.Produto"%>
+<%@page import="afero.model.OrcamentoItem"%>
+<%@page import="afero.model.Estoque"%>
+<%@page import="afero.model.Preco"%>
+<%@page import="afero.model.PedidoSaidaItem"%>
+<%@page import="afero.model.PedidoEntradaItem"%>
+<%@page import="afero.persistence.ProdutoDAO"%>
+<%@page import="afero.persistence.PedidoSaidaItemDAO"%>
+<%@page import="afero.persistence.PedidoEntradaItemDAO"%>
+<%@page import="afero.persistence.OrcamentoItemDAO"%>
+<%@page import="afero.persistence.EstoqueDAO"%>
+<%@page import="afero.persistence.PrecoDAO"%>
+<%@page import="afero.util.Utilitaria"%>
+<%@ page import="afero.util.ConverteDate" %>
+<%@page import="java.util.Calendar" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script language=JavaScript src="../js/abas.js" type=text/javascript></script>
+<script src="../js/common.js" /></script>
+<script>
+
+function localizar() {
+  
+  document.forms[0].submit();
+}  
+
+
+function recarregar() {
+  document.forms[0].action='deletarProdutos.jsp';
+  document.forms[0].submit();
+}
+</script>
+<%
+List listProduto;
+String cdLoja = request.getParameter("idLoja");
+int idLoja = 0;
+if (cdLoja == null) {
+	idLoja = 0;
+}else {
+	idLoja = Integer.parseInt(cdLoja);
+}
+
+if(idLoja != 0){
+
+OrcamentoItemDAO daoOrcamentoItem = new OrcamentoItemDAO(conn);
+List listOrcamentoItem;
+String clausulaOrcamento = null;
+listOrcamentoItem = daoOrcamentoItem.listarOrcamentoItemDeletados(clausulaOrcamento);
+for ( Iterator itOrcamentoItem= listOrcamentoItem.iterator();itOrcamentoItem.hasNext();) {
+	OrcamentoItem itemOrcamento = (OrcamentoItem) itOrcamentoItem.next();
+	daoOrcamentoItem.excluir(itemOrcamento);
+
+}	
+PedidoEntradaItemDAO daoEntradaItem = new PedidoEntradaItemDAO(conn);
+List listEntraItem;
+listEntraItem = daoEntradaItem.listarProcurarPedidoEntradaItemDeletados();
+for ( Iterator itEntradaItem = listEntraItem.iterator();itEntradaItem.hasNext();) {
+	PedidoEntradaItem itemEntrada = (PedidoEntradaItem) itEntradaItem.next();
+	daoEntradaItem.excluir(itemEntrada);
+
+}
+PedidoSaidaItemDAO daoSaidaItem = new PedidoSaidaItemDAO(conn);
+String clausulaSaidaItem = null;
+List listSaidaItem;
+listSaidaItem = daoSaidaItem.listarPedidoSaidaItemDeletados(clausulaSaidaItem);
+for ( Iterator itSaidaItem = listSaidaItem.iterator();itSaidaItem.hasNext();) {
+	PedidoSaidaItem  itemSaida = (PedidoSaidaItem)itSaidaItem.next();
+	daoSaidaItem.excluir(itemSaida);
+}
+ProdutoDAO daoProduto = new ProdutoDAO(conn);
+String clausula =" where p.status='A' AND e.idLoja ="+idLoja+" group by p.idProduto ";
+listProduto = daoProduto.listarProdutoDeletados(clausula);
+List listEstoque;
+List listEstoqueExclusao;
+
+for ( Iterator it = listProduto.iterator();it.hasNext();) {
+	Produto prod = (Produto) it.next();
+	EstoqueDAO daoEstoque = new EstoqueDAO(conn);
+	listEstoque = daoEstoque.procurarEstoquePrecoLojaDeletados(prod.getIdProduto(), idLoja);
+	for ( Iterator itEstoque = listEstoque.iterator();itEstoque.hasNext();) {
+		Estoque estoque = (Estoque)itEstoque.next();
+		PrecoDAO daoPreco = new PrecoDAO(conn);
+		Preco preco = daoPreco.procurarListarPrecoDeletados(estoque.getIdEstoque());
+		daoPreco.excluir(preco);
+	}
+		
+         listEstoqueExclusao = daoEstoque.procurarEstoquePrecoLojaDeletados(prod.getIdProduto(), idLoja);
+	for ( Iterator itEstoqueExclusao = listEstoqueExclusao.iterator();itEstoqueExclusao.hasNext();) {
+		Estoque estoqueExclusao = (Estoque)itEstoqueExclusao.next();
+		daoEstoque.excluir(estoqueExclusao);
+		daoProduto.excluir(prod);
+		
+	}
+	
+}
+
+String clausulaExclusaoProduto = " where p.status='I' AND e.idLoja ="+idLoja+" group by p.idProduto ";
+List listProdutoExclusao = daoProduto.listarProdutoDeletadosEstoque(clausulaExclusaoProduto);
+EstoqueDAO daoEstoqueProduto = new EstoqueDAO(conn);
+for ( Iterator itProduto = listProdutoExclusao.iterator();itProduto.hasNext();) {
+	Produto prod = (Produto) itProduto.next();
+	 listEstoqueExclusao = daoEstoqueProduto.procurarEstoquePrecoLojaDeletadosEstoque(prod.getIdProduto(), idLoja);
+		for ( Iterator itEstoqueExclusao = listEstoqueExclusao.iterator();itEstoqueExclusao.hasNext();) {
+			Estoque estoqueExclusao = (Estoque)itEstoqueExclusao.next();
+			daoEstoqueProduto.excluir(estoqueExclusao);
+			
+			
+		}
+
+}
+
+ProdutoDAO daoProduto = new ProdutoDAO(conn);
+String clausulaExcluirProduto = " where status='I' ";
+List listProdutoExcluir = daoProduto.listarProduto(clausulaExcluirProduto);
+for ( Iterator itProduto = listProdutoExcluir.iterator();itProduto.hasNext();) {
+	Produto prod = (Produto) itProduto.next();
+	daoProduto.excluir(prod);
+}
+
+}
+  
+  
+%>
+<script>
+function atualizar() {
+  document.forms[0].submit();
+}
+</script>
+
+<%-- Início do Conteúdo da Página --%>
+<div class="cabecalho_pagina">Excluir Produtos</div>
+<hr>
+<form action="deletarProdutos.jsp">
+
+
+<table border="0" width="100%">
+<tr>
+      <th class="label">Loja</th>
+      <td><select id="idLoja"name="idLoja" onchange="recarregar();" >
+          <option value='0'>Todos...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboLoja.jspf" %></select>
+          <script>comboSelect(document.forms[0].idLoja, '<%= idLoja %>');</script>
+      </td>
+  </tr>
+ </table>
+<table border="0" width="100%">
+    <tr>
+    <td align="center">
+        <input type="button" value="Atualizar" class="botao" onclick="atualizar();">
+    </td>
+    </tr>
+
+</table>
+</form>
+<br><br>
+<%@include file="../fimConexao.jsp"%>

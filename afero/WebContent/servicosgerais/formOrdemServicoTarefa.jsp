@@ -1,0 +1,180 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.OrdemServicoTarefa" %>
+<%@page import="afero.persistence.OrdemServicoTarefaDAO" %>
+<%@page import="afero.util.ConverteDate" %>
+<%@page import="afero.util.Utilitaria" %>
+<%@page import="java.util.Date" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/></script>
+<script>
+function calcula() {
+	var trocaP = /\./g; 
+	var quantidade = parseFloat(document.getElementById('quant').value.replace(",","."));
+	var valorUnit = parseFloat(document.getElementById('vlUni').value.replace(",","."));
+	var desconto = parseFloat(document.getElementById('pDesc').value.replace(",",".") );
+	var totalQuant = parseFloat(quantidade)*parseFloat(valorUnit);
+	var calcularDesconco = (parseFloat(totalQuant)*parseFloat(desconto))/100;
+	var total = parseFloat(totalQuant) - parseFloat(calcularDesconco);
+	var formatarCasas = total.toFixed(2);
+	var formatarTotal = formatarCasas.toString().replace(trocaP,",");
+	
+	document.getElementById('valor').value = formatarTotal;	   
+	
+}
+function salvar() {
+	if (document.all.idOrdemServicoItem.value == 0) {
+		window.alert("O campo Ordem de Servico Item é obrigatório.");
+		document.all.idOrdemServicoItem.focus();
+	}else if (document.all.idListaTarefa.value == 0) {
+		window.alert("O campo Lista de Tarefa é obrigatório.");
+		document.all.idListaTarefa.focus();
+	}else {
+		document.forms[0].submit();
+	}
+}
+
+function cancelar() {
+  document.forms[0].action="formOrdemServicoTarefa.jsp";
+  document.forms[0].submit();
+}
+
+function recarregar(acao) {
+  document.forms[0].action='formOrdemServicoTarefa.jsp?acao='+acao;
+  document.forms[0].submit();
+}
+
+
+function voltar() {
+  document.forms[0].action = 'listarOrdemServicoTarefa.jsp?acao=voltar'
+	document.forms[0].submit();
+}  
+</script>
+</head>
+
+<%
+String acao = request.getParameter("acao");
+String idOrdemServicoTarefa = request.getParameter("idOrdemServicoTarefa");
+String idListaTarefa = request.getParameter("idListaTarefa");
+String idOrdemServicoItem = request.getParameter("idOrdemServicoItem");
+String idOrdemServicoObjeto = request.getParameter("idOrdemServicoObjeto");
+int idColaborador = Integer.parseInt((String)session.getAttribute("idColaborador"));
+if (acao == null) acao = "inc";
+if(idOrdemServicoTarefa == null) idOrdemServicoTarefa = "0";
+String dsCompTarefa = "";
+float quant = 1;
+float valor = 0;
+float pDesc = 0;
+float vlUni = 0;
+Date dtMod = null;
+String usuario = (String) session.getAttribute("Login");
+
+if (acao.equalsIgnoreCase("atu")){
+	
+	OrdemServicoTarefaDAO dao = new OrdemServicoTarefaDAO(conn);
+	OrdemServicoTarefa ordemServicoTarefa = dao.procurarOrdemServicoTarefa("WHERE idOrdemServicoTarefa = " +Integer.parseInt(idOrdemServicoTarefa)+ ";");
+	dsCompTarefa = ordemServicoTarefa.getDsCompTarefa();
+	quant = ordemServicoTarefa.getQuant();
+	valor = ordemServicoTarefa.getValor();
+	pDesc = ordemServicoTarefa.getpDesc();
+	vlUni = ordemServicoTarefa.getVlUni();
+	idColaborador = ordemServicoTarefa.getIdColaborador();
+	dtMod = ordemServicoTarefa.getDtMod();
+	usuario = ordemServicoTarefa.getUsuario();
+	
+}else if(acao.equalsIgnoreCase("inc")){
+	
+	ListaTarefaDAO dao = new ListaTarefaDAO(conn);
+	ListaTarefa listaTarefa = dao.procurarListaTarefa(" WHERE idListaTarefa = "+Integer.parseInt(idListaTarefa));
+	vlUni = listaTarefa.getPreco();
+
+	
+	
+}
+%>
+<body onload="document.forms[0].elements[2].focus();" >
+<h1 class="cabecalho_pagina">Cadastro de Tarefas</h1>
+<form method="post" action="listarOrdemServicoTarefa.jsp?acao=<%=acao%>&idOrdemServicoTarefa=<%=idOrdemServicoTarefa%>">
+<input type="hidden" name="acao" value="<%=acao%>"/>
+<input type="hidden" name="idOrdemServicoTarefa" value="<%=idOrdemServicoTarefa%>"/>
+<input type="hidden" name="idOrdemServicoObjeto" value="<%=idOrdemServicoObjeto%>"/>
+<iframe width=174 height=189 name="gToday:normal:"../js/calendar/agenda.js"
+            id="gToday:normal:"../js/calendar/agenda.js" src="../js/calendar/ipopeng.htm"
+            scrolling="no" frameborder="0" style="visibility:visible; z-index:999; 
+    position:absolute; top:-500px; left:-500px;">
+</iframe>
+
+<table border="0" width="100%">
+	<tr>
+		<th class="label">Ordem Servico Item*</th>
+		<td><select name="idOrdemServicoItem" required="true">
+			<option value='0'>Selecione...</option>
+			<%@include file="../WEB-INF/jspf/combo/comboOrdemServicoItem.jspf"%></select>
+			<script>comboSelect(document.forms[0].idOrdemServicoItem, '<%= idOrdemServicoItem %>');</script>
+		</td>
+	</tr>
+	<tr>
+		<th class="label">Lista Tarefa*</th>
+		<td><select name="idListaTarefa" required="true">
+			<option value='0'>Selecione...</option>
+			<%@include file="../WEB-INF/jspf/combo/comboListaTarefa.jspf"%></select>
+			<script>comboSelect(document.forms[0].idListaTarefa, '<%=idListaTarefa %>');</script>
+		</td>
+	</tr>
+	<tr>
+		<th class="label">Descrição </th>
+		<td><textarea  id="dsCompTarefa" name="dsCompTarefa" cols="50" rows="5" maxlength="100"><%=dsCompTarefa%></textarea></td>
+	</tr>
+	<tr>
+		<th class="label">Quantidade</th>
+		<td><input type="text"  id="quant" name="quant" value="<%=Utilitaria.formatarNumero(quant, 0).toString()%>" size="40" maxlength="40" /></td>
+	</tr>
+	<tr>
+		<th class="label">Valor Unitário</th>
+		<td><input type="text"  id="vlUni" name="vlUni" value="<%=Utilitaria.formatarNumero(vlUni, 2).toString()  %>" size="40" onkeyup="FormataValor(this,event)" maxlength="40" /></td>
+	</tr>
+	<tr>
+		<th class="label">Desconto</th>
+		<td><input type="text"  id="pDesc" name="pDesc" value="<%=Utilitaria.formatarNumero(pDesc, 2).toString() %>" onkeyup="FormataValor(this,event)" onblur="calcula();" size="40" maxlength="40" /></td>
+	</tr>
+	<tr>
+		<th class="label">Valor</th>
+		<td><input type="text" name="valor" value="<%=Utilitaria.formatarNumero(valor, 2).toString() %>"  onkeyup="FormataValor(this,event)" onblur="calcula();" size="40" maxlength="40"></td>
+	</tr>
+	
+	<tr>
+		<th class="label">Colaborador</th>
+		<td><select name="idColaborador" required="true">
+			<option value='0'>Selecione...</option>
+			<%@include file="../WEB-INF/jspf/combo/comboColaborador.jspf"%></select>
+			<script>comboSelect(document.forms[0].idColaborador, '<%=idColaborador %>');</script>
+		</td>
+	</tr>
+
+<% if(acao.equalsIgnoreCase("atu")){ %>
+	
+	<tr>
+		<th class="label">Registros:</th>
+   	 	<td class="label_menor"><center>&nbsp; Modificação: <%if (dtMod != null) { %><%=dtMod%><% }%>&nbsp;;</center></td>
+   	 	<td class="label_menor"><center>&nbsp; Usuário: <%if (usuario != null) { %><%=usuario%><% }%>&nbsp;;</center></td>
+   	</tr>
+<%} %>
+  
+</table><hr>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td>
+			<input class="button" type="button" value="Adicionar" onClick="javascript: salvar();" />
+			<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" />
+			<input class="button" type="button" value="Voltar" onClick="javascript: voltar();" />
+		</td>
+		<td class="campo_obrigatorio">* Campos Obrigatórios</td>
+	</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

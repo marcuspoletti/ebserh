@@ -1,0 +1,235 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.Tributacao"%>
+<%@page import="afero.persistence.TributacaoDAO"%>
+<%@page import="afero.util.ConverteDate"%>
+<%@page import="java.util.Date"%>
+<%@page import="afero.util.Utilitaria"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js" /></script>
+<script>
+function salvar() {
+   if (document.all.idCatTributaria.value == '0') {
+     window.alert("O campo Cat. Tributaria é obrigatório.");
+     document.all.idCatTributaria.focus();
+   }else if (document.all.cdEstado.value == '0') {
+    window.alert("O campo Estado é obrigatório.");
+    document.all.cdEstado.focus();
+   }else if (document.all.cdEstadoIcmsST.value == '0') {
+	    window.alert("O campo Estado é obrigatório.");
+	    document.all.cdEstadoIcmsST.focus();
+   }else{
+  	document.forms[0].submit();
+  }
+}
+
+function cancelar() {
+  document.forms[0].action="formTributacao.jsp";
+  document.forms[0].submit();
+}
+
+function voltar() {
+  document.forms[0].action = 'listarTributacao.jsp?acao=voltar'
+	document.forms[0].submit();
+}
+
+</script>
+</head>
+<%
+//variáveis capturadas da página listarCidade.jsp
+ConverteDate converte = new ConverteDate();
+String acao = request.getParameter("acao");
+String idCatTributaria = request.getParameter("idCatTributaria");
+String idTributacao = request.getParameter("idTributacao");
+if (idTributacao == null)idTributacao= "0";
+if (acao == null) acao = "inc";
+if (idCatTributaria == null)idCatTributaria= "0";
+String cdEstado = request.getParameter("cdEstado");
+if(cdEstado == null)cdEstado = "0";
+String crt = request.getParameter("crt");
+if(crt == null)crt="1";
+int cdCstIcms = 0;
+int cdCsosn = 0;
+String origem = "0";
+String modBCIcms = "0";
+float pReduBCIcms = 0;
+float pBCOperacao = 0;
+float pMargemIcms = 0;
+float aliquotaIcms = 0;
+String modBCIcmsST = "0";
+float pReduBCIcmsST = 0;
+float pMargemIcmsST = 0;
+float aliquotaIcmsST = 0;
+int cdEstadoIcmsST = 0;
+float aliquotaCredito = 0;
+float percCargaTrib = 0;
+String observacao = "";
+String dtMod = "";
+
+String usuario = (String)session.getAttribute("Login");
+
+//verifica se acao foi atualizar
+if (acao.equalsIgnoreCase("atu")) {
+  TributacaoDAO dao = new TributacaoDAO(conn);
+  Tributacao tributacao = dao.procurarTributacao(Integer.parseInt(idTributacao));
+  idCatTributaria = "".valueOf(tributacao.getIdCatTributacao());
+  cdEstado = "".valueOf(tributacao.getCdEstado());
+  crt = tributacao.getCrt();
+  cdCstIcms = tributacao.getCdCstIcms();
+  cdCsosn = tributacao.getCdCsosn();
+  origem = tributacao.getOrigem();
+  modBCIcms = tributacao.getModBCIcms();
+  pReduBCIcms = tributacao.getpReduBCIcms();
+  pBCOperacao = tributacao.getpBCOperacao();
+  pMargemIcms = tributacao.getpMargemIcms();
+  aliquotaIcms = tributacao.getAliquotaIcms();
+  modBCIcmsST = tributacao.getModBCIcms();
+  pReduBCIcmsST = tributacao.getpReduBCIcmsST();
+  pMargemIcmsST = tributacao.getpMargemIcmsST();
+  aliquotaIcmsST = tributacao.getAliquotaIcmsST();
+  cdEstadoIcmsST = tributacao.getCdEstadoIcmsST();
+  aliquotaCredito = tributacao.getAliquotaCredito();
+  observacao = tributacao.getObservacao();
+  percCargaTrib = tributacao.getPercCargaTrib();
+  dtMod = tributacao.getDtMod().toString();
+  usuario = tributacao.getUsuario();
+}
+%>
+<body onload="document.forms[0].elements[0].focus();" >
+<h1 class="cabecalho_pagina">Cadastro de Tributação</h1>
+<form method="post" action="listarTributacao.jsp?acao=<%=acao%>">
+<input type="hidden" name="idTributacao" value="<%=idTributacao%>">
+
+
+<table border="0" width="100%">
+ <tr>
+      <th class="label">Categoria Trib.*</th>
+      <td><select name=idCatTributaria onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboCatTributaria.jspf"%></select>
+          <script>comboSelect(document.forms[0].idCatTributaria, '<%= idCatTributaria %>');</script>
+      </td>
+  </tr>  
+  <tr>
+      <th class="label">Estado*</th>
+      <td><select name="cdEstado" onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboEstado.jspf"%></select>
+          <script>comboSelect(document.forms[0].cdEstado, '<%= cdEstado %>');</script>
+      </td>
+  </tr>  
+  <tr>
+    <th class="label">CRT*</th>
+      <td class="label_radio"><input type="radio" class="radio" name="crt" value="1" <%= (crt.equals("1")? "checked": "") %>>Simples Nacional
+      <input type="radio" class="radio" name="crt" value="2" <%= (crt.equals("2")? "checked": "") %>>Regime Norma</td>
+  </tr>
+  <tr>
+      <th class="label">Cst Icms*</th>
+      <td><select name="cdCstIcms" onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboCstIcms.jspf"%></select>
+          <script>comboSelect(document.forms[0].cdCstIcms, '<%= cdCstIcms %>');</script>
+      </td>
+  </tr>  
+  <tr>
+      <th class="label">Csosn*</th>
+      <td><select name="cdCsosn" onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboCsosn.jspf"%></select>
+          <script>comboSelect(document.forms[0].cdCsosn, '<%= cdCsosn %>');</script>
+      </td>
+  </tr>
+  <tr>
+    <th class="label">Origem</th>
+      <td class="label_radio"><input type="radio" class="radio" name="origem" value="0" <%= (origem.equals("0")? "checked": "") %>>Nacional
+      <input type="radio" class="radio" name="origem" value="1" <%= (origem.equals("1")? "checked": "") %>>Estrangeira</td>
+  </tr>
+  <tr>
+    <th class="label">BC. Icms</th>
+      <td class="label_radio"><input type="radio" class="radio" name="modBCIcms" value="0" <%= (modBCIcms.equals("0")? "checked": "") %>>Margem Valor Agregado (%)
+      <input type="radio" class="radio" name="modBCIcms" value="1" <%= (modBCIcms.equals("1")? "checked": "") %>>Pauta
+      <input type="radio" class="radio" name="modBCIcms" value="2" <%= (modBCIcms.equals("2")? "checked": "") %>>Preço Tabelado
+      <input type="radio" class="radio" name="modBCIcms" value="3" <%= (modBCIcms.equals("3")? "checked": "") %>>valor da Operação</td>
+  </tr>
+  <tr>
+    <th class="label">Red.BC.Icms (%)</th>
+    <td><input type="text" name="pReduBCIcms" value="<%=Utilitaria.formatarNumero(pReduBCIcms,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr> 
+  <tr>
+    <th class="label">BC. Operacao (%)</th>
+    <td><input type="text" name="pBCOperacao" value="<%=Utilitaria.formatarNumero(pBCOperacao,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr> 
+  <tr>
+    <th class="label">Margem Icms(%)</th>
+    <td><input type="text" name="pMargemIcms" value="<%=Utilitaria.formatarNumero(pMargemIcms,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr> 
+    <tr>
+    <th class="label">Aliquota Icms(%)</th>
+    <td><input type="text" name="aliquotaIcms" value="<%=Utilitaria.formatarNumero(aliquotaIcms,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr> 
+  <tr>
+    <th class="label">Mod. BC. Icms ST</th>
+      <td class="label_radio"><input type="radio" class="radio" name="modBCIcmsST" value="0" <%= (modBCIcmsST.equals("0")? "checked": "") %>>Preço Tabelado
+      <input type="radio" class="radio" name="modBCIcmsST" value="1" <%= (modBCIcmsST.equals("1")? "checked": "") %>>Lista Negativa
+      <input type="radio" class="radio" name="modBCIcmsST" value="2" <%= (modBCIcmsST.equals("2")? "checked": "") %>>Lista Positiva
+      <input type="radio" class="radio" name="modBCIcmsST" value="3" <%= (modBCIcmsST.equals("3")? "checked": "") %>>Lista Neutra
+      <input type="radio" class="radio" name="modBCIcmsST" value="4" <%= (modBCIcmsST.equals("4")? "checked": "") %>>Margem Valor Agregado (%)
+       <input type="radio" class="radio" name="modBCIcmsST" value="5" <%= (modBCIcmsST.equals("5")? "checked": "") %>>Pauta</td>
+  </tr>
+  <tr>
+    <th class="label">Red. BC. Icms ST (%)</th>
+    <td><input type="text" name="pReduBCIcmsST" value="<%=Utilitaria.formatarNumero(pReduBCIcmsST,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr> 
+  <tr>
+    <th class="label">Margem Icms ST (%)</th>
+    <td><input type="text" name="pMargemIcmsST" value="<%=Utilitaria.formatarNumero(pMargemIcmsST,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr> 
+  <tr>
+    <th class="label">aliquota Icms ST(%)</th>
+    <td><input type="text" name="aliquotaIcmsST" value="<%=Utilitaria.formatarNumero(aliquotaIcmsST,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr>
+  <tr>
+      <th class="label">Estado Icms ST*</th>
+      <td><select name="cdEstadoIcmsST" onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboEstadoIcmsST.jspf"%></select>
+          <script>comboSelect(document.forms[0].cdEstadoIcmsST, '<%= cdEstadoIcmsST %>');</script>
+      </td>
+  </tr>  
+  <tr>
+    <th class="label">Aliquota Credito</th>
+    <td><input type="text" name="aliquotaCredito" value="<%=Utilitaria.formatarNumero(aliquotaCredito,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr>
+  <tr>
+      <th class="label">Observação</th>
+      <td><textarea name="observacao" cols="50" rows="2"><%=observacao %></textarea></td>
+  </tr>
+  <tr>
+    <th class="label">Perc. Carga Trib.</th>
+    <td><input type="text" name="percCargaTrib" value="<%=Utilitaria.formatarNumero(percCargaTrib,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="100"></td>
+  </tr>
+</table><hr>
+<table border="0" width="100%">
+  <%if(acao.equals("atu")){%>
+  
+  	<tr>
+  	    <th class="label">Registros:</th>
+  	    <td class="label_menor"><center>&nbsp Modificação: <%if (dtMod != null) { %><%=converte.DMYToYMD(dtMod)%><% }%>&nbsp</center></td>
+	</tr>
+  <% }%>
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Salvar" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" />
+	<input class="button" type="button" value="Voltar" onClick="javascript: voltar();" /></td>
+	<td class="campo_obrigatorio">* Campos Obrigatórios</td>
+</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

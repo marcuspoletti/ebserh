@@ -1,0 +1,19 @@
+<%@page import ="afero.model.EntidadeFisica" %>
+<%@page import ="afero.persistence.EntidadeFisicaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EntidadeFisicaDAO daoEntidadeFisica;
+List listEntidadeFisica;
+daoEntidadeFisica = new EntidadeFisicaDAO(conn);
+String clausulaEntidadeFisica = "  WHERE status='A' ORDER BY e.nome";
+listEntidadeFisica = daoEntidadeFisica.listarEntidadeFisica(clausulaEntidadeFisica);
+Iterator itEntidadeFisica = listEntidadeFisica.iterator();
+while (itEntidadeFisica.hasNext()) { 
+	EntidadeFisica entidadeFisica = (EntidadeFisica) itEntidadeFisica.next();
+%>
+
+<option value="<%=entidadeFisica.getIdEntidade()%>"><%=entidadeFisica.getNome()%></option>
+<%
+}
+%>

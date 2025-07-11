@@ -1,0 +1,217 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.ConfigServico" %>
+<%@ page import="afero.model.Loja" %>
+<%@ page import="afero.persistence.ConfigServicoDAO" %>
+<%@page import="afero.persistence.LojaDAO"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@ page import="afero.util.Utilitaria" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script>
+function confirmaExcluir(cont, id) {  
+  if (confirm("Deseja mesmo apagar o registro [" + cont + "]?")) {  
+       location.href = 'listarConfigServico.jsp?acao=exc&idLoja=' +id;   
+  }  
+}
+</script>
+
+<%
+ConfigServicoDAO dao;
+ConfigServicoDAO daoExclusao;
+LojaDAO daoLoja;
+Loja loja;
+
+
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null)mensagem = "";
+String acao = request.getParameter("acao");
+if (acao == null) acao = "listar";
+String status = "A";
+String clausula = "";
+
+String idLoja = "";
+String tipoOS = "";
+String dsCampo1 = "";
+String dsCampo2 = "";
+String dsCampo3 = "";
+String dsCampo4 = "";
+String msg1 = "";
+String msg2 = "";
+String msg3 = "";
+String msg4 = "";
+String msg5 = "";
+String pCSocial = "";
+String pCofins = "";
+String pPis = "";
+String pIrrf = "";
+String tetoIrrf = "";
+String pInss = "";
+String pIss = "";
+String cdCfopServico = "0";
+String cdCfopProduto = "0";
+String dsCmpOb1 = "";
+String dsCmpOb2 = "";
+String dsCmpOb3 = "";
+String dsCmpOb4 = "";
+
+
+if (acao.equalsIgnoreCase("inc") || acao.equalsIgnoreCase("atu") || acao.equalsIgnoreCase("exc")) {
+	
+	idLoja = request.getParameter("idLoja");
+	tipoOS = request.getParameter("tipoOS");
+	dsCampo1 = request.getParameter("dsCampo1");
+	dsCampo2 = request.getParameter("dsCampo2");
+	dsCampo3 = request.getParameter("dsCampo3");
+	dsCampo4 = request.getParameter("dsCampo4");
+	msg1 = request.getParameter("msg1");
+	msg2 = request.getParameter("msg2");
+	msg3 = request.getParameter("msg3");
+	msg4 = request.getParameter("msg4");
+	msg5 = request.getParameter("msg5");
+	pCSocial = request.getParameter("pCSocial");
+	pCofins = request.getParameter("pCofins");	
+	pPis = request.getParameter("pPis");
+	pIrrf = request.getParameter("pIrrf");
+	tetoIrrf = request.getParameter("tetoIrrf");
+	pInss = request.getParameter("pInss");
+	pIss = request.getParameter("pIss");
+	cdCfopServico = request.getParameter("cdCfopServico");
+	cdCfopProduto = request.getParameter("cdCfopProduto");
+	dsCmpOb1 = request.getParameter("dsCmpOb1");
+	dsCmpOb2 = request.getParameter("dsCmpOb2");
+	dsCmpOb3 = request.getParameter("dsCmpOb3");
+	dsCmpOb4 = request.getParameter("dsCmpOb4");
+
+	if(tipoOS == null) tipoOS = "";
+	if(dsCampo1 == null) dsCampo1 = "";
+	if(dsCampo2 == null) dsCampo2 = "";
+	if(dsCampo3 == null) dsCampo3 = "";
+	if(dsCampo4 == null) dsCampo4 = "";
+	if(msg1 == null) msg1 = "";
+	if(msg2 == null) msg2 = "";
+	if(msg3 == null) msg3 = "";
+	if(msg4 == null) msg4 = "";
+	if(msg5 == null) msg5 = "";
+	if(pCSocial == null) pCSocial = "0";
+	if(pCofins == null) pCofins = "0";
+	if(pPis == null) pPis = "0";
+	if(pIrrf == null) pIrrf = "0";
+	if(tetoIrrf == null) tetoIrrf = "0";
+	if(pInss == null) pInss = "0";
+	if(pIss == null) pIss = "0";
+	if(cdCfopServico == null) cdCfopServico = "0";
+	if(cdCfopProduto == null) cdCfopProduto = "0";
+	if(dsCmpOb1 == null) dsCmpOb1 = "";
+	if(dsCmpOb2 == null) dsCmpOb2 = "";
+	if(dsCmpOb3 == null) dsCmpOb3 = "";
+	if(dsCmpOb4 == null) dsCmpOb4 = "";
+	
+	ConfigServico configServico = new ConfigServico();
+  
+	try {
+
+		configServico.setIdLoja(Utilitaria.toNumber(idLoja).intValue());
+		configServico.setTipoOS(tipoOS);
+		configServico.setDsCampo1(dsCampo1);
+		configServico.setDsCampo2(dsCampo2);
+		configServico.setDsCampo3(dsCampo3);
+		configServico.setDsCampo4(dsCampo4);
+		configServico.setMsg1(msg1);
+		configServico.setMsg2(msg2);
+		configServico.setMsg3(msg3);
+		configServico.setMsg4(msg4);
+		configServico.setMsg5(msg5);
+		configServico.setpCSocial(Utilitaria.toNumber(pCSocial).floatValue());
+		configServico.setpCofins(Utilitaria.toNumber(pCofins).floatValue());
+		configServico.setpPis(Utilitaria.toNumber(pPis).floatValue());
+		configServico.setpIrrf(Utilitaria.toNumber(pIrrf).floatValue());
+		configServico.setTetoIrrf(Utilitaria.toNumber(tetoIrrf).floatValue());
+		configServico.setpInss(Utilitaria.toNumber(pInss).floatValue());
+		configServico.setpIss(Utilitaria.toNumber(pIss).floatValue());
+		configServico.setCdCfopServico(Utilitaria.toNumber(cdCfopServico).intValue());
+		configServico.setCdCfopProduto(Utilitaria.toNumber(cdCfopProduto).intValue());
+		configServico.setDsCmpOb1(dsCmpOb1);
+		configServico.setDsCmpOb2(dsCmpOb2);
+		configServico.setDsCmpOb3(dsCmpOb3);
+		configServico.setDsCmpOb4(dsCmpOb4);
+		      
+	} catch (NumberFormatException nfe) {
+		throw new Exception("Código inválido");
+	}
+
+	dao = new ConfigServicoDAO(conn);
+	daoExclusao = new ConfigServicoDAO(conn);
+
+  if (acao.equalsIgnoreCase("inc")) {  
+	  //inclui no banco de dados
+  	dao.incluir(configServico);
+
+  } else if (acao.equalsIgnoreCase("atu")) {
+	  //atualiza no banco de dados
+    	 dao.atualiza(configServico);
+  }else if (acao.equalsIgnoreCase("exc")){
+	  //exclui no banco de dados
+	  dao.excluir(configServico);
+  }
+}
+//quantidade de cadastros
+List listLojas;
+LojaDAO daoLojas = new LojaDAO(conn);
+listLojas = daoLojas.listarLoja(" ORDER BY idLoja");
+
+//seleciona todos os registros do banco de dados
+List list;
+dao = new ConfigServicoDAO(conn);
+clausula = clausula +" ORDER BY idLoja ";
+list = dao.listarConfigServico(clausula);
+int cont = 0;
+%>
+<h1 class="cabecalho_pagina">Configurações de Serviço</h1>
+<%if(listLojas.size() != list.size()) {%>
+|<a class="button" href="formConfigServico.jsp?acao=inc">Novo Cadastro</a>|<br>
+<%} %>
+
+<body onload="document.forms[0].elements[0].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<%-- mostra todos os registros do banco de dados --%>
+<table border="0" width="100%">
+    <tr>
+      <th class="grid">&nbsp;</th>
+      <th class="grid"><center>Loja</center></th>
+      <th class="grid">Tipo</th>
+      <th class="grid">Excluir</th>
+    </tr>
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+String nomeTipo = "";
+String nomeLoja;
+daoLoja = new LojaDAO(conn);
+loja = new Loja();
+for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	ConfigServico configServico = (ConfigServico) it.next();
+	if(configServico.getTipoOS().equalsIgnoreCase("O")){
+		nomeTipo = "Orçamento";
+	}else if(configServico.getTipoOS().equalsIgnoreCase("S")){
+		nomeTipo = "Ordem de Serviço";
+	}
+	
+	loja = daoLoja.procurarLoja(configServico.getIdLoja());
+	nomeLoja = loja.getApelido()+" / "+loja.getRazaoSocial();	
+    cont++;
+%>
+    <tr>
+      <td class = "grid" width="2%"><center><%=cont%></center></td>
+      <td class = "grid"><center><a href="formConfigServico.jsp?acao=atu&idLoja=<%=configServico.getIdLoja() %>"><%=nomeLoja %> </a></center></td>
+      <td class = "grid" width="15%"><center><%=nomeTipo %></center></td>
+      <td class = "grid" width="3%"><center><a href="javascript: confirmaExcluir(<%=cont%>,<%=configServico.getIdLoja()%>);"><img border = "0" src="../images/delete.gif"></a></center></td>
+  	</tr>
+<%
+}
+%>   
+</table>
+</form>
+<%if(listLojas.size() != list.size()) {%>
+<p align="right">|<a class="button" href="formConfigServico.jsp?acao=inc">Novo Cadastro</a>|<br>
+<%}%>

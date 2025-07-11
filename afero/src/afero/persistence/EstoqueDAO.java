@@ -1,0 +1,1165 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import afero.model.EstoqueProdutoPreco;
+
+import afero.model.Estoque;
+
+public class EstoqueDAO implements IEstoqueDAO{
+	private Connection conn;
+
+	public EstoqueDAO(Connection conn) throws AferoDAOException {
+		this.conn = conn;
+	}
+	public void incluir(Estoque estoque) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		
+		if (estoque == null)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+		
+
+		try {
+			String sql = "INSERT INTO tbestoque (idLoja, idProduto, qtEstoque, qtMinimo, qtMaxima, status, dtMod, usuario) "
+					+ "VALUES (?, ?, ?, ?, ?, ?, now(), ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, estoque.getIdLoja());
+			ps.setInt(2, estoque.getIdProduto());
+			if(estoque.getQtEstoque() == 0){
+				ps.setString(3, null);
+			}else{
+				ps.setDouble(3, estoque.getQtEstoque());
+			}
+			ps.setDouble(4, estoque.getQtMinimo());
+			ps.setDouble(5, estoque.getQtMaximo());
+			ps.setString(6, estoque.getStatus());
+			ps.setString(7, estoque.getUsuario());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+		
+	}
+	public int incluirProduto(Estoque estoque) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		int idEstoque = 0;
+		if (estoque == null)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+		
+			
+		
+
+		try {
+			String sql = "INSERT INTO tbestoque (idLoja, idProduto, qtEstoque, qtMinimo, qtMaxima, status, dtMod, usuario) "
+					+ "VALUES (?, ?, ?, ?, ?, ?, now(), ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, estoque.getIdLoja());
+			ps.setInt(2, estoque.getIdProduto());
+			if(estoque.getQtEstoque() == 0){
+				ps.setString(3, null);
+			}else{
+				ps.setDouble(3, estoque.getQtEstoque());
+			}
+			ps.setDouble(4, estoque.getQtMinimo());
+			ps.setDouble(5, estoque.getQtMaximo());
+			ps.setString(6, estoque.getStatus());
+			ps.setString(7, estoque.getUsuario());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+		if (estoque.getIdEstoque() == 0){
+			idEstoque = proximoIdEstoque();	
+		}else{
+			estoque.setIdEstoque(idEstoque);
+		}
+		return idEstoque;
+	}
+	
+	public int atualizarEstoque(Estoque estoque) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		int idEstoque = 0;
+		if (estoque == null)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+		
+			idEstoque = estoque.getIdEstoque();	
+		
+
+		try {
+			String sql = "UPDATE tbestoque SET idLoja = ?, idProduto = ?, qtMinimo = ?, qtMaxima = ?, status = ?, dtMod = now(), usuario = ? "
+					+ "WHERE idEstoque = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, estoque.getIdLoja());
+			ps.setInt(2, estoque.getIdProduto());
+			ps.setDouble(3, estoque.getQtMinimo());
+			ps.setDouble(4, estoque.getQtMaximo());
+			ps.setString(5, estoque.getStatus());
+			ps.setString(6, estoque.getUsuario());
+			ps.setInt(7, estoque.getIdEstoque());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+		return idEstoque;
+	}
+	
+	public void atualizarQuantMaxMin(Estoque estoque) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (estoque == null)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbestoque SET idLoja = ?, idProduto = ?, qtMinimo = ?, qtMaxima = ?, status = ?, dtMod = now(), usuario = ? "
+					+ "WHERE idEstoque = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, estoque.getIdLoja());
+			ps.setInt(2, estoque.getIdProduto());
+			ps.setDouble(3, estoque.getQtMinimo());
+			ps.setDouble(4, estoque.getQtMaximo());
+			ps.setString(5, estoque.getStatus());
+			ps.setString(6, estoque.getUsuario());
+			ps.setInt(7, estoque.getIdEstoque());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public void atualizar(Estoque estoque) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (estoque == null)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+
+		try {
+			String sql = "UPDATE tbestoque SET idLoja = ?, idProduto = ?, qtEstoque = ?, qtMinimo = ?, qtMaxima = ?, status = ?, dtMod = now(), usuario = ? "
+					+ "WHERE idEstoque = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, estoque.getIdLoja());
+			ps.setInt(2, estoque.getIdProduto());
+			ps.setDouble(3, estoque.getQtEstoque());
+			ps.setDouble(4, estoque.getQtMinimo());
+			ps.setDouble(5, estoque.getQtMaximo());
+			ps.setString(6, estoque.getStatus());
+			ps.setString(7, estoque.getUsuario());
+			ps.setInt(8, estoque.getIdEstoque());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+	
+	public void atualizarQuantidade(int idProduto, int idLoja, float quant) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		try {
+			String sql = "UPDATE tbestoque SET qtEstoque = ? Where idProduto = ? and idLoja = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setDouble(1, quant);
+			ps.setInt(2, idProduto);
+			ps.setInt(3, idLoja);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public void excluir(Estoque estoque) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (estoque == null)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbestoque WHERE idEstoque = ?");
+			ps.setInt(1, estoque.getIdEstoque());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+		}
+
+	}
+
+	public Estoque procurarEstoque(int idEstoque) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Estoque estoque = null;
+
+		try {
+			String sql = "SELECT idLoja, idProduto, qtEstoque, qtMinimo, qtMaxima, status, dtMod, usuario FROM tbestoque "
+				+ "WHERE status = 'A' and idEstoque = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idEstoque);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o código: " + idEstoque);
+			}
+            
+			int idLoja = rs.getInt(1);
+			int idProduto = rs.getInt(2);
+			double qtEstoque = rs.getDouble(3);
+			double qtMinimo = rs.getDouble(4);
+			double qtMaximo = rs.getDouble(5);
+			String status = rs.getString(6);
+			Date dtMod = rs.getDate(7);
+			String usuario = rs.getString(8);
+
+			estoque = new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return estoque;
+	}
+	public Estoque procurarEstoqueStatus(int idEstoque, String status) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Estoque estoque = null;
+
+		try {
+			String sql = "SELECT idLoja, idProduto, qtEstoque, qtMinimo, qtMaxima, status, dtMod, usuario FROM tbestoque "
+				+ "WHERE status = '"+status+"' and idEstoque = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idEstoque);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum "
+						+ "registro com o código: " + idEstoque);
+			}
+            
+			int idLoja = rs.getInt(1);
+			int idProduto = rs.getInt(2);
+			double qtEstoque = rs.getDouble(3);
+			double qtMinimo = rs.getDouble(4);
+			double qtMaximo = rs.getDouble(5);
+			status = rs.getString(6);
+			Date dtMod = rs.getDate(7);
+			String usuario = rs.getString(8);
+
+			estoque = new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return estoque;
+	}
+
+	public List listarEstoque() throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaxima, status, dtMod, usuario FROM tbestoque where status='A' ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	
+	public List procurarEstoquePreco(int idProduto, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e "+
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) "+
+	         "WHERE e.status = 'A' and p.idProduto = ? ";
+	         if(idLoja != 0){
+	        	 sql = sql + "and e.idLoja = ? ";
+	         }else if(idLoja == 0){
+	        	 sql = sql + "and e.idLoja != 0";
+	         }
+	         
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			if(idLoja != 0){
+				ps.setInt(2, idLoja);	
+			}
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public List procurarEstoquePrecoStatus(int idProduto, int idLoja, String status) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e "+
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) "+
+	         "WHERE e.status = '"+status+"' and p.idProduto = ? ";
+	         if(idLoja != 0){
+	        	 sql = sql + "and e.idLoja = ? ";
+	         }else if(idLoja == 0){
+	        	 sql = sql + "and e.idLoja != 0";
+	         }
+	         
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			if(idLoja != 0){
+				ps.setInt(2, idLoja);	
+			}
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+
+	public List procurarEstoqueLoja(int idProduto, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e "+
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) "+
+	         "WHERE e.status = 'A' and p.idProduto = ? AND e.idLoja = ? ";
+	        
+	         
+	         
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			ps.setInt(2, idLoja);	
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	
+	public List procurarEstoquePrecoSemStatus(int idProduto, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e "+
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) "+
+	         "WHERE p.idProduto = ? ";
+	         if(idLoja != 0){
+	        	 sql = sql + "and e.idLoja = ? ";
+	         }else if(idLoja == 0){
+	        	 sql = sql + "and e.idLoja != 0";
+	         }
+	         
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			if(idLoja != 0){
+				ps.setInt(2, idLoja);	
+			}
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	
+	public boolean exclusaoIdEstoque(int idEstoque) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+
+		try {
+			String sql = "select es.idEstoque " +
+			             "from tbestoque es " +
+			             "join tbpreco pr on (es.idEstoque = pr.idEstoque) " +
+			             "where es.status = 'A' and es.idEstoque = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idEstoque);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+			   ok = true;
+			}else{
+				ok = false;
+			}
+            
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+	
+	public Estoque procurarEstoque(int idProdutoPesquisa, int idLojaPesquisa) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Estoque estoque = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e "+
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) "+
+		     "JOIN tbpreco pr on (e.idEstoque = pr.idEstoque) "+
+	         "WHERE e.status='A' and p.idProduto = ? and e.idLoja = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProdutoPesquisa);
+			ps.setInt(2, idLojaPesquisa);
+			rs = ps.executeQuery();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				estoque = new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario);
+
+			}
+		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return estoque;
+	}
+	
+	
+	public List procurarEstoqueLoja(int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e " +
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) " +
+	         "WHERE e.status='A' and e.idLoja = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}
+		
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public Estoque procurarEstoqueLojaProdutoSstatus(int idLojaPesquisa, int idProdutoPesquisa) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Estoque est = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e " +
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) " +
+	         "WHERE e.idLoja = ? and e.idProduto = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLojaPesquisa);
+			ps.setInt(2, idProdutoPesquisa);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				int idEstoque = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				est = new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario);
+
+			}
+		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return est;
+	}
+	
+	public Estoque procurarEstoqueLojaProduto(int idLoja, int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		Estoque est = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e " +
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) " +
+	         "WHERE e.status='A' and e.idLoja = ? and e.idProduto = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			ps.setInt(2, idProduto);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				est = new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario);
+
+			}
+		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return est;
+	}
+	
+	public int getIdEstoque(int idLoja, int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int idEstoque = 0;
+		
+		try {
+			String sql = "SELECT e.idEstoque " +
+		     "FROM tbestoque e " +
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) " +
+	         "WHERE e.idLoja = ? and p.idProduto = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			ps.setInt(2, idProduto);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				idEstoque = rs.getInt(1);	
+			}
+		
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return idEstoque;
+	}
+	
+	public List procurarEstoqueList(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario "+
+		                 "FROM tbestoque e " + 
+		                 "JOIN tbproduto p on (e.idProduto = p.idProduto) "+ 
+	                     "WHERE e.status = 'A' and p.idProduto = ?; ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	
+	public List procurarEstoquePrecoLoja(int idProduto, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e "+
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) "+
+	         "WHERE e.status='A' and p.idProduto = ? and e.idLoja = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			ps.setInt(2, idLoja);
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}
+		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	
+	public List procurarEstoquePrecoQuantidades(int idProduto, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+		     "FROM tbestoque e "+
+		     "JOIN tbproduto p on (e.idProduto = p.idProduto) "+
+	         "WHERE p.status='A' AND e.status='A' and e.qtEstoque <= e.qtMinimo and p.idProduto = ? ";
+	         if(idLoja != 0){
+	        	 sql = sql + "and e.idLoja = ? ";
+	         }else if(idLoja == 0){
+	        	 sql = sql + "and e.idLoja != 0";
+	         }
+	         
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			if(idLoja != 0){
+				ps.setInt(2, idLoja);	
+			}
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	private int proximoIdEstoque() throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int idEstoque = 0;
+
+		try {
+			String sql = "SELECT MAX(idEstoque) FROM tbestoque ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum registro");
+			}
+            
+			idEstoque = rs.getInt(1);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return idEstoque;
+	}
+	private void atualzarPrecoCusto(int idProduto, float precoCusto, int idPreco) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		try {
+			String sql = "UPDATE tbpreco SET idEstoque = ? and custoDireto = ? WHERE idPreco = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			ps.setFloat(2, precoCusto);
+			ps.setInt(3, idPreco);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		}
+	}
+	public List procurarEstoquePrecoLojaDeletados(int idProduto, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+			             "FROM tbproduto p "+
+			             "JOIN tbestoque e  on (p.idProduto = e.idProduto) "+ 
+			             "JOIN tbpreco pr on e.idEstoque = pr.idEstoque "+
+			             "WHERE e.status='I' and p.idProduto = ? and e.idLoja = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			ps.setInt(2, idLoja);
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}
+		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public List procurarEstoquePrecoLojaDeletadosEstoque(int idProduto, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<Estoque> list = null;
+		
+		try {
+			String sql = "SELECT e.idEstoque, e.idLoja, e.idProduto, e.qtEstoque, e.qtMinimo, e.qtMaxima, e.status, e.dtMod, e.usuario " +
+			             "FROM tbproduto p "+
+			             "JOIN tbestoque e  on (p.idProduto = e.idProduto) "+ 
+			             "WHERE p.idProduto = ? and e.idLoja = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			ps.setInt(2, idLoja);
+			rs = ps.executeQuery();
+			list = new ArrayList<Estoque>();
+			
+			while (rs.next()) {
+				
+				int idEstoque = rs.getInt(1);
+				//int idLoja = rs.getInt(2);
+				//int idProduto = rs.getInt(3);
+				double qtEstoque = rs.getDouble(4);
+				double qtMinimo = rs.getDouble(5);
+				double qtMaximo = rs.getDouble(6);
+				String status = rs.getString(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);
+
+				list.add(new Estoque(idEstoque, idLoja, idProduto, qtEstoque, qtMinimo, qtMaximo, status, dtMod, usuario));
+
+			}
+		
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public double saldoEntradaAte(int idLoja, int idProduto, String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		double saldoAte = 0;
+
+		try {
+			String sql = "SELECT sum(pei.quant) as saldo "+
+                         "FROM tbproduto p "+ 
+                         "JOIN tbpedidoentradaitem pei on (p.idProduto = pei.idProduto) "+
+                         "JOIN tbpedidoentrada pe on (pei.idPedidoEntrada = pe.idPedidoEntrada) "+
+                         "WHERE p.status = 'A' AND pe.status='A' AND pe.idLoja = ? AND p.idProduto = ? ";
+			if (clausula != null) sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			ps.setInt(2, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				saldoAte = 0;
+			}else{
+				saldoAte = rs.getDouble(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return saldoAte;
+	}
+	public double saldoSaidaAte(int idLoja, int idProduto, String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		double saldoAte = 0;
+
+		try {
+			String sql = "SELECT sum(pei.quant) as saldo "+
+                         "FROM tbproduto p "+ 
+                         "JOIN tbpedidosaidaitem pei on (p.idProduto = pei.idProduto) "+
+                         "JOIN tbpedidosaida pe on (pei.idPedidoSaida = pe.idPedidoSaida) "+
+                         "WHERE p.status = 'A' AND pe.status='A' AND pe.idLoja = ? AND p.idProduto = ? ";
+			if (clausula != null) sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			ps.setInt(2, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				saldoAte = 0;
+			}else{
+				saldoAte = rs.getDouble(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return saldoAte;
+	}
+	public double valorPreco(int idProduto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		double valorAte = 0;
+
+		try {
+			String sql = "select pr.preco "+
+			             "from tbproduto p "+
+			             "JOIN tbestoque e on (p.idProduto = e.idProduto) "+
+			             "JOIN tbpreco pr on (e.idEstoque = pr.idEstoque) "+
+			             "where p.idProduto = ? AND pr.precoPadrao='S' AND e.status='A'";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Não foi encontrado nenhum registro");
+			}
+            
+			valorAte = rs.getDouble(1);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return valorAte;
+	}
+	public double entradaAte(int idLoja, int idProduto, String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		double entradaAte = 0;
+
+		try {
+			String sql = "SELECT sum(pei.quant) "+
+                         "FROM tbproduto p "+ 
+                         "JOIN tbpedidoentradaitem pei on (p.idProduto = pei.idProduto) "+
+                         "JOIN tbpedidoentrada pe on (pei.idPedidoEntrada = pe.idPedidoEntrada) "+
+                         "WHERE p.status = 'A' AND pe.status='A' AND pe.idLoja = ? AND p.idProduto = ? ";
+                         
+			if (clausula != null) sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			ps.setInt(2, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				entradaAte = 0;
+			}else{
+				entradaAte = rs.getDouble(1);
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return entradaAte;
+	}
+		public double saidaAte(int idLoja, int idProduto, String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		double saidaAte = 0;
+
+		try {
+			String sql = "SELECT sum(pei.quant) "+
+                         "FROM tbproduto p "+ 
+                         "JOIN tbpedidosaidaitem pei on (p.idProduto = pei.idProduto) "+
+                         "JOIN tbpedidosaida pe on (pei.idPedidoSaida = pe.idPedidoSaida) "+
+                         "WHERE p.status = 'A' AND pe.status='A'AND pe.idLoja = ? AND p.idProduto = ? ";
+			if (clausula != null) sql = sql + clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			ps.setInt(2, idProduto);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				saidaAte = 0;
+			}else{
+				saidaAte = rs.getDouble(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return saidaAte;
+	}
+
+
+}

@@ -1,0 +1,19 @@
+<%@page import ="afero.model.GrupoUsuario" %>
+<%@page import ="afero.persistence.GrupoUsuarioDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+GrupoUsuarioDAO daoGrupoUsuario;
+List listUsuario;
+daoGrupoUsuario = new GrupoUsuarioDAO(conn);
+String clausulaGrupoUsuario = "  WHERE status='A' ORDER BY dsGrupoUsuario";
+listUsuario = daoGrupoUsuario.listarGrupoUsuario(clausulaGrupoUsuario);
+Iterator itGrupoUsuario = listUsuario.iterator();
+while (itGrupoUsuario.hasNext()) { 
+	GrupoUsuario grupoUsuario = (GrupoUsuario) itGrupoUsuario.next();
+%>
+
+<option value="<%=grupoUsuario.getIdGrupoUsuario()%>"><%=grupoUsuario.getDsGrupoUsuario()%></option>
+<%
+}
+%>

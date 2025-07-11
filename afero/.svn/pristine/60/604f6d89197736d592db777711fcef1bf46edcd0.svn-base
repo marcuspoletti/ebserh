@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Cnae" %>
+<%@page import ="afero.persistence.CnaeDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CnaeDAO daoCnae;
+List listCnae;
+daoCnae = new CnaeDAO(conn);
+String clausulaCnae = " Where subclasse is not null ORDER BY denominacao";
+listCnae = daoCnae.listarCnae(clausulaCnae);
+Iterator itCnae = listCnae.iterator();
+while (itCnae.hasNext()) { 
+	Cnae cnaCombo = (Cnae) itCnae.next();
+%>
+
+<option value="<%=cnaCombo.getIdCnae()%>"><%=cnaCombo.getDenominacao()%></option>
+<%
+}
+%>

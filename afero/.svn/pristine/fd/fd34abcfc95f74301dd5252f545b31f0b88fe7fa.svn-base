@@ -1,0 +1,68 @@
+package afero.model;
+
+public class ConfigGeral {
+	
+	private int idLoja;
+	private String menuModulo;
+	private String emailServidor;
+	private String emailPorta;
+	private String emailUsuario;
+	private String emailSenha;
+	
+	
+	
+	public ConfigGeral() {
+		
+		// TODO Auto-generated constructor stub
+	}
+	public ConfigGeral(int idLoja, String menuModulo, String emailServidor,
+			String emailPorta, String emailUsuario, String emailSenha) {
+	
+		this.idLoja = idLoja;
+		this.menuModulo = menuModulo;
+		this.emailServidor = emailServidor;
+		this.emailPorta = emailPorta;
+		this.emailUsuario = emailUsuario;
+		this.emailSenha = emailSenha;
+	}
+	public int getIdLoja() {
+		return idLoja;
+	}
+	public void setIdLoja(int idLoja) {
+		this.idLoja = idLoja;
+	}
+	public String getMenuModulo() {
+		return menuModulo;
+	}
+	public void setMenuModulo(String menuModulo) {
+		this.menuModulo = menuModulo;
+	}
+	public String getEmailServidor() {
+		return emailServidor;
+	}
+	public void setEmailServidor(String emailServidor) {
+		this.emailServidor = emailServidor;
+	}
+	public String getEmailPorta() {
+		return emailPorta;
+	}
+	public void setEmailPorta(String emailPorta) {
+		this.emailPorta = emailPorta;
+	}
+	public String getEmailUsuario() {
+		return emailUsuario;
+	}
+	public void setEmailUsuario(String emailUsuario) {
+		this.emailUsuario = emailUsuario;
+	}
+	public String getEmailSenha() {
+		return emailSenha;
+	}
+	public void setEmailSenha(String emailSenha) {
+		this.emailSenha = emailSenha;
+	}
+	
+	
+	
+
+}

@@ -1,0 +1,20 @@
+<%@page import="afero.model.TipoEntidade"%>
+<%@page import ="afero.persistence.TipoEntidadeDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoEntidadeDAO daoTipoEntidade;
+List listTipoEntidade;
+daoTipoEntidade = new TipoEntidadeDAO(conn);
+String clausulaTipoEntidade = "  WHERE status='A' ORDER BY dsTipoEntidade";
+listTipoEntidade = daoTipoEntidade.listarTipoEntidade(clausulaTipoEntidade);
+Iterator itTipoEntidade = listTipoEntidade.iterator();
+while (itTipoEntidade.hasNext()) { 
+	TipoEntidade tipoEntidade = (TipoEntidade) itTipoEntidade.next();
+%>
+
+
+<option value="<%=tipoEntidade.getIdTipoEntidade()%>"><%=tipoEntidade.getDsTipoEntidade()%></option>
+<%
+}
+%>

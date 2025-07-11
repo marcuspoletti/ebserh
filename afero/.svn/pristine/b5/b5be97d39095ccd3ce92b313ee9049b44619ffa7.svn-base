@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Crt" %>
+<%@page import ="afero.persistence.CrtDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CrtDAO daoCrt;
+List listCrt;
+daoCrt = new CrtDAO(conn);
+String clausulaCrt = " ORDER BY descricao";
+listCrt = daoCrt.listarCrt(clausulaCrt);
+Iterator itCrt = listCrt.iterator();
+while (itCrt.hasNext()) { 
+	Crt crt = (Crt) itCrt.next();
+%>
+
+<option value="<%=crt.getIdCrt()%>"><%=crt.getDescricao()%></option>
+<%
+}
+%>

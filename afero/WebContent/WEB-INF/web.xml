@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  <display-name>afero</display-name>
+  <session-config>
+    <session-timeout>60</session-timeout>
+  </session-config>
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  <servlet>
+    <description></description>
+    <display-name>UploadCliente</display-name>
+    <servlet-name>UploadCliente</servlet-name>
+    <servlet-class>afero.servlet.UploadCliente</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UploadCliente</servlet-name>
+    <url-pattern>/importacao/UploadCliente</url-pattern>
+  </servlet-mapping>
+ <error-page>
+  <error-code>404</error-code>
+  <location>/erro.jsp</location>
+</error-page>
+<servlet>  
+  <servlet-name>OrdemServicoServlet</servlet-name>   
+  <servlet-class>afero.servlet.OrdemServicoServlet</servlet-class>   
+</servlet>  
+<servlet-mapping>  
+  <servlet-name>OrdemServicoServlet</servlet-name>   
+  <url-pattern>/servlet/OrdemServicoServlet</url-pattern>   
+</servlet-mapping>  
+<servlet>  
+  <servlet-name>OrdemServicoProdutoServlet</servlet-name>   
+  <servlet-class>afero.servlet.OrdemServicoProdutoServlet</servlet-class>   
+</servlet>  
+<servlet-mapping>  
+  <servlet-name>OrdemServicoProdutoServlet</servlet-name>   
+  <url-pattern>/servlet/OrdemServicoProdutoServlet</url-pattern>   
+</servlet-mapping>  
+<servlet>
+<servlet-name>carga_pdv_nfce</servlet-name>
+        <servlet-class>afero.servlet.Carga</servlet-class>
+ </servlet>
+ <servlet-mapping>
+        <servlet-name>carga_pdv_nfce</servlet-name>
+        <url-pattern>/pdv/nfce/carga.jsp</url-pattern>
+ </servlet-mapping>
+<servlet>
+<servlet-name>venda_assistida_pdv_nfce</servlet-name>
+        <servlet-class>afero.servlet.VendaAssistida</servlet-class>
+ </servlet>
+ <servlet-mapping>
+        <servlet-name>venda_assistida_pdv_nfce</servlet-name>
+        <url-pattern>/pdv/nfce/venda_assistida.jsp</url-pattern>
+ </servlet-mapping>
+
+  <servlet>
+<servlet-name>receber_arquivo_nfce</servlet-name>
+<servlet-class>afero.servlet.ReceberNFCe</servlet-class>
+     </servlet>
+     <servlet-mapping>
+<servlet-name>receber_arquivo_nfce</servlet-name>
+<url-pattern>/pdv/nfce/importar.jsp</url-pattern>
+     </servlet-mapping>
+ 
+   
+   
+   
+</web-app>

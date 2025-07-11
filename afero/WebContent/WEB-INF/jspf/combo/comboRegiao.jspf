@@ -1,0 +1,20 @@
+<%@page import="afero.model.Regiao"%>
+<%@page import ="afero.persistence.RegiaoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+RegiaoDAO daoRegiao;
+List listRegiao;
+daoRegiao = new RegiaoDAO(conn);
+String clausulaRegiao = "  WHERE status='A' ORDER BY nmRegiao";
+listRegiao = daoRegiao.listarRegiao(clausulaRegiao);
+Iterator itRegiao = listRegiao.iterator();
+while (itRegiao.hasNext()) { 
+	Regiao regiao = (Regiao) itRegiao.next();
+%>
+
+
+<option value="<%=regiao.getCdRegiao()%>"><%=regiao.getNmRegiao()%></option>
+<%
+}
+%>

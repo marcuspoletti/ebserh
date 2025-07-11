@@ -1,0 +1,19 @@
+<%@page import ="afero.model.TipoLogradouro" %>
+<%@page import ="afero.persistence.TipoLogradouroDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoLogradouroDAO daoTipoLogradouro;
+List listTipoLogradouro;
+daoTipoLogradouro = new TipoLogradouroDAO(conn);
+String clausulaTipoLogradouro = "  WHERE status='A' ";
+listTipoLogradouro = daoTipoLogradouro.listarTipoLogradouro(clausulaTipoLogradouro);
+Iterator itTipoLogradouro = listTipoLogradouro.iterator();
+while (itTipoLogradouro.hasNext()) { 
+	TipoLogradouro tipoLogradouro = (TipoLogradouro) itTipoLogradouro.next();
+%>
+
+<option value="<%=tipoLogradouro.getCdTipoLogradouro()%>"><%=tipoLogradouro.getDsTipoLogradouro() %></option>
+<%
+}
+%>

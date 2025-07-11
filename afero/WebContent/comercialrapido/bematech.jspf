@@ -1,0 +1,71 @@
+<OBJECT id="idBemaPrinter" height="1" width="1" classid="clsid:310DBDAC-85FF-4008-82A8-E22A09F9460B" VIEWASTEXT></OBJECT>
+<SCRIPT language="JAVASCRIPT" type="TEXT/JAVASCRIPT">
+function ImprimeTextoBematech(porta, modeloImpressora, texto) {
+    var BemaPrinter1 = document.getElementById("idBemaPrinter");
+    // porta = LPT1, COM1 ou COM2
+	// modeloImpressora = 0 (zero) : modelos MP-20 TH, MP-2000 CI, MP-2000 TH e Blocos Impressores.
+	//                    1 (um)   : modelos MP-20 CI, MP-20 MI e MP-20 S. 
+
+	var iRetorno;
+    try {
+	  iRetorno = BemaPrinter1.IniciaPorta(porta);
+    } catch (e) {
+      alert("A impressão na impressora Bematech só funciona no Internet Explorer.");
+      return;
+    }
+	if (iRetorno <= 0) {
+		alert("Problemas ao abrir a porta de Comunicação " + porta + ". ");
+		return;
+	}
+	iRetorno = BemaPrinter1.ConfiguraModeloImpressora(modeloImpressora);
+	if (iRetorno == -2) {
+		alert("Parâmetro inválido na função ConfiguraModeloImpressora.");
+		return;
+	}
+	if (PrinterStatus(BemaPrinter1)) {
+		iRetorno = BemaPrinter1.FormataTX(texto + "\n\n\n\n\n\n\n\n\n\n\n\n", 3, 0, 0, 0, 0);
+		if (iRetorno == 0) {
+			alert("Erro de Comunicação.");
+			return;
+		}
+    }
+	BemaPrinter1.FechaPorta();
+}
+
+function PrinterStatus(objBematech) {
+	var iRetorno = objBematech.Le_Status();
+	var ok = false;
+	switch (iRetorno) {
+		case 0 : alert("Desligada ou cabo desconectado");
+			break;            
+		case 32 : // pouco papel e off-line na LPT
+			alert("Pouco papel e/ou off-line");
+			break;
+		case 4 : // pouco papel e off-line na serial
+			alert("Pouco papel e off-line");
+			break;
+		case 40 : // fim de papel na LPT
+			alert("Fim de papel");
+			break;
+		case 5:
+		case 48 : // 5 = pouco papel serial e 48 na LPT
+			alert("Pouco papel e on-line");
+			break;
+		case 79 : // off-line na LPT
+			alert("Off-line");
+			break;
+		case 9:
+		case 128 : // 9 = head-up na serial e 128 na LPT
+			alert("Head Up");
+			break
+		case 24:
+		case 144 : // 24 = on-line na serial e 144 na LPT
+			ok = true; // 24 (COM) e 144 (LPT)
+			break;
+		default:
+			alert("Status desconhecido: " + iRetorno); 
+			break;
+	}
+	return ok;
+}
+</SCRIPT>

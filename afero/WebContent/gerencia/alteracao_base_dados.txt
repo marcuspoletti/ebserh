@@ -1,0 +1,5 @@
+
+--Inserção do campo data de pagamento
+ALTER TABLE `tbpedidosaida`
+	ADD COLUMN `dtPag` TIMESTAMP NULL AFTER `usuario`;
+--Fim da inserção

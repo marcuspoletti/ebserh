@@ -1,0 +1,348 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+
+<%@page import="afero.model.Orcamento"%>
+<%@page import="afero.model.CondPagto"%>
+<%@page import="afero.model.EntidadeEndereco"%>
+<%@page import="afero.model.EntidadeTelefone"%>
+<%@page import="afero.model.TipoLogradouro"%>
+<%@page import="afero.model.PedidoSaidaSub"%>
+<%@page import="afero.model.PedidoSaidaSubItem"%>
+<%@page import="afero.model.PedidoSaidaSubItens"%>
+<%@page import="afero.model.OrcamentoPedidoSaida"%>
+<%@page import="afero.model.OrdemServico"%>
+<%@page import="afero.model.OrcamentoItem"%>
+<%@page import="afero.model.Entidade"%>
+<%@page import="afero.model.EntidadeFisica"%>
+<%@page import="afero.model.Entrega"%>
+<%@page import="afero.model.Colaborador"%>
+<%@page import="afero.model.Loja"%>
+<%@page import="afero.persistence.LojaDAO"%>
+<%@page import="afero.persistence.CondPagtoDAO"%>
+<%@page import="afero.persistence.EntidadeDAO"%>
+<%@page import="afero.persistence.EntidadeTelefoneDAO"%>
+<%@page import="afero.persistence.TipoLogradouroDAO"%>
+<%@page import="afero.persistence.PedidoSaidaSubDAO"%>
+<%@page import="afero.persistence.EntregaDAO"%>
+<%@page import="afero.persistence.OrcamentoDAO"%>
+<%@page import="afero.persistence.EntidadeEnderecoDAO"%>
+<%@page import="afero.persistence.ColaboradorDAO"%>
+<%@page import="afero.persistence.OrcamentoPedidoSaidaDAO"%>
+<%@page import="afero.persistence.OrdemServicoDAO"%>
+<%@page import="afero.persistence.PedidoSaidaSubItemDAO"%>
+<%@page import="afero.persistence.PedidoSaidaSubItensDAO"%>
+<%@page import="afero.persistence.EntidadeFisicaDAO"%>
+<%@ page import="afero.util.Utilitaria"%>
+<%@ page import="afero.util.ConverteDate"%>
+<%@ page import="afero.model.Produto"%>
+<%@ page import="afero.model.Unidade"%>
+<%@ page import="afero.model.Estoque"%>
+<%@ page import="afero.model.Preco"%>
+<%@ page import="afero.persistence.ProdutoDAO"%>
+<%@ page import="afero.persistence.UnidadeDAO"%>
+<%@ page import="afero.persistence.EstoqueDAO"%>
+<%@ page import="afero.persistence.PrecoDAO"%>
+<%@ page import="afero.persistence.OrcamentoItemDAO"%>
+<%@ page import="java.util.List"%>
+<%@ page import="java.util.Iterator"%>
+<%@page import="afero.util.Utilitaria"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<style type="text/css">
+<!--
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+}
+.style5 {
+	color: #000066;
+	font-weight: bold;
+}
+-->
+.texto {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	border: none;
+}
+.texto_or {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: Black;
+	border: none;
+	text-align: left;
+}
+function Impressao(pedido){
+  location.href="impPedido.jsp?impressao=ok&idPedidoSaida="+pedido;
+  window.print();
+}
+
+</style></head>
+<%
+String impressao = request.getParameter("impressao");
+if(impressao == null)impressao = "";
+String idLojaUsuario = (String)session.getAttribute("idLoja");
+List listar;
+TipoLogradouroDAO logradouro = new TipoLogradouroDAO(conn);
+PedidoSaidaSubDAO daoPedidoSaida = new PedidoSaidaSubDAO(conn);
+String acao = request.getParameter("acao");
+if(acao == null)acao="listar";
+List list = null;
+List listarEstoque = null;
+List listarOrcamentoDAO = null;
+List listUpdate = null;
+List listSubItens = null;
+List listarEstoqueSubItens = null;
+ProdutoDAO dao;
+ProdutoDAO daoProdutoSubItens = null;
+EstoqueDAO daoEstoque;
+EstoqueDAO daoEstoqueSubItens;
+PedidoSaidaSubItemDAO daoPedidoSaidaItem;
+PedidoSaidaSubItensDAO daoPedidoSaidaSubItens;
+Produto prod = null;
+Produto prodSubItens = null;
+Estoque estoque =null;
+Estoque estoqueSubList = null;
+PedidoSaidaSubItem pedidoSaidaItem = null;
+PedidoSaidaSubItens pedidoSubItens = null;
+int cont = 0;
+String preco = "0";
+ConverteDate converte = new ConverteDate();
+String idPedidoSaida = request.getParameter("idPedidoSaida");
+PedidoSaidaSub pedidoSaida = daoPedidoSaida.procurarPedidoSaidaItem(Integer.parseInt(idPedidoSaida));
+int idColaborador =pedidoSaida.getIdColaborador();
+Colaborador colaborador = new Colaborador();
+ColaboradorDAO daoColaborador = new ColaboradorDAO(conn);
+colaborador = daoColaborador.procurarColaborador(idColaborador);
+String dsColaborador = colaborador.getApelido();
+int idLoja = pedidoSaida.getIdLoja();
+Loja lojaListar = new Loja();
+LojaDAO daoLoja = new LojaDAO(conn);
+lojaListar = daoLoja.procurarLoja(idLoja);
+String dsLoja = lojaListar.getApelido() +" / "+ lojaListar.getRazaoSocial(); 
+int idEntrega = pedidoSaida.getIdEntrega();
+String pessResp = pedidoSaida.getPessoaResponsavel();
+if(pessResp == null)pessResp = "";
+Entrega entrega = new Entrega();
+EntregaDAO daoEntrega = new EntregaDAO(conn);
+entrega = daoEntrega.procurarEntrega(idEntrega);
+String dsEntrega = entrega.getDsEntrega();
+float valorEntrega = entrega.getTxEntrega();
+int cdEntidade =pedidoSaida.getCdEntidade();
+Entidade entidade = new Entidade();
+EntidadeDAO daoEntidade = new EntidadeDAO(conn);
+entidade = daoEntidade.procurarEntidade(cdEntidade);
+String dsEntidade = entidade.getNome();
+EntidadeEndereco entidadeEndereco = null;
+EntidadeEnderecoDAO daoEntidadeEndereco= new EntidadeEnderecoDAO(conn);
+entidadeEndereco = daoEntidadeEndereco.procurarEntidadeEnderecoPadrao(cdEntidade);
+EntidadeTelefoneDAO daoEntidadeFone = new EntidadeTelefoneDAO(conn);
+EntidadeTelefone entidadeFone = null;
+listar = daoEntidadeFone.listarTelefone(cdEntidade);
+String telefone = "";
+int contador = 0;
+for ( Iterator it = listar.iterator(); it.hasNext(); ) {
+	entidadeFone = (EntidadeTelefone) it.next();
+	if(entidadeFone.getNroTelefone() != null){
+		contador++;
+		if(contador <= 2){
+			telefone = telefone + " " +entidadeFone.getNroTelefone();
+		}
+		
+	}
+	
+}
+TipoLogradouro logra = logradouro.procurarTipoLogradouro(entidadeEndereco.getCdTipoLogradouro());
+
+String dsLogradouro = logra.getDsTipoLogradouro();
+String endereco = dsLogradouro + " " +entidadeEndereco.getDsEndereco() + " " +"nº"+ " "+entidadeEndereco.getNroEndereco();
+String cmpEndereco = entidadeEndereco.getCmpEndereco();
+String cep = entidadeEndereco.getCepEndereco();
+String bairro =entidadeEndereco.getBaiEndereco();
+String referencia = entidadeEndereco.getRefEndereco();
+String cidadeUf = "";
+CondPagto condPagto = null;
+CondPagtoDAO daoCondPagto = new CondPagtoDAO(conn);
+condPagto = daoCondPagto.procurarCondPagto(pedidoSaida.getCdCondPagto());
+String status = pedidoSaida.getStatus();
+String operacao = pedidoSaida.getOperacao();
+String dtPed =converte.dateToStr(pedidoSaida.getDtPed(),"dd/MM/yyyy HH:mm:ss");
+String dtEntrega =converte.dateToString(pedidoSaida.getDtEntrega());
+String anotacao = pedidoSaida.getAnotacao();
+String hrEntrega = pedidoSaida.getHrEntrega();
+if(hrEntrega == null)hrEntrega="";
+if(anotacao == null)anotacao="";
+String observacao = pedidoSaida.getObservacao();
+double valorTotal = pedidoSaida.getVlPed();
+float desconto = pedidoSaida.getVlDesc();
+%>
+<body>
+<div align="center"></div>
+<table width="700" border="0" cellpadding="0" cellspacing="0" bordercolor="#000000">
+  <tr>
+    <td><table width="700" border="0" cellpadding="0" cellspacing="0" bordercolor="#000000">
+      <tr>
+        
+        <td width="580"><table width="580" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td width="9" align="left" valign="top">&nbsp;</td>
+              <td width="427" class="texto"><strong><%=lojaListar.getRazaoSocial()%></strong></td>
+              <td width="132" align="right" class="texto" valign="top"><p><strong><span class="style5">Afero</span></strong></p></td>
+              <td width="12" align="right" valign="top">&nbsp;</td>
+            </tr>
+            <tr>
+              <td align="left">&nbsp;</td>
+              <td class="texto"><%=lojaListar.getEndereco()+" "%><%=lojaListar.getCmpEndereco()+" "%><%=lojaListar.getBairro()%></td>
+              <td align="right" valign="top" class="texto"><strong>Data: </strong><%=dtPed%></td>
+              <td align="right" valign="top">&nbsp;</td>
+            </tr>
+            <tr>
+              <td valign="top">&nbsp;</td>
+              <td class="texto"><%="Telefone : " + lojaListar.getNroTelefone() %></td>
+              <!-- <td align="right" valign="top"><strong>Hora:</strong> 00:00:00</td> -->
+              <td align="right" valign="top">&nbsp;</td>
+            </tr>
+        </table></td>
+      </tr>
+    </table></td>
+  </tr>
+</table>
+<hr>
+<br>
+<table border="0" width="700" style="width: 720px">
+  <tr>
+    <th align="right" class="texto" width="120" >Cliente:</th>
+    <td class="texto_or" name="dsEntidade" colspan="2"><b><%=dsEntidade.toUpperCase()%></b></td>
+    <th align="right" class="texto" width="120">Pedido nº: </th>
+    <td class="texto_or" name="dsEntidade" ><b><%="00"+idPedidoSaida %></b></td>
+  </tr>
+  <tr>
+    <th align="right" class="texto" width="120">Referência:</th>
+    <td class="texto_or" name="anotacao" cols="60" rows="5" colspan="2"><b><%=anotacao%></b></td>
+  </tr>
+</table><hr>
+<table border="0" width="100%">
+	<tr>
+	         <th class="texto"><center></center></th>
+		<%--<th class="texto"><center>Comp.</center></th>
+		<th class="texto"><center>Larg.</center></th> --%>
+		<th class="texto"><center>Quant.</center></th>
+		<th class="texto"><center>Desc. do Prod.</center></th>
+		<th class="texto"><center>Und</center></th>
+	</tr>
+	<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+ float total = 0;
+ daoPedidoSaidaItem = new PedidoSaidaSubItemDAO(conn);
+ daoPedidoSaidaSubItens = new PedidoSaidaSubItensDAO(conn);
+ list = daoPedidoSaidaItem.procurarPedidoSaidaItem(Integer.parseInt(idPedidoSaida));
+ if(list != null){
+  for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	pedidoSaidaItem = (PedidoSaidaSubItem) it.next();
+	dao = new ProdutoDAO(conn);
+	prod = dao.procurarProduto(pedidoSaidaItem.getIdProduto());
+	daoEstoque = new EstoqueDAO(conn);
+	listarEstoque = daoEstoque.procurarEstoquePreco(prod.getIdProduto(), Integer.parseInt(idLojaUsuario));
+	if(listarEstoque != null){
+	for (Iterator itListar = listarEstoque.iterator(); itListar.hasNext();){
+		cont++;
+		estoque = (Estoque) itListar.next();
+		LojaDAO loja = new LojaDAO(conn);
+		Loja lojaEstoque = loja.procurarLoja(estoque.getIdLoja());
+		PrecoDAO daoPrecoListar = new PrecoDAO(conn);
+		Preco precoListar = daoPrecoListar.procurarPrecoEstoque(estoque.getIdEstoque());
+		if(precoListar!=null){
+			
+			//preco = Utilitaria.formatarNumero(precoListar.getPreco(), 2).toString();
+			preco = Utilitaria.formatarNumero(pedidoSaidaItem.getVlUni(), 2).toString();
+			UnidadeDAO daoUnidade = new UnidadeDAO(conn);
+			Unidade unidadeListar = daoUnidade.procurarUnidade(precoListar.getIdUnidade());	
+%>
+	<tr>
+		<td class="texto" width="1%"><center><%=cont%></center></td>
+		<%--<td class="texto" width="3%" name="comprimento" size="7" maxlength="7"><center><%=Utilitaria.formatarNumero(pedidoSaidaItem.getComp(),2)%></center></td> --%>
+		<%--<td class="texto" width="3%" name="largura" size="7" maxlength="7"><center><%=Utilitaria.formatarNumero(pedidoSaidaItem.getLarg(),2)%></center></td> --%>
+		<td class="texto" width="3%" name="quantidade" size="7" maxlength="7"><center><%=Utilitaria.formatarNumero(pedidoSaidaItem.getQuant(),2)%></center></td>
+		<td class="texto" width="10%"><center><b><%=prod.getDsProduto()%><%if(pedidoSaidaItem.getDsCompProduto()!=null){ %><%=". "+pedidoSaidaItem.getDsCompProduto() %><%} %></b></center></td>
+		<%float precoItem = Utilitaria.toNumber(preco).floatValue() * pedidoSaidaItem.getQuant(); %>
+		<td class="texto" width="3%"><center><%=unidadeListar.getDsUnidade()%></center></td>
+		<%total = total +  precoItem;%>
+	</tr>
+	<%
+       listSubItens = daoPedidoSaidaSubItens.listarPedidoSaidaSubItensListCompProduto(pedidoSaidaItem.getIdPedidoSaidaItem());
+       if(listSubItens != null){
+          for ( Iterator itSubItens = listSubItens.iterator(); itSubItens.hasNext(); ) {
+        	      pedidoSubItens = (PedidoSaidaSubItens) itSubItens.next();
+        	      daoProdutoSubItens = new ProdutoDAO(conn);
+        	      prodSubItens = daoProdutoSubItens.procurarProduto(pedidoSubItens.getIdProduto());
+        	      daoEstoqueSubItens = new EstoqueDAO(conn);
+        	      listarEstoqueSubItens = daoEstoqueSubItens.procurarEstoquePreco(pedidoSaidaItem.getIdProduto(), Integer.parseInt(idLojaUsuario));
+        	      if(listarEstoqueSubItens != null){
+        	  	for (Iterator itListarSubItens = listarEstoqueSubItens.iterator(); itListarSubItens.hasNext();){
+        	  		//cont++;
+        	  		estoqueSubList = (Estoque) itListarSubItens.next();
+        	  		LojaDAO lojaSubItens = new LojaDAO(conn);
+        	  		Loja lojaEstoqueSubItens = lojaSubItens.procurarLoja(estoqueSubList.getIdLoja());
+        	  		PrecoDAO daoPrecoListarSubItens = new PrecoDAO(conn);
+        	  		Preco precoListarSubList = daoPrecoListarSubItens.procurarPrecoEstoque(estoque.getIdEstoque());
+        	  		if(precoListar!=null){
+        	  			
+        	  			//preco = Utilitaria.formatarNumero(precoListar.getPreco(), 2).toString();
+        	  			preco = Utilitaria.formatarNumero(pedidoSubItens.getVlUni(), 2).toString();
+        	  			UnidadeDAO daoUnidadeSubList = new UnidadeDAO(conn);
+        	  			Unidade unidadeListarSubList = daoUnidadeSubList.procurarUnidade(precoListar.getIdUnidade());
+        	  			
+      %>
+   <tr>
+      <td class="texto" width="1%"><center></center></td>
+      
+      <%--<td class="texto"  width="3%"><center><%=pedidoSubItens.getComp()%></center></td>
+      <td class="texto"  width="3%"><center><%=pedidoSubItens.getLarg()%></center></td> --%>
+      <td class="texto"  width="3%"><center><%=pedidoSubItens.getQuant()%></center></td>
+      <td class="texto"  width="5%"><center><%=prodSubItens.getDsProduto()+". "+pedidoSubItens.getDsCompProduto()%></center></td>
+      <%float precoItemSub = Utilitaria.toNumber(preco).floatValue() * pedidoSubItens.getQuant(); %>
+      <td class="texto"  width="3%"><center><%="FATIA"%></center></td>
+ 
+      <%//total = total +  precoItemSub;%>
+  </tr>
+      <%
+    	   
+       	}
+       }
+        	      }
+          }
+       }
+      
+      %>
+	<input type="hidden" name="idPreco" value="<%=precoListar.getIdPreco()%>" />
+	<%
+		}
+	}
+	}
+}
+%>
+
+	<input type="hidden" id="cont" value="<%=cont%>" />
+	<% 
+ }
+%>
+	
+</table>
+<br>
+<br>
+
+<br>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+    <br>
+	<td class="texto_or"><b><a href="javascript:window.print();">Imprimir</b></td>
+</tr>
+</table>
+
+<%@include file="../fimConexao.jsp"%>
+
+</body>
+</html>

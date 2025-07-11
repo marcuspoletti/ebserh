@@ -1,0 +1,4 @@
+<%
+	out.println("<option value=\"R\">Recebimento</option>");
+	out.println("<option value=\"P\">Pagamento</option>");
+%>

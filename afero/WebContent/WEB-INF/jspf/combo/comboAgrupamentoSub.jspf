@@ -1,0 +1,20 @@
+<%@page import="afero.model.Agrupamento"%>
+<%@page import="afero.persistence.AgrupamentoDAO"%>
+<%@ page import="java.util.List"%>
+<%@ page import="java.util.Iterator"%>
+<%
+AgrupamentoDAO daoAgrupamentoSubCombo;
+List listAgrupamentoSub;
+daoAgrupamentoSubCombo = new AgrupamentoDAO(conn);
+String clausulaAgrupamento = "  WHERE status='A' ORDER BY dsAgrupamento";
+listAgrupamentoSub = daoAgrupamentoSubCombo.listarAgrupamento(clausulaAgrupamento);
+Iterator itAgrupamento = listAgrupamentoSub.iterator();
+while (itAgrupamento.hasNext()) { 
+	Agrupamento agrupamentoSub = (Agrupamento) itAgrupamento.next();
+	
+%>
+
+<option value="<%=agrupamentoSub.getIdAgrupamento()%>"><%=agrupamentoSub.getDsAgrupamento()%></option>
+<%
+}
+%>

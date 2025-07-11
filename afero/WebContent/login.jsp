@@ -1,0 +1,73 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<%@page import="afero.util.IDadosSistema"%>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title><%=IDadosSistema.Sis_nom%> | <%=IDadosSistema.Sis_tit%> - <%=IDadosSistema.Sis_cod%> v.<%=IDadosSistema.Sis_ver%></title>
+<link type="text/css" rel="Stylesheet" href="css/afero.css"/>
+<style type="text/css">
+	body {
+		margin-left: 0px;
+		margin-top: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		background-color: #ECE9D8;
+	}
+	body,td,th {
+		color: #000000;
+	}
+</style>
+<script language="JavaScript" src="js/login.js"></script>
+</head>
+<%
+String mensagem = request.getParameter("mensagem");
+if (mensagem == null) mensagem = "";
+%>
+
+<body onload="document.forms[0].elements[0].focus();">
+<div align="center">
+  <table width="669" border="0" cellspacing="0" cellpadding="0">
+  	<tr>
+      <td width="669" height="120" align="center" valign="top"">
+  	</tr>
+    <tr>
+      <td width="669" height="324" align="center" valign="top" background="images/login.jpg">
+      	<table width="669" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td height="156" align="center" valign="bottom">&nbsp;</td>
+        </tr>
+        <tr>
+          <td>
+          <form name="membros" method="post" action="validacaoLogin.jsp" >
+					<table  width="400" align="center">
+						<tr>
+							<th width="120" align="right" style="font-size:12px"><b>Usuário:</b></th>
+							<td align="left"><input  type="text" name="login" size="20" maxlength="20" onKeyUp="lockaccess()" style="font-size: 12px"></td>
+						</tr>
+						<tr>
+							<td colspan="2"><a style="font-size:12px"></a></td>
+						</tr>
+						<tr>
+							<th width="120" align="right" style="font-size:12px"><b>Senha:</b></th>
+							<td align="left"><input type="password" id="senha" name="senha" size="20" maxlength="20" onKeyUp="lockaccess()" style="font-size:12px">&nbsp;&nbsp;<input type="submit" name="acesso" value="ok" disabled style="font-size:12px"></td>
+						</tr>
+						<tr>
+						   <td colspan="2"><br /><a style="font-size:12px" class="mensagem"><%if (!mensagem.equals("")) { %>&nbsp;<%=mensagem%>&nbsp;<% }%></a></td>
+						</tr>
+					</table>
+					</form>
+					</td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+        </tr>
+      </table></td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

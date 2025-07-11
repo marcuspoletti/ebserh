@@ -1,0 +1,15 @@
+<%
+LojaDAO daoLojaPara;
+List listLojaPara;
+daoLojaPara = new LojaDAO(conn);
+String clausulaLojaPara = "  WHERE status ='A' ORDER BY apelido";
+listLojaPara = daoLojaPara.listarLoja(clausulaLojaPara);
+Iterator itLojaPara = listLojaPara.iterator();
+while (itLojaPara.hasNext()) { 
+	Loja lojaPara = (Loja) itLojaPara.next();
+%>
+
+<option value="<%=lojaPara.getIdLoja()%>"><%=lojaPara.getApelido()%>/<%=lojaPara.getRazaoSocial()%></option>
+<%
+}
+%>

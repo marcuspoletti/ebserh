@@ -1,0 +1,152 @@
+package afero.model;
+
+import java.util.Date;
+
+public class OrdemServicoItem {
+	
+	private int idOrdemServicoItem;
+	private int idOrdemServicoObjeto;
+	private int idListaServico;
+	private String dsCompServico;
+	private float comp;
+	private float larg;
+	private float quant;
+	private float valor;
+	private float pDesc;
+	private float vlUni;
+	private int idColaborador;
+	private Date dtMod;
+	private String usuario;
+
+	public OrdemServicoItem() {
+	}
+	
+	public OrdemServicoItem(int idOrdemServicoItem, int idOrdemServicoObjeto,
+			int idListaServico, String dsCompServico, float comp, float larg,
+			float quant, float valor, float pDesc, float vlUni,
+			int idColaborador, Date dtMod2, String usuario) {
+		super();
+		this.idOrdemServicoItem = idOrdemServicoItem;
+		this.idOrdemServicoObjeto = idOrdemServicoObjeto;
+		this.idListaServico = idListaServico;
+		this.dsCompServico = dsCompServico;
+		this.comp = comp;
+		this.larg = larg;
+		this.quant = quant;
+		this.valor = valor;
+		this.pDesc = pDesc;
+		this.vlUni = vlUni;
+		this.idColaborador = idColaborador;
+		this.dtMod = dtMod2;
+		this.usuario = usuario;
+	}
+
+
+
+	public int getIdOrdemServicoItem() {
+		return idOrdemServicoItem;
+	}
+
+	public void setIdOrdemServicoItem(int idOrdemServicoItem) {
+		this.idOrdemServicoItem = idOrdemServicoItem;
+	}
+
+	public int getIdOrdemServicoObjeto() {
+		return idOrdemServicoObjeto;
+	}
+
+	public void setIdOrdemServicoObjeto(int idOrdemServicoObjeto) {
+		this.idOrdemServicoObjeto = idOrdemServicoObjeto;
+	}
+
+	public int getIdListaServico() {
+		return idListaServico;
+	}
+
+	public void setIdListaServico(int idListaServico) {
+		this.idListaServico = idListaServico;
+	}
+
+	public String getDsCompServico() {
+		return dsCompServico;
+	}
+
+	public void setDsCompServico(String dsCompServico) {
+		this.dsCompServico = dsCompServico;
+	}
+
+	public float getComp() {
+		return comp;
+	}
+
+	public void setComp(float comp) {
+		this.comp = comp;
+	}
+
+	public float getLarg() {
+		return larg;
+	}
+
+	public void setLarg(float larg) {
+		this.larg = larg;
+	}
+
+	public float getQuant() {
+		return quant;
+	}
+
+	public void setQuant(float quant) {
+		this.quant = quant;
+	}
+
+	public float getValor() {
+		return valor;
+	}
+
+	public void setValor(float valor) {
+		this.valor = valor;
+	}
+
+	public float getpDesc() {
+		return pDesc;
+	}
+
+	public void setpDesc(float pDesc) {
+		this.pDesc = pDesc;
+	}
+
+	public float getVlUni() {
+		return vlUni;
+	}
+
+	public void setVlUni(float vlUni) {
+		this.vlUni = vlUni;
+	}
+
+	public int getIdColaborador() {
+		return idColaborador;
+	}
+
+	public void setIdColaborador(int idColaborador) {
+		this.idColaborador = idColaborador;
+	}
+
+	public Date getDtMod() {
+		return dtMod;
+	}
+
+	public void setDtMod(Date dtMod) {
+		this.dtMod = dtMod;
+	}
+
+	public String getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(String usuario) {
+		this.usuario = usuario;
+	}
+	
+	
+
+}

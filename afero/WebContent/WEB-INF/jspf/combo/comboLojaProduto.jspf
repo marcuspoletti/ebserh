@@ -1,0 +1,26 @@
+<%@page import ="afero.model.Loja" %>
+<%@page import ="afero.model.Produto" %>
+<%@page import ="afero.model.Estoque" %>
+<%@page import ="afero.persistence.LojaDAO" %>
+<%@page import ="afero.persistence.ProdutoDAO" %>
+<%@page import ="afero.persistence.EstoqueDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EstoqueDAO daoEstoqueProduto;
+List listEstoqueProduto;
+daoEstoqueProduto = new EstoqueDAO(conn);
+listEstoqueProduto = daoEstoqueProduto.procurarEstoqueLojaProduto(Integer.parseInt(idLoja), prod.getIdProduto());
+if(listEstoqueProduto != null){
+	Iterator itEstoqueProduto = listEstoqueProduto.iterator();
+	while (itEstoqueProduto.hasNext()) { 
+		ProdutoDAO daoProdutoestoque = new ProdutoDAO(conn);
+		Estoque estoqueProduto = (Estoque) itEstoqueProduto.next();
+		Produto produtoEstoque = daoProdutoestoque.procurarProduto(estoqueProduto.getIdProduto());
+	%>
+
+		<option value="<%=estoqueProduto.getIdEstoque()%>"><%=produtoEstoque.getDsProduto()%></option>
+	<%
+	}
+}
+%>

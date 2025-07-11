@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Mesa" %>
+<%@page import ="afero.persistence.MesaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+MesaDAO daoMesaTroca;
+List listMesaTroca;
+daoMesaTroca = new MesaDAO(conn);
+String clausulaMesaTroca = " ORDER BY dsMesa";
+listMesaTroca = daoMesaTroca.listarMesa(clausulaMesaTroca);
+Iterator itMesaTroca = listMesaTroca.iterator();
+while (itMesaTroca.hasNext()) { 
+	Mesa mesaTroca = (Mesa) itMesaTroca.next();
+%>
+
+<option value="<%=mesaTroca.getIdMesa()%>"><%=mesaTroca.getDsMesa()%></option>
+<%
+}
+%>

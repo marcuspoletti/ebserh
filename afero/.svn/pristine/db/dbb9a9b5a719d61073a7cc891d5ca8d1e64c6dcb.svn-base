@@ -1,0 +1,541 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.Duplicata"%>
+<%@page import="afero.model.Entidade"%>
+<%@page import="afero.util.*"%>
+<%@page import="afero.persistence.DuplicataDAO"%>
+<%@page import="afero.persistence.EntidadeDAO"%>
+<%@page import="afero.model.Colaborador"%>
+<%@page import="afero.persistence.ColaboradorDAO"%>
+<%@page import="afero.util.ConverteDate"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script language=JavaScript src="../js/abas.js" type=text/javascript></script>
+<script src="../js/common.js" /></script>
+<script>
+function salvar() {
+  
+  	document.forms[0].submit();
+  
+}
+function recarregar(acao) {
+  document.forms[0].action='baixaPagamento.jsp?acao='+acao;
+  document.forms[0].submit();
+}
+function cancelar() {
+  document.forms[0].action="listarDuplicata.jsp";
+  document.forms[0].submit();
+}
+
+function voltar() {
+  document.forms[0].action = 'listarDuplicata.jsp?acao=voltar'
+	document.forms[0].submit();
+}
+function comboSelect(combo, key) {
+  var err = window.onerror; 
+  window.onerror = new Function('return true'); 
+  if (!combo) return; 
+  combo.selectedIndex=-1; 
+  for (var i = 0; i < combo.options.length; i++) {
+    if (combo.multiple) {
+      combo.options[i].selected=((","+key+",").indexOf(","+combo.options[i].value+",") != -1); 
+    } else {
+      combo.options[i].selected=(combo.options[i].value == key);
+    }
+  }
+  window.onerror = err;
+}  
+</script>
+</head>
+<%
+ColaboradorDAO daoDuplicataColaborador = new ColaboradorDAO(conn);
+
+String idUsuario = (String)session.getAttribute("idUsuario");
+
+Colaborador colaboradorDuplicata = daoDuplicataColaborador.procurarColaboradorUsuario(Integer.parseInt(idUsuario));
+
+String acao = request.getParameter("acao");
+
+String idDuplicata = request.getParameter("idDuplicata");
+
+String idDuplicataPai = request.getParameter("idDuplicataPai");
+
+String idConta = request.getParameter("idConta");
+
+String cdEntidade = request.getParameter("cdEntidade");
+
+String idPlanoConta = request.getParameter("idPlanoConta");
+
+String idCentroCusto = request.getParameter("idCentroCusto");
+
+String cdTipoFrequencia = request.getParameter("cdTipoFrequencia");
+
+String idTipoDocumento = request.getParameter("idTipoDocumento");
+
+String idColaborador = request.getParameter("idColaborador");
+
+String cdFormaPagto = request.getParameter("cdFormaPagto");
+
+String idLoja = request.getParameter("idLoja");
+
+if(idLoja== null)idLoja= String.valueOf(colaboradorDuplicata.getIdLoja());
+
+if (acao == null) acao = "inc";
+
+if (idDuplicata == null) idDuplicata = "0";
+
+if (idConta == null) idConta = "0";
+
+if (cdEntidade == null) cdEntidade = "0";
+
+if (idPlanoConta == null) idPlanoConta = "0";
+
+if (idCentroCusto == null) idCentroCusto = "0";
+
+if (cdTipoFrequencia == null)cdTipoFrequencia = "1";
+
+if (idTipoDocumento == null) idTipoDocumento = "0";
+
+if (idColaborador == null) idColaborador = "".valueOf(colaboradorDuplicata.getIdColaborador());
+
+if (cdFormaPagto == null) cdFormaPagto = "0";
+
+if (idDuplicataPai == null)idDuplicataPai = "0";
+
+String historico = request.getParameter("historico");
+if(historico == null)historico="";
+
+String dtVenc = request.getParameter("dtVenc");
+if(dtVenc == null)dtVenc = "";
+
+String dtEmissao = request.getParameter("dtEmissao");
+if(dtEmissao == null)dtEmissao="";
+
+String dtBaixa = request.getParameter("dtBaixa");
+if(dtBaixa == null)dtBaixa = "";
+
+String informaParcelas = request.getParameter("informaParcelas");
+if(informaParcelas == null)informaParcelas = "N";
+
+int quantParcelas = 0;
+String cQuantParcelas = request.getParameter("quantParcelas");
+if(cQuantParcelas != null){
+	quantParcelas = Utilitaria.toNumber(cQuantParcelas).intValue();
+}
+String dtUltimoVenc = request.getParameter("dtUltimoVenc");
+if(dtUltimoVenc == null)dtUltimoVenc = "";
+
+double valor = 0;
+String cValor = request.getParameter("valor");
+if(cValor != null){
+	valor = Utilitaria.toNumber(cValor).doubleValue();	
+}
+String dc = request.getParameter("dc");
+if(dc == null)dc = "D";
+
+String divideValor = request.getParameter("divideValor");
+if(divideValor == null)divideValor = "N";
+
+String dtComp = request.getParameter("dtComp");
+if(dtComp == null)dtComp="";
+
+String nrDoc = request.getParameter("nrDoc");
+if(nrDoc == null)nrDoc="";
+
+String nrSerie = request.getParameter("nrSerie");
+if(nrSerie==null)nrSerie="";
+
+String geraBoleto = request.getParameter("geraBoleto");
+if(geraBoleto == null)geraBoleto= "N";
+
+String cdBarra = request.getParameter("cdBarra");
+if(cdBarra == null)cdBarra="";
+
+String observacao = request.getParameter("observacao");
+if(observacao == null)observacao = "";
+
+String tipoLancamento = request.getParameter("tipoLancamento");
+if(tipoLancamento == null)tipoLancamento = "M";
+
+float txMulta = 0;
+String cTxMulta = request.getParameter("txMulta");
+if(cTxMulta != null){
+	txMulta = Utilitaria.toNumber(cTxMulta).floatValue();
+}
+float txJuros = 0;
+String cTxJuros = request.getParameter("txJuros");
+if(cTxJuros != null){
+	txJuros = Utilitaria.toNumber(cTxJuros).floatValue();
+}
+String tipoJuros = request.getParameter("tipoJuros");
+if(tipoJuros == null)tipoJuros = "M";
+
+double valorOriginal = 0;
+String cValorOriginal = request.getParameter("valor");
+if(cValorOriginal != null){
+	valorOriginal = Utilitaria.toNumber(cValorOriginal).doubleValue();
+}
+int nrTitulo = 0;
+String cNrTitulo = request.getParameter("nrTitulo");
+if(cNrTitulo != null){
+	nrTitulo  = Utilitaria.toNumber(cNrTitulo).intValue();
+}
+int parcela = 0;
+String cParcela = request.getParameter("parcela");
+if(cParcela!= null){
+	parcela = Utilitaria.toNumber(cParcela).intValue();
+}
+String nrBaixa = request.getParameter("nrBaixa");
+if(nrBaixa == null)nrBaixa = "";
+
+float vlMulta = 0;
+String cVlMulta = request.getParameter("vlMulta");
+if(cVlMulta != null){
+	vlMulta = Utilitaria.toNumber(cVlMulta).floatValue();
+}
+float vlJuros = 0;
+String cVlJuros = request.getParameter("vlJuros");
+if(cVlJuros!= null){
+	vlJuros = Utilitaria.toNumber(cVlJuros).floatValue();
+}
+float vlDesc = 0;
+String cVlDesc = request.getParameter("vlDesc");
+if(cVlDesc!= null){
+	vlDesc = Utilitaria.toNumber(cVlDesc).floatValue();
+}
+double vlBaixa = 0;
+String cVlBaixa = request.getParameter("vlBaixa");
+if(cVlBaixa!= null){
+	vlBaixa = Utilitaria.toNumber(cVlDesc).doubleValue();	
+}
+String autenticacao = request.getParameter("autenticacao");
+if(autenticacao == null)autenticacao = "";
+
+double vlResiduo = 0;
+String cVlResiduo = request.getParameter("vlResiduo");
+if(cVlResiduo!= null){
+	vlResiduo = Utilitaria.toNumber(cVlResiduo).doubleValue();
+}
+
+String status = request.getParameter("status");
+if(status == null)status="A";
+
+String dtMov = request.getParameter("dtMov");
+if(dtMov == null)dtMov = "";
+
+String usuario = (String) session.getAttribute("Login");
+
+String dsEntidade = request.getParameter("dsEntidade");
+if(dsEntidade == null)dsEntidade = "";
+
+//verifica se acao foi atualizar
+if (acao.equalsIgnoreCase("atu")) {
+    DuplicataDAO dao = new DuplicataDAO(conn);
+    Duplicata duplicata = dao.procurarDuplicata(Integer.parseInt(idDuplicata));
+    idDuplicataPai = "".valueOf(duplicata.getIdDuplicataPai()).toString();
+    idLoja = "".valueOf(duplicata.getIdLoja()).toString();
+    idConta = "".valueOf(duplicata.getIdConta()).toString();
+	cdEntidade = "".valueOf(duplicata.getCdEntidade()).toString();
+	idPlanoConta = "".valueOf(duplicata.getIdPlanoConta()).toString();
+	idCentroCusto = "".valueOf(duplicata.getIdCentroCusto()).toString();
+	historico = duplicata.getHistorico();
+	if(duplicata.getDtVenc() != null){
+		dtVenc = ConverteDate.dateToString(duplicata.getDtVenc());	
+	}
+	cdTipoFrequencia = "".valueOf(duplicata.getCdTipoFrequencia()).toString();
+	informaParcelas = duplicata.getInformaParcelas();
+	quantParcelas = duplicata.getQuantParcelas();
+	if(duplicata.getDtUltimoVenc() != null){
+		dtUltimoVenc = ConverteDate.dateToString(duplicata.getDtUltimoVenc());
+	}
+	valor = duplicata.getValor();
+	dc = duplicata.getDc();
+	divideValor = duplicata.getDivideValor();
+	idTipoDocumento = "".valueOf(duplicata.getIdTipoDocumento()).toString();
+	if(duplicata.getDtComp() != null){
+		dtComp = ConverteDate.dateToString(duplicata.getDtComp());	
+	}
+	nrDoc = duplicata.getNrDoc();
+	nrSerie = duplicata.getNrSerie();
+	geraBoleto = duplicata.getGerarBoleto();
+	cdBarra = duplicata.getCdBarra();
+	observacao = duplicata.getObservacao();
+	tipoLancamento = duplicata.getTipoLancamento();
+	txMulta = duplicata.getTxMulta();
+	txJuros = duplicata.getTxJuros();
+	tipoJuros = duplicata.getTipoJuros();
+	valorOriginal = duplicata.getValorOriginaL();
+	nrTitulo = duplicata.getNrTitulo();
+	parcela = duplicata.getParcela();
+	if(duplicata.getDtEmissao() != null){
+		dtEmissao = ConverteDate.dateToString(duplicata.getDtEmissao());	
+	}
+	idColaborador = "".valueOf(duplicata.getIdColaborador()).toString();
+	cdFormaPagto = "".valueOf(duplicata.getCdFormaPagto()).toString();
+	if(duplicata.getDtBaixa() != null){
+		dtBaixa = ConverteDate.dateToString(duplicata.getDtBaixa());
+	}
+
+	nrBaixa = duplicata.getNrBaixa();
+	vlMulta = duplicata.getVlMulta();
+	vlJuros = duplicata.getVlJuros();
+	vlDesc = duplicata.getVlDesc();
+	vlBaixa = duplicata.getVlBaixa();
+	autenticacao = duplicata.getAutenticacao();
+	vlResiduo = duplicata.getVlResiduo();
+	status = duplicata.getStatus();
+	usuario = duplicata.getUsuario();
+	EntidadeDAO daoEntidade = new EntidadeDAO(conn);
+	Entidade entidade = daoEntidade.procurarEntidade(Integer.parseInt(cdEntidade));
+	dsEntidade = entidade.getNome();
+}
+%>
+<body onload="document.forms[0].elements[2].focus();" >
+<h1 class="cabecalho_pagina">Baixa do Contas a Pagar</h1>
+<form method="post" action="listarDuplicata.jsp?acao=<%=acao%>">
+<input type="hidden" name="acao" value="<%=acao%>"/>
+<input type="hidden" name="cdEntidade" value="<%=cdEntidade%>">
+<input type="hidden" name="usuario" value="<%=usuario%>"/>
+<input type="hidden" name="dsEntidade" value="<%=dsEntidade%>"/>
+<input type="hidden" name="idDuplicata" value="<%=idDuplicata%>"/>
+<input type="hidden" name="valorOriginal" value="<%=valor%>"/>
+<input type="hidden" name="parcela" value="<%=parcela%>"/>
+<input type="hidden" name="vlResiduo" value="<%=vlResiduo%>"/>
+<input type="hidden" name="cdTipoFrequencia" value="<%=cdTipoFrequencia%>"/>
+<input type="hidden" name="dtComp" value="<%=dtComp%>"/>
+<input type="hidden" name="informaPracelas" value="<%=informaParcelas%>"/>
+<input type="hidden" name="quantParcelas" value="<%=quantParcelas%>"/>
+<input type="hidden" name="dtUltimoVenc" value="<%=dtUltimoVenc%>"/>
+<input type="hidden" name="divideValor" value="<%=divideValor%>"/>
+<input type="hidden" name="idColaborador" value="<%=idColaborador%>"/>
+<input type="hidden" name="idDuplicataPai" value="<%=idDuplicataPai%>"/>
+<input type="hidden" name="idCentroCusto" value="<%=idCentroCusto%>"/>
+<input type="hidden" name="idTipoDocumento" value="<%=idTipoDocumento%>"/>
+<input type="hidden" name="cdEntidade" value="<%=cdEntidade%>"/>
+<input type="hidden" name="dtEmissao" value="<%=dtEmissao%>"/>
+<input type="hidden" name="nrTitulo" value="<%=nrTitulo%>"/>
+<input type="hidden" name="nrDoc" value="<%=nrDoc%>"/>
+<input type="hidden" name="nrSerie" value="<%=nrSerie%>"/>
+<input type="hidden" name="historico" value="<%=historico%>"/>
+<input type="hidden" name="observacao" value="<%=observacao%>"/>
+<input type="hidden" name="dtVenc" value="<%=dtVenc%>"/>
+<iframe width=174 height=189 name="gToday:normal:"../js/calendar/agenda.js"
+            id="gToday:normal:"../js/calendar/agenda.js" src="../js/calendar/ipopeng.htm"
+            scrolling="no" frameborder="0" style="visibility:visible; z-index:999; 
+    position:absolute; top:-500px; left:-500px;">
+    </iframe>
+<table border="0" width="100%">
+   <tr>
+      <th class="label">Loja*</th>
+      <td><select disabled name="idLoja" onchange="recarregar('<%=acao%>');" required="true">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboLoja.jspf"%></select>
+          <script>comboSelect(document.forms[0].idLoja, '<%= idLoja %>');</script>
+      </td>
+  </tr>
+  <tr>
+      <th class="label">Conta</th>
+      <td><select disabled name="idConta" onchange="recarregar('<%=acao%>');" style="width: 172px">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboConta.jspf" %></select>
+          <script>comboSelect(document.forms[0].idConta, '<%= idConta %>');</script>
+      </td>
+  </tr>
+    <tr>
+      <th class="label">Plano Conta</th>
+      <td><select disabled name="idPlanoConta" onchange="recarregar('<%=acao%>');" style="width: 172px">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboPlanoConta.jspf" %></select>
+          <script>comboSelect(document.forms[0].idPlanoConta, '<%= idPlanoConta %>');</script>
+      </td>
+  </tr>
+<!-- 
+  <tr>
+      <th class="label">Colaborador*</th>
+      <td><select name="idColaborador" onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboColaborador.jspf"%></select>
+          <script>comboSelect(document.forms[0].idColaborador, '<%= idColaborador %>');</script>
+      </td>
+  </tr>
+    <tr>
+      <th class="label">Duplicata Pai</th>
+      <td><select name="idDuplicataPai" onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboDuplicataPai.jspf"%></select>
+          <script>comboSelect(document.forms[0].idDuplicataPai, '<%= idDuplicataPai %>');</script>
+      </td>
+  </tr>
+      <tr>
+      <th class="label">Centro de Custo</th>
+      <td><select name="idCentroCusto" onchange="recarregar('<%=acao%>');" style="width: 172px">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboCentroCusto.jspf" %></select>
+          <script>comboSelect(document.forms[0].idCentroCusto, '<%= idCentroCusto%>');</script>
+      </td>
+  </tr>
+  <tr>
+      <th class="label">Tipo Documento*</th>
+      <td><select name="idTipoDocumento" onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboTipoDocumento.jspf"%></select>
+          <script>comboSelect(document.forms[0].idTipoDocumento, '<%= idTipoDocumento %>');</script>
+      </td>
+  </tr>
+    <tr>
+      <th class="label" style="height: 22px">Credor / Cliente*</th>
+            <td style="height: 15px"><input disabled type="text" name="dsEntidade" <%if (dsEntidade != null) { %>value="<%=dsEntidade%>"<% }%>  size="60" maxlength="60"> <a  href="consultarClientesFinanceiro.jsp?acao=<%=acao%>&idConta=<%=idConta%>&nrDoc=<%=nrDoc%>&nrSerie=<%=nrSerie%>&idDuplicataPai=<%=idDuplicataPai%>&idPlanoConta=<%=idPlanoConta%>&idCentroCusto=<%=idCentroCusto%>&idLoja<%=idLoja%>&idColaborador=<%=idColaborador%>&nrTitulo=<%=nrTitulo%>&idColaborador=<%=idColaborador%>&dtEmissao=<%=dtEmissao%>&idTipoDocumento=<%=idTipoDocumento%>&cdEntidade=<%=cdEntidade%>&dtEmissao=<%=dtEmissao %>"><img border = "0" src="../images/pesquisa.gif"></a></td>
+       		
+  </tr>
+    <tr>
+    <th class="label">Data Emissão*</th>
+   <td>
+	     <input type="text" name="dtEmissao" size="15" <%if (dtEmissao != null) { %>value="<%=dtEmissao%>"<%} %> onblur="chkData(this,'dd/MM/yyyy')" maxlength="10" class="inputs">
+		 <a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dtEmissao);return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+        </td>
+  </tr>
+  <tr>
+    <th class="label">Número Título*</th>
+    <td><input type="text" name="nrTitulo" value="<%=nrTitulo%>"  size="40" maxlength="40"></td>
+  </tr>
+   <tr>
+    <th class="label">Número Documento*</th>
+    <td><input type="text" name="nrDoc" <%if (nrDoc != null) { %>value="<%=nrDoc%>"<% }%>  size="40" maxlength="40"></td>
+  </tr>
+    <tr>
+    <th class="label">Número Série*</th>
+    <td><input type="text" name="nrSerie" <%if (nrSerie != null) { %>value="<%=nrSerie%>"<% }%>  size="40" maxlength="40"></td>
+  </tr>
+
+    <tr>
+      <th class="label">Histórico</th>
+      <td><textarea name="historico" cols="60" rows="5" ><%=historico%></textarea></td>
+  </tr>
+  
+  <tr>  
+    <th class="label">Valor</th>
+    <td><input type="text" name="valor" value="<%=Utilitaria.formatarNumero(valor,2).toString()%>"  onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+  <tr>  
+    <th class="label">Taxa de Multa</th>
+    <td><input type="text" name="txMulta" value="<%=Utilitaria.formatarNumero(txMulta,2).toString()%>"  onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+  <tr>  
+    <th class="label">Taxa de Juros</th>
+    <td><input type="text" name="txJuros" value="<%=Utilitaria.formatarNumero(txJuros,2).toString()%>"  onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+    <tr>
+      <th class="label">Observação</th>
+      <td><textarea name="observacao" cols="60" rows="5" ><%=observacao%></textarea></td>
+  </tr>  
+  <tr>
+    <th class="label">Gerar Boleto</th>
+      <td class="label_radio"><input type="radio" class="radio" name="geraBoleto" value="S" <%= (geraBoleto.equals("S")? "checked": "") %>>Sim
+      <input type="radio" class="radio" name="geraBoleto" value="N" <%= (geraBoleto.equals("N")? "checked": "") %>>Não</td>
+  </tr>
+      <tr>  
+    <th class="label">Código de Barras</th>
+    <td><input type="text" name="cdBarra" <%if (cdBarra != null) { %>value="<%=cdBarra%>"<%} %> size="40" maxlength="40"></td>
+  </tr>
+  <tr>
+    <th class="label">Crédito / Débito</th>
+      <td class="label_radio"><input disabled type="radio" class="radio" name="dc" value="C" <%= (dc.equals("C")? "checked": "") %>>Crédito
+      <input disabled type="radio" class="radio" name="dc" value="D" <%= (dc.equals("D")? "checked": "") %>>Débito</td>
+    
+  </tr>
+  -->
+  <tr>  
+    <th class="label">Valor</th>
+    <td><input disabled type="text" name="valor" value="<%=Utilitaria.formatarNumero(valor,2).toString()%>"  onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+  <tr>
+    <th class="label">Tipo de Lançamento</th>
+      <td class="label_radio"><input disabled type="radio" class="radio" name="tipoLancamento" value="M" <%= (tipoLancamento.equals("M")? "checked": "") %>>Manual
+      <input disabled type="radio" class="radio" name="tipoLancamento" value="A" <%= (tipoLancamento.equals("A")? "checked": "") %>>Automático</td>
+  </tr>
+  <tr>  
+    <th class="label">Taxa de Multa</th>
+    <td><input disabled type="text" name="txMulta" value="<%=Utilitaria.formatarNumero(txMulta,2).toString()%>"  onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+  <tr>  
+    <th class="label">Taxa de Juros</th>
+    <td><input disabled type="text" name="txJuros" value="<%=Utilitaria.formatarNumero(txJuros,2).toString()%>"  onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+    <tr>
+    <th class="label">Tipo de Juros</th>
+      <td class="label_radio"><input disabled type="radio" class="radio" name="tipoJuros" value="M" <%= (tipoJuros.equals("M")? "checked": "") %>>Mensalmente
+      <input disabled type="radio" class="radio" name="tipoJuros" value="D" <%= (tipoJuros.equals("D")? "checked": "") %>>Diariamente</td>
+  </tr>
+  <tr>
+    <th class="label">Data Vencimento*</th>
+   <td>
+	     <input disabled type="text" name="dtVenc" size="15" <%if (dtVenc != null) { %>value="<%=dtVenc%>" <%} %>onblur="chkData(this,'dd/MM/yyyy')" maxlength="10" class="inputs">
+		 <a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dtVenc);return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+        </td>
+  </tr>
+  
+  <tr>
+      <th class="label">Forma de Pagamento</th>
+      <td><select name="cdFormaPagto" onchange="recarregar('<%=acao%>');">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboFormaPagto.jspf"%></select>
+          <script>comboSelect(document.forms[0].cdFormaPagto, '<%= cdFormaPagto %>');</script>
+      </td>
+  </tr>
+  <tr>
+    <th class="label">Status da Duplicata</th>
+      <td class="label_radio"><input type="radio" class="radio" name="status" value="A" <%= (status.equals("A")? "checked": "") %>>Ativo
+      <input type="radio" class="radio" name="status" value="I" <%= (status.equals("I")? "checked": "") %>>Cancelado
+      <input type="radio" class="radio" name="status" value="DQ" <%= (status.equals("DQ")? "checked": "") %>>Quitado
+      <input type="radio" class="radio" name="status" value="RP" <%= (status.equals("RP")? "checked": "") %>>Reparcelado</td>
+    
+  </tr>
+
+  <tr>
+    <th class="label">Data da Baixa</th>
+   <td>
+	     <input type="text" name="dtBaixa" size="15" <%if (dtBaixa != null) { %>value="<%=dtBaixa%>"<%} %> onblur="chkData(this,'dd/MM/yyyy')" maxlength="10" class="inputs">
+		 <a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dtBaixa);return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+        </td>
+  </tr>
+
+  <tr>  
+    <th class="label">Número da Baixa</th>
+    <td><input type="text" name="nrBaixa" value="<%=nrBaixa%>" size="40" maxlength="40"></td>
+  </tr>
+  <tr>  
+    <th class="label">Valor da Multa</th>
+    <td><input type="text" name="vlMulta" value="<%=Utilitaria.formatarNumero(vlMulta,2).toString()%>"  onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+  <tr>  
+    <th class="label">Valor do Juros</th>
+    <td><input type="text" name="vlJuros" value="<%=Utilitaria.formatarNumero(vlJuros,2).toString()%>"  onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+    <tr>  
+    <th class="label">Valor do Desconto</th>
+    <td><input type="text" name="vlDesc" value="<%=Utilitaria.formatarNumero(vlDesc,2).toString()%>"onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+      <tr>  
+    <th class="label">Valor da Baixa</th>
+    <td><input type="text" name="vlBaixa" value="<%=Utilitaria.formatarNumero(vlBaixa,2).toString()%>" onkeyup="FormataValor(this,event)" size="40" maxlength="40"></td>
+  </tr>
+      <tr>  
+    <th class="label">Autenticação</th>
+    <td><input type="text" name="autenticacao" <%if (autenticacao != null) { %>value="<%=autenticacao%>" <%} %>  size="40" maxlength="40"></td>
+  </tr>
+  
+</table><hr>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Salvar" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" />
+	<input class="button" type="button" value="Voltar" onClick="javascript: voltar();" /></td>
+	<td class="campo_obrigatorio">* Campos Obrigatórios</td>
+</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

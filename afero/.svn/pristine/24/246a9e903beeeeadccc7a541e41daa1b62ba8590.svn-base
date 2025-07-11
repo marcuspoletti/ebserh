@@ -1,0 +1,185 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import afero.model.ListaTarefa;
+import afero.util.ConverteDate;
+
+public class ListaTarefaDAO {
+	
+	public Connection conn;
+
+	public ListaTarefaDAO(Connection conn) {
+		this.conn = conn;
+	}
+	
+	// INSERIR
+	
+	public void incluir(ListaTarefa listaTarefa) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (listaTarefa == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+		
+		try {
+			String sql = "INSERT INTO tbListaTarefa (idLoja, dsListaTarefa, preco, idUnidade, status, dtCad, dtMod, usuario)" +
+						"VALUES (?, ?, ?, ?, ?, now(), now(), ?)";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, listaTarefa.getIdLoja());
+			ps.setString(2, listaTarefa.getDsListaTarefa());
+			ps.setFloat(3, listaTarefa.getPreco());
+			ps.setInt(4, listaTarefa.getIdUnidade());
+			ps.setString(5, listaTarefa.getStatus());
+			ps.setString(6, listaTarefa.getUsuario());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} 
+	}
+
+	// ATUALIZAR 
+	
+	public void atualiza(ListaTarefa listaTarefa) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (listaTarefa == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+		
+		try {
+			String sql = "UPDATE tbListaTarefa set idLoja = ?, dsListaTarefa = ?, preco = ?, idUnidade = ?, status = ?," +
+						"dtCad = ?, dtMod = now(), usuario = ?" +
+						"WHERE idListaTarefa = ?";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, listaTarefa.getIdLoja());
+			ps.setString(2, listaTarefa.getDsListaTarefa());
+			ps.setFloat(3, listaTarefa.getPreco());
+			ps.setInt(4, listaTarefa.getIdUnidade());
+			ps.setString(5, listaTarefa.getStatus());
+			ps.setDate(6, ConverteDate.DateToDateSql(listaTarefa.getDtCad()));
+			ps.setString(7, listaTarefa.getUsuario());
+			ps.setInt(8, listaTarefa.getIdListaTarefa());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} 
+	}
+	
+	// EXCLUIR
+	
+	public void excluir(ListaTarefa listaTarefa) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (listaTarefa == null)
+			throw new AferoDAOException("O valor passado n�o pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbListaTarefa WHERE idListaTarefa = ?");
+			ps.setInt(1, listaTarefa.getIdListaTarefa());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+		}
+	}
+	
+	// BUSCAR
+	
+	public ListaTarefa procurarListaTarefa (String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		ListaTarefa listaTarefa = null;
+		
+		try {
+			String sql = "SELECT idListaTarefa, idLoja, idListaTarefa, dsListaTarefa, preco, idUnidade, status, dtCad, dtMod, usuario " +
+						" FROM tbListaTarefa";
+			
+			if(clausula != null)
+				sql += clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				
+				listaTarefa = new ListaTarefa();
+				
+				listaTarefa.setIdListaTarefa(rs.getInt(1));
+				listaTarefa.setIdLoja(rs.getInt(2));
+				listaTarefa.setIdListaTarefa(rs.getInt(3));
+				listaTarefa.setDsListaTarefa(rs.getString(4));
+				listaTarefa.setPreco(rs.getFloat(5));
+				listaTarefa.setIdUnidade(rs.getInt(6));
+				listaTarefa.setStatus(rs.getString(7));
+				listaTarefa.setDtCad(rs.getDate(8));
+				listaTarefa.setDtMod(rs.getDate(9));
+				listaTarefa.setUsuario(rs.getString(10));	
+
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao procurar dados:" + sqle);
+		}catch (Exception e){
+			throw new AferoDAOException ("Erro ao procurar dados:" + e);
+		} 
+		return listaTarefa;
+	}
+	
+	// LISTAR
+	
+	public List<ListaTarefa> listarTarefa(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<ListaTarefa> list = null;
+
+		try {
+			String sql = "SELECT idListaTarefa, idLoja, dsListaTarefa, preco, idUnidade, status, dtCad, dtMod, usuario " +
+						 "FROM tbListaTarefa ";
+			
+			if (clausula != null)
+				sql += clausula;
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<ListaTarefa>();
+			
+			while (rs.next()){
+				
+				int idListaTarefa = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+				String dsListaTarefa = rs.getString(3);
+				float preco = rs.getFloat(4);
+				int idUnidade = rs.getInt(5);
+				String status = rs.getString(6);
+				Date dtCad = rs.getDate(7);
+				Date dtMod = rs.getDate(8);
+				String usuario = rs.getString(9);	
+				
+				list.add( new ListaTarefa(idListaTarefa, idLoja, dsListaTarefa, preco, idUnidade, status, dtCad, dtMod, usuario));
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao listar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao listar dados: " + e);
+		} 
+		return list;
+	}
+}

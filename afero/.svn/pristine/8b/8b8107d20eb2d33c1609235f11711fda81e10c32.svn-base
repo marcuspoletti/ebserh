@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Csosn" %>
+<%@page import ="afero.persistence.CsosnDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CsosnDAO daoCsosn;
+List listCsosn;
+daoCsosn = new CsosnDAO(conn);
+String clausulaCsosn = " ORDER BY dsCsosn";
+listCsosn = daoCsosn.listarCsosn(clausulaCsosn);
+Iterator itCsosn = listCsosn.iterator();
+while (itCsosn.hasNext()) { 
+	Csosn csosn = (Csosn) itCsosn.next();
+%>
+
+<option value="<%=csosn.getCdCsosn()%>"><%=csosn.getCdCsosn()+"/"%><%=csosn.getDsCsosn()%></option>
+<%
+}
+%>

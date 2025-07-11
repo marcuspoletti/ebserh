@@ -1,0 +1,22 @@
+<%@page import ="afero.model.SubGrupo" %>
+<%@page import ="afero.persistence.SubGrupoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+
+SubGrupoDAO daoSubGrupo;
+List listSubGrupo;
+daoSubGrupo = new SubGrupoDAO(conn);
+String clausulaSubGrupo = "";
+clausulaSubGrupo = "  WHERE status='A' ORDER BY dsSubGrupo";
+listSubGrupo = daoSubGrupo.listarSubGrupo(clausulaSubGrupo);
+Iterator itSubGrupo = listSubGrupo.iterator();
+while (itSubGrupo.hasNext()) { 
+	SubGrupo subGrupo = (SubGrupo) itSubGrupo.next();
+	
+%>
+
+<option value="<%=subGrupo.getIdSubGrupo()%>"><%=subGrupo.getDsSubGrupo()%></option>
+<%
+}
+%>

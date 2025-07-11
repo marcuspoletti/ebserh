@@ -1,0 +1,1528 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import afero.util.Utilitaria;
+import afero.model.EntradaProduto;
+import afero.model.VendasGrupoCondicaoPagamento;
+import afero.model.MapaEntregaBairro;
+import afero.model.VendasGrupos;
+import afero.model.PedidoSaida;
+import afero.model.MapaEntregaData;
+import afero.model.SaidaProduto;
+import afero.model.Mesa;
+import afero.persistence.MesaDAO;
+import afero.util.ConverteDate;
+
+public class PedidoSaidaDAO implements IPedidoSaidaDAO{
+
+	private Connection conn;
+	
+    public PedidoSaidaDAO(Connection conn) {
+		this.conn = conn;		
+    }
+	
+	public void incluir(PedidoSaida pedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (pedidoSaida == null)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {
+			String sql = "INSERT INTO tbpedidosaida(idLoja, cdEntidade, idColaborador, idEntrega, operacao, dtPed, "+
+			             "vlPed, observacao, anotacao, status, dtMod, usuario, dtEntrega, hrEntrega, dtMov, pessoaResponsavel) " +
+			             "VALUES(?, ?, ?, ?, ?, now(), ?, ?, ?, ?, now(), ?, ?, ?, now(), ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, pedidoSaida.getIdLoja());
+			ps.setInt(2, pedidoSaida.getCdEntidade());
+			ps.setInt(3, pedidoSaida.getIdColaborador());
+			ps.setInt(4, pedidoSaida.getIdEntrega());
+			ps.setString(5, pedidoSaida.getOperacao());
+			ps.setDouble(6, pedidoSaida.getVlPed());
+			ps.setString(7, pedidoSaida.getObservacao());
+			ps.setString(8, pedidoSaida.getAnotacao());
+			ps.setString(9, pedidoSaida.getStatus());
+			ps.setString(10, pedidoSaida.getUsuario());
+			ps.setDate(11, ConverteDate.DateToDateSql(pedidoSaida.getDtEntrega()));
+			ps.setString(12, pedidoSaida.getHrEntrega());
+			ps.setString(13, pedidoSaida.getPessoaResponsavel());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+	
+	public void incluirDesconto(PedidoSaida pedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (pedidoSaida == null)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {
+			String sql = "INSERT INTO tbpedidosaida(idLoja, cdEntidade, idColaborador, idEntrega, operacao, dtPed, "+
+			             "vlDesc, vlPed, observacao, anotacao, status, dtMod, usuario, dtEntrega, hrEntrega, dtMov, pessoaResponsavel) " +
+			             "VALUES(?, ?, ?, ?, ?, now(), ?, ?, ?, ?, ?, now(), ?, ?, ?, now(), ?)";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, pedidoSaida.getIdLoja());
+			ps.setInt(2, pedidoSaida.getCdEntidade());
+			ps.setInt(3, pedidoSaida.getIdColaborador());
+			ps.setInt(4, pedidoSaida.getIdEntrega());
+			ps.setString(5, pedidoSaida.getOperacao());
+			ps.setFloat(6, pedidoSaida.getVlDesc());
+			ps.setDouble(7, pedidoSaida.getVlPed());
+			ps.setString(8, pedidoSaida.getObservacao());
+			ps.setString(9, pedidoSaida.getAnotacao());
+			ps.setString(10, pedidoSaida.getStatus());
+			ps.setString(11, pedidoSaida.getUsuario());
+			ps.setDate(12, ConverteDate.DateToDateSql(pedidoSaida.getDtEntrega()));
+			ps.setString(13, pedidoSaida.getHrEntrega());
+			ps.setString(14, pedidoSaida.getPessoaResponsavel());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public void atualizar(PedidoSaida pedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (pedidoSaida == null)
+			throw new AferoDAOException("O valor passado nï¿½o pode ser nulo");
+
+		try {		
+			String sql = "UPDATE tbpedidosaida set idLoja = ?, cdEntidade = ?, idColaborador = ?, idEntrega = ?, operacao = ?, "+
+                         "vlPed = ?, observacao = ?, anotacao = ?, status = ?, dtMod = now(), usuario = ?, dtEntrega = ?, hrEntrega = ?, "+
+                         "pessoaResponsavel = ?, vlDesc = ? "+
+            			 "WHERE idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, pedidoSaida.getIdLoja());
+			ps.setInt(2, pedidoSaida.getCdEntidade());
+			ps.setInt(3, pedidoSaida.getIdColaborador());
+			ps.setInt(4, pedidoSaida.getIdEntrega());
+			ps.setString(5, pedidoSaida.getOperacao());
+			ps.setDouble(6, pedidoSaida.getVlPed());
+			ps.setString(7, pedidoSaida.getObservacao());
+			ps.setString(8, pedidoSaida.getAnotacao());
+			ps.setString(9, pedidoSaida.getStatus());
+			ps.setString(10, pedidoSaida.getUsuario());
+			ps.setDate(11, ConverteDate.DateToDateSql(pedidoSaida.getDtEntrega()));
+			ps.setString(12, pedidoSaida.getHrEntrega());
+			ps.setString(13, pedidoSaida.getPessoaResponsavel());
+			ps.setFloat(14,pedidoSaida.getVlDesc());
+			ps.setInt(15, pedidoSaida.getIdPedidoSaida());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+	
+	public void atualizarCabecalho(PedidoSaida pedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (pedidoSaida == null)
+			throw new AferoDAOException("O valor passado nï¿½o pode ser nulo");
+
+		try {		
+			String sql = "UPDATE tbpedidosaida set idLoja = ?, cdEntidade = ?, idColaborador = ?, idEntrega = ?, operacao = ?, "+
+                         "observacao = ?, anotacao = ?, status = ?, dtMod = now(), usuario = ?, dtEntrega = ?, hrEntrega = ?, "+
+                         "pessoaResponsavel = ? "+
+            			 "WHERE idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, pedidoSaida.getIdLoja());
+			ps.setInt(2, pedidoSaida.getCdEntidade());
+			ps.setInt(3, pedidoSaida.getIdColaborador());
+			ps.setInt(4, pedidoSaida.getIdEntrega());
+			ps.setString(5, pedidoSaida.getOperacao());
+			ps.setString(6, pedidoSaida.getObservacao());
+			ps.setString(7, pedidoSaida.getAnotacao());
+			ps.setString(8, pedidoSaida.getStatus());
+			ps.setString(9, pedidoSaida.getUsuario());
+			ps.setDate(10, ConverteDate.DateToDateSql(pedidoSaida.getDtEntrega()));
+			ps.setString(11, pedidoSaida.getHrEntrega());
+			ps.setString(12, pedidoSaida.getPessoaResponsavel());
+			ps.setInt(13, pedidoSaida.getIdPedidoSaida());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+
+		}
+	}
+
+	public void excluir(PedidoSaida pedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (pedidoSaida == null)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbpedidoSaida WHERE idPedidoSaida=?");
+			ps.setInt(1, pedidoSaida.getIdPedidoSaida());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+		}
+
+	}
+
+	public PedidoSaida procurarPedidoSaida(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		PedidoSaida pedidoSaida = null;
+		
+		try {
+			String sql = "SELECT idLoja, cdEntidade, idColaborador, idEntrega, operacao, dtPed, "+
+			             "vlPed, observacao, anotacao, status, dtMod, usuario, dtEntrega, hrEntrega, dtMov, pessoaResponsavel, cdCondPagto " +
+					     "FROM tbpedidosaida " +
+					     "WHERE idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Nï¿½o foi encontrado nenhum "
+						+ "registro com o cï¿½digo: " +idPedidoSaida);
+			}
+			int idLoja = rs.getInt(1);
+		    int cdEntidade = rs.getInt(2);
+			int idColaborador = rs.getInt(3);
+			int idEntrega = rs.getInt(4);
+			String operacao = rs.getString(5);
+			Date dtPed = rs.getTimestamp(6);
+		    double vlPed = rs.getDouble(7);
+		    String observacao = rs.getString(8);
+		    String anotacao = rs.getString(9);
+		    String status = rs.getString(10);
+		    Date dtMod = rs.getDate(11);
+			String usuario = rs.getString(12);
+			Date dtEntrega = rs.getTimestamp(13);
+			String hrEntrega = rs.getString(14);
+			Date dtMov = rs.getDate(15);
+			String pessoaResponsavel = rs.getString(16);
+			int cdCondPagto = rs.getInt(17);
+
+		    pedidoSaida = new PedidoSaida(idPedidoSaida, idLoja, cdEntidade,
+					idColaborador, idEntrega, operacao, dtPed,
+					vlPed, observacao, anotacao, status, dtMod, usuario, 
+					dtEntrega, hrEntrega, dtMov, pessoaResponsavel, cdCondPagto);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return pedidoSaida;
+	}
+	
+	public PedidoSaida procurarPedidoSaidaItem(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		PedidoSaida pedidoSaida = null;
+		
+		try {
+			String sql = "SELECT idLoja, cdEntidade, idColaborador, idEntrega, operacao, dtPed, "+
+			             "vlPed, observacao, anotacao, status, dtMod, usuario, dtEntrega, hrEntrega, dtMov, pessoaResponsavel, vlDesc, cdCondPagto " +
+					     "FROM tbpedidosaida " +
+					     "WHERE idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Nï¿½o foi encontrado nenhum "
+						+ "registro com o cï¿½digo: " +idPedidoSaida);
+			}
+			int idLoja = rs.getInt(1);
+		    int cdEntidade = rs.getInt(2);
+			int idColaborador = rs.getInt(3);
+			int idEntrega = rs.getInt(4);
+			String operacao = rs.getString(5);
+			Date dtPed = rs.getTimestamp(6);
+		    double vlPed = rs.getDouble(7);
+		    String observacao = rs.getString(8);
+		    String anotacao = rs.getString(9);
+		    String status = rs.getString(10);
+		    Date dtMod = rs.getDate(11);
+			String usuario = rs.getString(12);
+			Date dtEntrega = rs.getTimestamp(13);
+			String hrEntrega = rs.getString(14);
+			Date dtMov = rs.getDate(15);
+			String pessoaResponsavel = rs.getString(16);
+			float vlDesc = rs.getFloat(17);
+			int cdCondPagto = rs.getInt(18);
+
+		    pedidoSaida = new PedidoSaida(idPedidoSaida, idLoja, cdEntidade,
+					idColaborador, idEntrega, operacao, dtPed,
+					vlPed, observacao, anotacao, status, dtMod, usuario, 
+					dtEntrega, hrEntrega, dtMov, pessoaResponsavel, vlDesc, cdCondPagto);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return pedidoSaida;
+	}
+	public PedidoSaida procurarPedidoSaidaItemTipoPedido(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		PedidoSaida pedidoSaida = null;
+		
+		try {
+			String sql = "SELECT idLoja, cdEntidade, idColaborador, idEntrega, operacao, dtPed, "+
+			             "vlPed, observacao, anotacao, status, dtMod, usuario, dtEntrega, hrEntrega, dtMov, pessoaResponsavel, vlDesc, cdCondPagto, tipoPedido " +
+					     "FROM tbpedidosaida " +
+					     "WHERE idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (!rs.next()) {
+				throw new AferoDAOException("Nï¿½o foi encontrado nenhum "
+						+ "registro com o cï¿½digo: " +idPedidoSaida);
+			}
+			int idLoja = rs.getInt(1);
+		    int cdEntidade = rs.getInt(2);
+			int idColaborador = rs.getInt(3);
+			int idEntrega = rs.getInt(4);
+			String operacao = rs.getString(5);
+			Date dtPed = rs.getTimestamp(6);
+		    double vlPed = rs.getDouble(7);
+		    String observacao = rs.getString(8);
+		    String anotacao = rs.getString(9);
+		    String status = rs.getString(10);
+		    Date dtMod = rs.getDate(11);
+			String usuario = rs.getString(12);
+			Date dtEntrega = rs.getTimestamp(13);
+			String hrEntrega = rs.getString(14);
+			Date dtMov = rs.getDate(15);
+			String pessoaResponsavel = rs.getString(16);
+			float vlDesc = rs.getFloat(17);
+			int cdCondPagto = rs.getInt(18);
+			String tipoPedido = rs.getString(19);
+
+		    pedidoSaida = new PedidoSaida(idPedidoSaida, idLoja, cdEntidade,
+					idColaborador, idEntrega, operacao, dtPed,
+					vlPed, observacao, anotacao, status, dtMod, usuario, 
+					dtEntrega, hrEntrega, dtMov, pessoaResponsavel, vlDesc, cdCondPagto, tipoPedido);
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return pedidoSaida;
+	}
+	public List listarPedidoSaida(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<PedidoSaida> list = null;
+		
+		try {
+			String sql = "SELECT  ps.idPedidoSaida, ps.idLoja, ps.cdEntidade, ps.idColaborador, ps.idEntrega, ps.operacao, ps.dtPed, "+ 
+			                     "ps.vlPed, ps.observacao, ps.anotacao, ps.status, ps.dtMod, ps.usuario, ps.dtEntrega, ps.hrEntrega, ps.dtMov, "+
+			                     "ps.pessoaResponsavel, ps.vlDesc, ps.cdCondPagto "+
+			                     "FROM tbpedidosaida ps "+
+			                     "join tbentidade e on (ps.cdEntidade = e.cdEntidade) ";
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<PedidoSaida>();
+			while (rs.next()) {
+				int idPedidoSaida = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+			    int cdEntidade = rs.getInt(3);
+				int idColaborador = rs.getInt(4);
+				int idEntrega = rs.getInt(5);
+				String operacao = rs.getString(6);
+				Date dtPed = rs.getTimestamp(7);
+			    double vlPed = rs.getDouble(8);
+			    String observacao = rs.getString(9);
+			    String anotacao = rs.getString(10);
+			    String status = rs.getString(11);
+			    Date dtMod = rs.getDate(12);
+				String usuario = rs.getString(13);
+				Date dtEntrega = rs.getTimestamp(14);
+				String hrEntrega = rs.getString(15);
+				Date dtMov = rs.getDate(16);
+				String pessoaResponsavel = rs.getString(17);
+				float vlDesc = rs.getFloat(18);
+				int cdCondPagto = rs.getInt(19);
+				list.add(new PedidoSaida(idPedidoSaida, idLoja, cdEntidade,
+						idColaborador, idEntrega, operacao, dtPed,
+						vlPed, observacao, anotacao, status, dtMod, usuario, 
+						dtEntrega, hrEntrega, dtMov, pessoaResponsavel, cdCondPagto));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public List listarPedidoSaidaTipoPedido(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<PedidoSaida> list = null;
+		
+		try {
+			String sql = "SELECT  ps.idPedidoSaida, ps.idLoja, ps.cdEntidade, ps.idColaborador, ps.idEntrega, ps.operacao, ps.dtPed, "+ 
+			                     "ps.vlPed, ps.observacao, ps.anotacao, ps.status, ps.dtMod, ps.usuario, ps.dtEntrega, ps.hrEntrega, ps.dtMov, "+
+			                     "ps.pessoaResponsavel, ps.vlDesc, ps.cdCondPagto, ps.tipoPedido "+
+			                     "FROM tbpedidosaida ps "+
+			                     "join tbentidade e on (ps.cdEntidade = e.cdEntidade) ";
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<PedidoSaida>();
+			while (rs.next()) {
+				int idPedidoSaida = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+			    int cdEntidade = rs.getInt(3);
+				int idColaborador = rs.getInt(4);
+				int idEntrega = rs.getInt(5);
+				String operacao = rs.getString(6);
+				Date dtPed = rs.getTimestamp(7);
+			    double vlPed = rs.getDouble(8);
+			    String observacao = rs.getString(9);
+			    String anotacao = rs.getString(10);
+			    String status = rs.getString(11);
+			    Date dtMod = rs.getDate(12);
+				String usuario = rs.getString(13);
+				Date dtEntrega = rs.getTimestamp(14);
+				String hrEntrega = rs.getString(15);
+				Date dtMov = rs.getDate(16);
+				String pessoaResponsavel = rs.getString(17);
+				float vlDesc = rs.getFloat(18);
+				int cdCondPagto = rs.getInt(19);
+				String tipoPedido = rs.getString(20);
+				list.add(new PedidoSaida(idPedidoSaida, idLoja, cdEntidade,
+						idColaborador, idEntrega, operacao, dtPed,
+						vlPed, observacao, anotacao, status, dtMod, usuario, 
+						dtEntrega, hrEntrega, dtMov, pessoaResponsavel, cdCondPagto, tipoPedido));
+				
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	
+	public int idPedidoSaida() throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int numPedidoSaida = 0;
+		
+		try {
+			String sql = "select max(idPedidoSaida) from tbpedidosaida order by idPedidoSaida DESC LIMIT 1";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				numPedidoSaida = rs.getInt(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return numPedidoSaida;
+	}
+	
+	public boolean respPedidoSaida(int idOrcamento) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+		
+		try {
+			String sql = "select ops.idPedidoSaida " +  
+			             "from tborcamentopedidosaida ops "+
+	                     "where ops.idOrcamento= ? limit 1";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idOrcamento);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				ok = true;
+			}else{
+				ok=false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+
+	public String dataAtualPedido() throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String dataAtual = "";
+		
+		try {
+			String sql = "select now();";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				dataAtual = ConverteDate.dateToString(rs.getDate(1));
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return dataAtual;
+	}
+	public String statusPag(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String statusPag = null;
+		
+		try {
+			String sql = "select statusPag from tbpedidosaida where idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				statusPag = rs.getString(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return statusPag;
+	}
+	public String status(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String status = null;
+		
+		try {
+			String sql = "select status from tbpedidosaida where idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				status = rs.getString(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return status;
+	}
+	public String tipoPedido(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String tipoPedido = null;
+		
+		try {
+			String sql = "select tipoPedido from tbpedidosaida where idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				tipoPedido = rs.getString(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return tipoPedido;
+	}
+	public int getIdOrcamento(int id) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int idOrcamento = 0;
+		
+		try {
+			String sql = "select o.idOrcamento " +
+                                 "from tbpedidosaida p " +
+                                 "join tborcamentopedidosaida op on (p.idPedidoSaida = op.idPedidoSaida) "+
+                                 "join tborcamento o on (op.idOrcamento = o.idOrcamento) "+
+                                 "where p.idPedidoSaida = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, id);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				idOrcamento = rs.getInt(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return idOrcamento;
+	}
+
+	public boolean confirmarPedido(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+		
+		try {
+			String sql = "select p.idPedidoSaida "+ 
+                                 "from tbordemservico os "+
+                                 "join tborcamento o on (os.idOrcamento = o.idOrcamento) "+
+                                 "join tborcamentopedidosaida op on (o.idOrcamento = op.idOrcamento) "+
+                                 "join tbpedidosaida p on (op.idPedidoSaida = p.idPedidoSaida) "+
+                                 "where p.idPedidoSaida = ? and os.status='A'"; 
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if(rs.next()) {
+				ok = true;
+			} else {
+				ok=false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return ok;
+	}
+	
+	public List listarMapaEntragaData(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<MapaEntregaData> list = null;
+		
+		try {
+			String sql = "select ps.dtEntrega, ps.hrEntrega, count(ps.idEntrega) as quantidade "+
+                         "from tbpedidosaida ps ";
+ 
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn; 
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<MapaEntregaData>();
+			while (rs.next()) {
+				Date dtEntrega = rs.getDate(1);
+				String hrEntrega = rs.getString(2);
+				int quantidade = rs.getInt(3);
+				list.add(new MapaEntregaData(dtEntrega, hrEntrega, quantidade));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	
+	public List listarMapaEntragaBairro(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<MapaEntregaBairro> list = null;
+		
+		try {
+			String sql = "select e.dsEntrega, count(ps.idEntrega) as quantidade "+ 
+                         "from tbpedidosaida ps "+
+                         "Join tbentrega e on e.idEntrega = ps.idEntrega ";
+                        
+ 
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn; 
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<MapaEntregaBairro>();
+			while (rs.next()) {
+				String dsEntrega = rs.getString(1);
+				int quantidade = rs.getInt(2);
+				list.add(new MapaEntregaBairro(dsEntrega, quantidade));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public List listarPedidoSaidaMapaPedido(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<PedidoSaida> list = null;
+		
+		try {
+			String sql = "SELECT  ps.idPedidoSaida, ps.idLoja, ps.cdEntidade, ps.idColaborador, ps.idEntrega, ps.operacao, ps.dtPed, "+ 
+			                     "ps.vlPed, ps.observacao, ps.anotacao, ps.status, ps.dtMod, ps.usuario, ps.dtEntrega, ps.hrEntrega, ps.dtMov, "+
+			                     "ps.pessoaResponsavel, ps.cdCondPagto "+
+			                     "FROM tbpedidosaida ps "+
+			                     "join tbentidade e on (ps.cdEntidade = e.cdEntidade) "+
+			                     "join tbentrega en on (ps.idEntrega = en.idEntrega) ";
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<PedidoSaida>();
+			while (rs.next()) {
+				int idPedidoSaida = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+			    int cdEntidade = rs.getInt(3);
+				int idColaborador = rs.getInt(4);
+				int idEntrega = rs.getInt(5);
+				String operacao = rs.getString(6);
+				Date dtPed = rs.getTimestamp(7);
+			    double vlPed = rs.getDouble(8);
+			    String observacao = rs.getString(9);
+			    String anotacao = rs.getString(10);
+			    String status = rs.getString(11);
+			    Date dtMod = rs.getDate(12);
+				String usuario = rs.getString(13);
+				Date dtEntrega = rs.getTimestamp(14);
+				String hrEntrega = rs.getString(15);
+				Date dtMov = rs.getDate(16);
+				String pessoaResponsavel = rs.getString(17);
+				int cdCondPagto = rs.getInt(18);
+				list.add(new PedidoSaida(idPedidoSaida, idLoja, cdEntidade,
+						idColaborador, idEntrega, operacao, dtPed,
+						vlPed, observacao, anotacao, status, dtMod, usuario, 
+						dtEntrega, hrEntrega, dtMov, pessoaResponsavel, cdCondPagto));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return list;
+	}
+	public void atualizarCondPagto(int idPedidoSaida, int cdCondPagto) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set cdCondPagto = ? where idPedidoSaida=?");
+			ps.setInt(1, cdCondPagto);
+			ps.setInt(2, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+		}
+
+	}
+	public void atualizarStatusPag(int idPedidoSaida, String statusPag) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			if(statusPag.equalsIgnoreCase("P")){
+				ps = conn.prepareStatement("UPDATE tbpedidoSaida set statusPag = ?, dtPag=now() where idPedidoSaida=?");
+			}else {
+				ps = conn.prepareStatement("UPDATE tbpedidoSaida set statusPag = ? where idPedidoSaida=?");
+			}
+			
+			ps.setString(1, statusPag);
+			ps.setInt(2, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		}
+
+	}
+	
+	public void atualizarTipoPedido(int idPedidoSaida, String tipoPedido) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set tipoPedido = ? where idPedidoSaida=?");
+			ps.setString(1, tipoPedido);
+			ps.setInt(2, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+		}
+
+	}
+	
+	public void atualizarImpressaoPedido(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set impPedido= ? where idPedidoSaida=?");
+			ps.setString(1, "S");
+			ps.setInt(2, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+		}
+
+	}
+	
+	public String statusImpressao(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String statusImpressao = "";
+		
+		try {
+			String sql = "select impPedido from tbpedidosaida where idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				statusImpressao =rs.getString(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return statusImpressao;
+	}
+	public float valorTotal(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		float valorTotal = 0;
+		
+		try {
+			String sql = " SELECT sum(quant*vlUni) from tbpedidosaidaitem i where i.idPedidoSaida = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				valorTotal =rs.getFloat(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return valorTotal;
+	}
+	
+	public void atualizarMotorista(int idPedidoSaida, int idMotorista) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+		if (idMotorista == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set idMotorista = ? where idPedidoSaida=?");
+			ps.setInt(1, idMotorista);
+			ps.setInt(2, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		}
+
+	}
+	
+	public void atualizarEntregador(int idPedidoSaida, int idEntregador) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set idEntregador = ? where idPedidoSaida=?");
+			ps.setInt(1, idEntregador);
+			ps.setInt(2, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		}
+
+	}
+	public int getIdMotorista(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int idMotorista = 0;
+		
+		try {
+			String sql = "select idMotorista from tbpedidosaida where idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				idMotorista = rs.getInt(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return idMotorista;
+	}
+	public int getIdEntregador(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int idEntregador = 0;
+		
+		try {
+			String sql = "select idEntregador from tbpedidosaida where idPedidoSaida = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				idEntregador = rs.getInt(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return idEntregador;
+	}
+	public void atualizarEntregadorNull(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set idEntregador = null where idPedidoSaida=?");
+			ps.setInt(1, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		}
+
+	}
+	public void atualizarMotoristaNull(int idPedidoSaida) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set idMotorista = null where idPedidoSaida=?");
+			ps.setInt(1, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		}
+
+	}
+	public float valorTotalPedido(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		float valorTotal = 0;
+		
+		try {
+			String sql = " select sum(ps.vlPed + e.txEntrega) "+
+			             " from tbpedidosaida ps "+
+                         " join tbentrega e on ps.idEntrega = e.idEntrega ";
+			conn = this.conn;
+			sql +=clausula;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				valorTotal =rs.getFloat(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return valorTotal;
+	}
+	
+	public int quantPedidos(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int valorTotal = 0;
+		
+		try {
+			String sql = " select count(ps.idPedidoSaida) "+
+			             " from tbpedidosaida ps "+
+                         " join tbentrega e on (ps.idEntrega = e.idEntrega) ";
+			conn = this.conn;
+			sql +=clausula;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				valorTotal =rs.getInt(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return valorTotal;
+	}
+	
+	public int quantPedidosEntrega(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int valorTotal = 0;
+		
+		try {
+			String sql = " select count(ps.idPedidoSaida) "+
+			             " from tbpedidosaida ps "+
+                         " join tbentrega e on (ps.idEntrega = e.idEntrega) AND (e.idEntrega <> 1) ";
+			conn = this.conn;
+			sql +=clausula;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				valorTotal =rs.getInt(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return valorTotal;
+	}
+	public float valorTotalPedidoEntrega(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		float valorTotal = 0;
+		
+		try {
+			String sql = " select sum(ps.vlPed + e.txEntrega) "+
+			             " from tbpedidosaida ps "+
+                         " join tbentrega e on (ps.idEntrega = e.idEntrega) AND e.idEntrega <> 1 ";
+			conn = this.conn;
+			sql +=clausula;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				valorTotal =rs.getFloat(1);
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps, rs);
+		}
+		return valorTotal;
+	}
+	public List vendasGrupos(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<VendasGrupos> list = null;
+		
+		try {
+			String sql = "SELECT g.idGrupo, g.dsGrupo, sum(psi.quant*psi.VlUni), sum(psi.quant) "+
+						  "FROM tbgrupo g "+
+						  "JOIN tbproduto p on (g.idGrupo = p.idGrupo) "+
+						  "JOIN tbpedidosaidaitem psi on (p.idProduto = psi.idProduto) "+
+						  "JOIN tbpedidosaida ps on (psi.idPedidoSaida = ps.idPedidoSaida)";
+                        
+ 
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn; 
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<VendasGrupos>();
+			while (rs.next()) {
+				int idGrupo = rs.getInt(1);
+				String dsGrupo = rs.getString(2);
+				float valor  = rs.getFloat(3);
+				int quantItens = rs.getInt(4);
+				list.add(new VendasGrupos(dsGrupo, valor, quantItens, idGrupo));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	public boolean existePedidoMesa(int idMesa) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean idPedido = false;
+		
+		try {
+			String sql = "select ps.idPedidoSaida "+
+			             "from tbpedidosaida ps "+
+			             "join tbmesa m on (ps.idMesa = m.idMesa) "+
+                         "where ps.status='P' AND m.idMesa = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idMesa);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				idPedido =true;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return idPedido;
+	}
+	public String procurarPedidoMesa(int idMesa) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String idPedido = "0";
+		
+		try {
+			String sql = "select ps.idPedidoSaida "+
+			             "from tbpedidosaida ps "+
+			             "join tbmesa m on (ps.idMesa = m.idMesa) "+
+                         "where ps.status='P' AND m.idMesa = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idMesa);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				idPedido =String.valueOf(rs.getInt(1));
+			}else{
+				idPedido = "0";
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return idPedido;
+	}
+	public String duracaoDoPedido(int idMesa) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String duracao = "00:00:00";
+		String hora = "";
+		String minuto = "";
+		String segundo = "";
+		MesaDAO daoMesa = new MesaDAO(this.conn);
+		String status = daoMesa.statusMesa(idMesa);
+		if(status.equalsIgnoreCase("C")){
+			try {
+				String sql = " SELECT  HOUR(TIMEDIFF(now(), ps.dtPed)), MINUTE (TIMEDIFF(now(), ps.dtPed)), SECOND(TIMEDIFF(now(), ps.dtPed)) from tbpedidosaida ps "+
+				             " WHERE ps.idPedidoSaida = ? AND ps.status = 'P' AND ps.tipoPedido = 'PM' LIMIT 1 ";
+				conn = this.conn;
+				ps = conn.prepareStatement(sql);
+				String idPedido = procurarPedidoMesa(idMesa);
+				ps.setInt(1, Integer.parseInt(idPedido));
+				rs = ps.executeQuery();
+				if (rs.next()) {
+					hora = String.valueOf(rs.getInt(1));
+					minuto = String.valueOf(rs.getInt(2));
+					segundo = String.valueOf(rs.getInt(3));
+					duracao = hora+":"+minuto+":"+segundo;
+				}
+	
+			} catch (Exception sqle) {
+				throw new AferoDAOException(sqle);
+			} 
+		}
+		return duracao;
+	}
+	public List vendasGruposCondicaoPagamento(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<VendasGrupoCondicaoPagamento> list = null;
+		
+		try {
+			String sql = "SELECT ps.cdCondPagto, cp.dsCondPagto, sum(psi.quant*psi.VlUni) "+
+						  "FROM tbgrupo g "+
+						  "JOIN tbproduto p on (g.idGrupo = p.idGrupo) "+
+						  "JOIN tbpedidosaidaitem psi on (p.idProduto = psi.idProduto) "+
+						  "JOIN tbpedidosaida ps on (psi.idPedidoSaida = ps.idPedidoSaida) "+
+						  "JOIN tbcondpagto cp on (ps.cdCondPagto = cp.cdCondPagto)";
+                        
+ 
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn; 
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<VendasGrupoCondicaoPagamento>();
+			while (rs.next()) {
+				int cdCondPagto = rs.getInt(1);
+				String dsCondPagto  = rs.getString(2);
+				double valor = rs.getDouble(3);
+				list.add(new VendasGrupoCondicaoPagamento(cdCondPagto, dsCondPagto, valor));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	public List vendasGruposCondicaoPagamentoCabecalho(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<VendasGrupoCondicaoPagamento> list = null;
+		
+		try {
+			String sql = "SELECT ps.cdCondPagto, cp.dsCondPagto, sum(ps.vlPed) "+
+						  "FROM tbgrupo g "+
+						  "JOIN tbproduto p on (g.idGrupo = p.idGrupo) "+
+						  "JOIN tbpedidosaidaitem psi on (p.idProduto = psi.idProduto) "+
+						  "JOIN tbpedidosaida ps on (psi.idPedidoSaida = ps.idPedidoSaida) "+
+						  "JOIN tbcondpagto cp on (ps.cdCondPagto = cp.cdCondPagto)";
+                        
+ 
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn; 
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<VendasGrupoCondicaoPagamento>();
+			while (rs.next()) {
+				int cdCondPagto = rs.getInt(1);
+				String dsCondPagto  = rs.getString(2);
+				double valor = rs.getDouble(3);
+				list.add(new VendasGrupoCondicaoPagamento(cdCondPagto, dsCondPagto, valor));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	public List vendasGruposCondicaoPagamentoPedidoCabecalho(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<VendasGrupoCondicaoPagamento> list = null;
+		
+		try {
+			String sql = "SELECT ps.cdCondPagto, cp.dsCondPagto, sum(ps.vlPed) "+
+						  "FROM tbgrupo g "+
+						  "JOIN tbproduto p on (g.idGrupo = p.idGrupo) "+
+						  "JOIN tbpedidosaidaitem psi on (p.idProduto = psi.idProduto) "+
+						  "JOIN tbpedidosaida ps on (psi.idPedidoSaida = ps.idPedidoSaida) "+
+						  "JOIN tbcondpagto cp on (ps.cdCondPagto = cp.cdCondPagto)";
+                        
+ 
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn; 
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<VendasGrupoCondicaoPagamento>();
+			while (rs.next()) {
+				int cdCondPagto = rs.getInt(1);
+				String dsCondPagto  = rs.getString(2);
+				double valor = rs.getDouble(3);
+				list.add(new VendasGrupoCondicaoPagamento(cdCondPagto, dsCondPagto, valor));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	
+	
+	public List listarRelatorioSaidaProduto(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<SaidaProduto> list = null;
+		
+		try {
+			String sql = "SELECT p.idProduto, ps.idPedidoSaida, ps.dtPed, psi.quant, psi.vlUni, pr.custoDireto, p.dsProduto "+ 
+			                     "from tbpedidosaida ps "+
+			                     "Join tbpedidosaidaitem psi on ps.idPedidoSaida = psi.idPedidoSaida "+
+			                     "Join tbproduto p on psi.idProduto = p.idProduto "+
+			                     "Join tbestoque e on p.idProduto = e.idProduto "+
+			                     "Join tbpreco pr on e.idEstoque = pr.idEstoque AND pr.precoPadrao = 'S' ";
+                        
+ 
+			if (clausula != null) sql = sql + clausula;			
+			conn = this.conn; 
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<SaidaProduto>();
+			while (rs.next()) {
+				String cdProduto = rs.getString(1);
+				String numPedido    = rs.getString(2);
+				Date dtPed       = rs.getDate(3);
+				float quant      = rs.getFloat(4);
+				float prUnit     = rs.getFloat(5);
+				float custo      = rs.getFloat(6);
+				String dsProduto = rs.getString(7);
+				
+				list.add(new SaidaProduto(cdProduto, dsProduto, numPedido, dtPed,
+						quant, prUnit, custo));
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	
+	public void atualizarClientes(int idPedidoSaida, int cdEntidade, String usuario) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado nï¿½o pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set cdEntidade = ?, dtMod = now(), usuario = ? where idPedidoSaida = ?");
+			ps.setInt(1, cdEntidade);
+			ps.setString(2, usuario);
+			ps.setInt(3, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		}
+
+	}
+	
+	public void atualizarIdOrdemServico(int idPedidoSaida, int idOrdemServico) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;		
+		if (idPedidoSaida == 0)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+
+		try {			
+			conn = this.conn;
+			ps = conn.prepareStatement("UPDATE tbpedidoSaida set idOrdemServico = ? where idPedidoSaida=?");
+			ps.setInt(1, idOrdemServico);
+			ps.setInt(2, idPedidoSaida);
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+
+		}
+	}
+	
+	
+	public List listarPedidoOrdemServico(int idOrdemServico, int cdLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<PedidoSaida> list = null;
+		
+		try {
+			String sql = "SELECT  ps.idPedidoSaida, ps.idLoja, ps.cdEntidade, ps.idColaborador, ps.idEntrega, ps.operacao, ps.dtPed, "+ 
+			                     "ps.vlPed, ps.observacao, ps.anotacao, ps.status, ps.dtMod, ps.usuario, ps.dtEntrega, ps.hrEntrega, ps.dtMov, "+
+			                     "ps.pessoaResponsavel, ps.vlDesc, ps.cdCondPagto, ps.tipoPedido "+
+			                     "FROM tbpedidosaida ps "+
+			                     "Join tbordemservico e on (ps.idOrdemServico = e.idOrdemServico) "+
+			                     "WHERE e.idOrdemServico = ? AND e.idLoja = ? AND ps.status = 'P' ";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idOrdemServico);
+			ps.setInt(2, cdLoja);
+			rs = ps.executeQuery();
+			list = new ArrayList<PedidoSaida>();
+			while (rs.next()) {
+				int idPedidoSaida = rs.getInt(1);
+				int idLoja = rs.getInt(2);
+			    int cdEntidade = rs.getInt(3);
+				int idColaborador = rs.getInt(4);
+				int idEntrega = rs.getInt(5);
+				String operacao = rs.getString(6);
+				Date dtPed = rs.getTimestamp(7);
+			    double vlPed = rs.getDouble(8);
+			    String observacao = rs.getString(9);
+			    String anotacao = rs.getString(10);
+			    String status = rs.getString(11);
+			    Date dtMod = rs.getDate(12);
+				String usuario = rs.getString(13);
+				Date dtEntrega = rs.getTimestamp(14);
+				String hrEntrega = rs.getString(15);
+				Date dtMov = rs.getDate(16);
+				String pessoaResponsavel = rs.getString(17);
+				float vlDesc = rs.getFloat(18);
+				int cdCondPagto = rs.getInt(19);
+				String tipoPedido = rs.getString(20);
+				list.add(new PedidoSaida(idPedidoSaida, idLoja, cdEntidade,
+						idColaborador, idEntrega, operacao, dtPed,
+						vlPed, observacao, anotacao, status, dtMod, usuario, 
+						dtEntrega, hrEntrega, dtMov, pessoaResponsavel, cdCondPagto, tipoPedido));
+				
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return list;
+	}
+	
+	public int ProcurarOrdemDeServico(int idPedidoSaida, int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int idOrdemServico = 0;
+		
+		try {
+			String sql = "SELECT  ps.idOrdemServico, ps.idPedidoSaida, ps.idLoja, ps.cdEntidade, ps.idColaborador, ps.idEntrega, ps.operacao, ps.dtPed, "+ 
+			                     "ps.vlPed, ps.observacao, ps.anotacao, ps.status, ps.dtMod, ps.usuario, ps.dtEntrega, ps.hrEntrega, ps.dtMov, "+
+			                     "ps.pessoaResponsavel, ps.vlDesc, ps.cdCondPagto, ps.tipoPedido "+
+			                     "FROM tbpedidosaida ps "+
+			                     "Join tbordemservico e on (ps.idOrdemServico = e.idOrdemServico) "+
+			                     "WHERE ps.idPedidoSaida = ? AND e.idLoja = ? AND ps.status = 'P' ";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idPedidoSaida);
+			ps.setInt(2, idLoja);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				idOrdemServico = rs.getInt(1);
+
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return idOrdemServico;
+	}
+
+}

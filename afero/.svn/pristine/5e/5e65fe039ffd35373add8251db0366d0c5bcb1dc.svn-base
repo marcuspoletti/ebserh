@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="orcamentoAfero_itens" language="groovy" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<queryString>
+		<![CDATA[select p.dsProduto, oi.quant, oi.pDesc, oi.vlUni,(oi.quant * oi.vlUni)as valor, u.dsUnidade
+  from tborcamentoitem oi
+  join tbproduto p on (oi.idProduto = p.idProduto)
+  join tbestoque e on (p.idProduto = e.idProduto)
+  join tbpreco pr on (e.idEstoque = pr.idEstoque)
+  join tbunidade u on (pr.idUnidade = u.idUnidade)
+  Where p.status='A' AND pr.precoPadrao = 'S' AND oi.idOrcamento = 250]]>
+	</queryString>
+	<field name="dsProduto" class="java.lang.String"/>
+	<field name="quant" class="java.lang.Float"/>
+	<field name="pDesc" class="java.lang.Float"/>
+	<field name="vlUni" class="java.lang.Float"/>
+	<field name="valor" class="java.lang.Double"/>
+	<field name="dsUnidade" class="java.lang.String"/>
+	<columnHeader>
+		<band height="32" splitType="Stretch">
+			<staticText>
+				<reportElement x="1" y="12" width="152" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Descrição do Produto]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="290" y="12" width="41" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Quant.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="327" y="12" width="48" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Desc(%)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="373" y="12" width="71" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vl.Unit(R$)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="432" y="12" width="75" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vl.Item(R$)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="506" y="12" width="35" height="20"/>
+				<textElement>
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Und.]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="25" splitType="Stretch">
+			<textField>
+				<reportElement x="2" y="2" width="273" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dsProduto}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="302" y="1" width="36" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Float"><![CDATA[$F{quant}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="336" y="1" width="41" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Float"><![CDATA[$F{pDesc}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="381" y="1" width="75" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Float"><![CDATA[$F{vlUni}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="444" y="1" width="56" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{valor}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="490" y="3" width="65" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dsUnidade}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

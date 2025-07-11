@@ -1,0 +1,19 @@
+<%@page import ="afero.model.CatTributaria" %>
+<%@page import ="afero.persistence.CatTributariaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CatTributariaDAO daoCatTributaria;
+List listCatTributaria;
+daoCatTributaria = new CatTributariaDAO(conn);
+String clausulaCatTributaria = " ORDER BY dsCatTributaria";
+listCatTributaria = daoCatTributaria.listarCatTributaria(clausulaCatTributaria);
+Iterator itCatTributaria = listCatTributaria.iterator();
+while (itCatTributaria.hasNext()) { 
+	CatTributaria cstTributaria = (CatTributaria) itCatTributaria.next();
+%>
+
+<option value="<%=cstTributaria.getIdCatTributaria()%>"><%=cstTributaria.getDsCatTributaria()%></option>
+<%
+}
+%>

@@ -1,0 +1,19 @@
+<%@page import ="aferopet.model.TipoRaca" %>
+<%@page import ="aferopet.persistence.TipoRacaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoRacaDAO daoTipoRaca;
+List listTipoRaca;
+daoTipoRaca = new TipoRacaDAO(conn);
+String clausulaTipoRaca = "  WHERE status='A' ";
+listTipoRaca = daoTipoRaca.listarTipoRaca(clausulaTipoRaca);
+Iterator itTipoRaca = listTipoRaca.iterator();
+while (itTipoRaca.hasNext()) { 
+	TipoRaca tipoRaca = (TipoRaca) itTipoRaca.next();
+%>
+
+<option value="<%=tipoRaca.getIdTipoRaca()%>"><%=tipoRaca.getDsTipoRaca()%></option>
+<%
+}
+%>

@@ -1,0 +1,19 @@
+<%@page import ="afero.model.CondPagto" %>
+<%@page import ="afero.persistence.CondPagtoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CondPagtoDAO daoCondPagto;
+List listCondPagto;
+daoCondPagto = new CondPagtoDAO(conn);
+String clausulaCondPagto = "  WHERE status='A' ORDER BY dsCondPagto";
+listCondPagto = daoCondPagto.listarCondPagto(clausulaCondPagto);
+Iterator itCondPagto = listCondPagto.iterator();
+while (itCondPagto.hasNext()) { 
+	CondPagto condPagto = (CondPagto) itCondPagto.next();
+%>
+
+<option value="<%=condPagto.getCdCondPagto()%>"><%=condPagto.getDsCondPagto()%></option>
+<%
+}
+%>

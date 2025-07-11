@@ -1,0 +1,624 @@
+
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.OrdemServico" %>
+<%@page import="afero.model.PedidoSaida" %>
+<%@page import="afero.model.Entidade" %>
+<%@page import="afero.model.Loja" %>
+<%@page import="afero.model.Colaborador" %>
+<%@page import="afero.model.TipoAtendimento" %>
+<%@page import="afero.model.CondPagto" %>
+<%@page import="afero.model.OrdemServicoObjeto" %>
+<%@page import="afero.model.OrdemServicoItem" %>
+<%@page import="afero.model.ConfigServico" %>
+<%@page import="afero.model.ListaServico"%>
+<%@page import="afero.model.ListaTarefa"%>
+<%@page import="afero.model.OrdemServicoTarefa"%>
+<%@page import="afero.persistence.OrdemServicoDAO" %>
+<%@page import="afero.persistence.PedidoSaidaDAO" %>
+<%@page import="afero.persistence.EntidadeDAO" %>
+<%@page import="afero.persistence.LojaDAO" %>
+<%@page import="afero.persistence.ColaboradorDAO" %>
+<%@page import="afero.persistence.TipoAtendimentoDAO" %>
+<%@page import="afero.persistence.CondPagtoDAO" %>
+<%@page import="afero.persistence.OrdemServicoObjetoDAO" %>
+<%@page import="afero.persistence.OrdemServicoItemDAO" %>
+<%@page import="afero.persistence.ConfigServicoDAO" %>
+<%@page import="afero.persistence.ListaServicoDAO"%>
+<%@page import="afero.persistence.ListaTarefaDAO"%>
+<%@page import="afero.persistence.OrdemServicoItemDAO"%>
+<%@page import="afero.persistence.OrdemServicoTarefaDAO"%>
+<%@page import="java.util.List" %>
+<%@page import="java.util.Iterator" %>
+<%@page import="afero.util.ConverteDate" %>
+<%@page import="afero.util.Utilitaria" %>
+<%@page import="java.util.Date" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<script src="../js/common.js"/></script>
+<script>
+function confirmaExcluirObj(cont, idObj) {
+	  if (confirm("Deseja mesmo apagar o Objeto [" + cont + "]?")) {  
+	       location.href = 'formAddObjetosOS.jsp?acao=excObj&idOrdemServico='+document.getElementById('idOrdemServico').value+'&idOrdemServicoObjeto='+idObj;
+	  }
+}
+
+function confirmaExcluirItem(cont, idItem) {
+	  if (confirm("Deseja mesmo apagar o Serviço [" + cont + "]?")) {  
+	       location.href = 'formAddObjetosOS.jsp?acao=excItem&idOrdemServico='+document.getElementById('idOrdemServico').value+'&idOrdemServicoItem='+idItem;
+	  }
+}
+
+function confirmaExcluirTarefa(cont, id) {
+	  if (confirm("Deseja mesmo apagar a Tarefa [" + cont + "]?")) {  
+	       location.href = 'formAddObjetosOS.jsp?acao=excTaf&idOrdemServico='+document.getElementById('idOrdemServico').value+'&idOrdemServicoTarefa='+id;
+	  }
+}
+function salvar() {
+		document.forms[0].submit();
+}
+
+function cancelar() {
+  document.forms[0].action="formProdutosOS.jsp";
+  document.forms[0].submit();
+}
+
+function voltar() {
+  document.forms[0].action = 'listarOrdemServico.jsp?acao=voltar'
+	document.forms[0].submit();
+}
+
+function abrirPopup(URL) {
+
+  var width = 700;
+  var height = 400;
+
+  var left = 99;
+  var top = 99;
+
+  window.open(URL,'janela', 'width='+width+', height='+height+', top='+top+', left='+left+', scrollbars=yes, status=no, toolbar=no, location=no, directories=no, menubar=no, resizable=no, fullscreen=no');
+
+}
+</script>
+<style type="text/css">
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+}
+.style5 {
+	color: #000066;
+	font-weight: bold;
+}
+-->
+.texto {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	color: Navy;
+	border: none;
+}
+.texto_or {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	color: Black;
+	border: none;
+	text-align: left;
+}
+function Impressao(pedido){
+  location.href="impPedido.jsp?impressao=ok&idPedidoSaida="+pedido;
+  window.print();
+}
+</style>
+</head>
+<%
+Entidade entidade;
+EntidadeDAO daoEntidade;
+String nomeEntidade = "";
+
+Loja loja;
+LojaDAO daoLoja;
+String nomeLoja = "";
+
+Colaborador colaborador;
+ColaboradorDAO daoColaborador;
+String nomeColaborador = "";
+
+
+TipoAtendimento tipoAtendimento;
+TipoAtendimentoDAO daoTipoAtendimento;
+String nomeTipoAtendimento = "";
+
+CondPagto condPagto;
+CondPagtoDAO daoCondPagto;
+String nomeCondPagto = "";
+
+OrdemServicoObjeto ordemServicoObjeto;
+OrdemServicoObjeto servicoObjeto; // Para mostrar nome do objeto nos serviços 
+OrdemServicoObjetoDAO daoObjeto;
+String clausulaObj = "";
+
+String nomeTipo = "";
+String nomeStatus = "";
+
+ConfigServico configServico;
+ConfigServicoDAO daoConfig;
+
+OrdemServicoItemDAO daoItem;
+OrdemServicoItem ordemServicoItem;
+String clausulaItem = "";
+String nIdOS = "";// Guardar idOrdemServicoObjeto da OS
+
+OrdemServicoTarefaDAO daoTarefa;
+OrdemServicoTarefa ordemServicoTarefa;
+String clausulaTarefa = "";
+
+ListaTarefa listaTarefa;
+ListaTarefaDAO daoListaTarefa;
+
+ListaServico listaServico;
+ListaServicoDAO daoListaServico;
+
+String mensagem = request.getParameter("mensagem");
+String acao = request.getParameter("acao");
+String idOrdemServico = request.getParameter("idOrdemServico");
+
+String idOrdemServicoObj = null; // Variavel para query de serviços.
+String idOrdemServicoItemObj = null;
+if (acao == null) acao = "inc";
+if(idOrdemServico == null) idOrdemServico = "0";
+
+int cdEntidade = 0;
+int idLoja = Integer.parseInt((String)session.getAttribute("idLoja"));
+int idColaborador = 0;
+int idEntrega = 0;
+int cdTipoAtendimento = 0;
+String tipo = "O";
+Date dtOrc = null;
+Date dtOS = null;
+Date dtAprov = null;
+Date dtEntrega = null;
+String pessoaResponsavel = "";
+Date dtInicio = null;
+Date dtConclusao = null;
+Date dtEntRealizada = null;
+int cdCondPagto = 0;
+int prazoEntrega = 0;
+int prazoValidade = 0;
+int prazoGarantia = 0;
+String cmpOS1 = "";
+String cmpOS2 = "";
+String cmpOS3 = "";
+String cmpOS4 = "";
+String observacao = "";
+double vlServ = 0;
+double vlProd = 0;
+double vlFrete = 0;
+double vlDesc = 0;
+double vlTotalOrdemServico = 0;
+
+String status = "I";
+Date dtMod = null;
+String usuario = (String) session.getAttribute("Login");
+
+//exclusão
+if(acao.equalsIgnoreCase("excObj")){
+	daoObjeto = new OrdemServicoObjetoDAO(conn);
+	ordemServicoObjeto = new OrdemServicoObjeto();
+	int idOrdemServicoObjeto = Integer.parseInt(request.getParameter("idOrdemServicoObjeto"));
+	ordemServicoObjeto.setIdOrdemServicoObjeto(idOrdemServicoObjeto);
+	if(daoObjeto.existeServico(idOrdemServicoObjeto)){
+		  mensagem = " Existe registro de serviço na ORDEM DE SERVIÇO OU ORÇAMENTO ";
+	  }else{
+		  daoObjeto.excluir(ordemServicoObjeto);
+	  }
+	  
+	  acao = "atu";
+}
+
+if(acao.equalsIgnoreCase("excItem")){
+	daoItem = new OrdemServicoItemDAO(conn);
+	ordemServicoItem = new OrdemServicoItem();
+	int idOrdemServicoItem = Integer.parseInt(request.getParameter("idOrdemServicoItem"));
+	ordemServicoItem.setIdOrdemServicoItem(idOrdemServicoItem);
+	if(daoItem.existeServico(idOrdemServicoItem)){
+		  mensagem = " Existe registro de serviço na ORDEM DE SERVIÇO OU ORÇAMENTO ";
+	  }else{
+		  daoItem.excluir(ordemServicoItem);
+	  }
+	  //exclui no banco de dados
+	 
+	  acao = "atu";
+}
+if(acao.equalsIgnoreCase("excTaf")){
+	daoTarefa = new OrdemServicoTarefaDAO(conn);
+	ordemServicoTarefa= new OrdemServicoTarefa();
+	int idOrdemServicoTarefa = Integer.parseInt(request.getParameter("idOrdemServicoTarefa"));
+	ordemServicoTarefa.setIdOrdemServicoTarefa(idOrdemServicoTarefa);
+
+	  //exclui no banco de dados
+	//  if(daoTarefa.existeServico(idOrdemServicoTarefa)){
+	//	  mensagem = " Existe registro de serviço na ORDEM DE SERVIÇO OU ORÇAMENTO ";
+	  //}else{
+		  daoTarefa.excluir(ordemServicoTarefa);
+	 // }
+	  
+	  acao = "atu";
+}
+if (acao.equalsIgnoreCase("atu") || acao.equalsIgnoreCase("inc")){
+	
+	OrdemServicoDAO dao = new OrdemServicoDAO(conn);
+	OrdemServico ordemServico = dao.procurarOrdemServico(" WHERE idOrdemServico = "+Integer.parseInt(idOrdemServico) );
+	idLoja = ordemServico.getIdLoja();
+	cdEntidade = ordemServico.getCdEntidade();
+	idColaborador = ordemServico.getIdColaborador();
+	cdTipoAtendimento = ordemServico.getCdTipoAtendimento();
+	tipo = ordemServico.getTipo();
+	dtOrc = ordemServico.getDtOrc();
+	dtOS = ordemServico.getDtOS();
+	dtAprov = ordemServico.getDtAprov();
+	dtEntrega = ordemServico.getDtEntrega();
+	pessoaResponsavel = ordemServico.getPessoaResponsavel();
+	dtInicio = ordemServico.getDtInicio();
+	dtConclusao = ordemServico.getDtConclusao();
+	dtEntRealizada = ordemServico.getDtEntRealizada();
+	cdCondPagto = ordemServico.getCdCondPagto();
+	prazoEntrega = ordemServico.getPrazoEntrega();
+	prazoValidade = ordemServico.getPrazoEntrega();
+	prazoGarantia = ordemServico.getPrazoGarantia();
+	cmpOS1 = ordemServico.getCmpOS1();
+	cmpOS2 = ordemServico.getCmpOS2();
+	cmpOS3 = ordemServico.getCmpOS3();
+	cmpOS4 = ordemServico.getCmpOS4();
+	observacao = ordemServico.getObservacao();
+	vlServ = ordemServico.getVlServ();
+	vlProd = ordemServico.getVlProd();
+	vlFrete = ordemServico.getVlFrete();
+	vlDesc = ordemServico.getVlDesc();
+	vlTotalOrdemServico = dao.getValorTotal(Integer.parseInt(idOrdemServico));
+	status = ordemServico.getStatus();
+	dtMod = ordemServico.getDtMod();
+	usuario = ordemServico.getUsuario();
+	
+	// Nome da Entidade
+	entidade = new Entidade();
+	daoEntidade = new EntidadeDAO(conn);
+	entidade = daoEntidade.procurarEntidade(cdEntidade);
+	nomeEntidade = entidade.getNome();
+	
+	//Loja
+	loja = new Loja();
+	daoLoja = new LojaDAO(conn);
+	loja = daoLoja.procurarLoja(idLoja);
+	nomeLoja = loja.getRazaoSocial();
+	
+	//Colaborador
+	colaborador = new Colaborador();
+	daoColaborador = new ColaboradorDAO(conn);
+	colaborador = daoColaborador.procurarColaborador(idColaborador);
+	nomeColaborador = colaborador.getNome();
+
+	
+	//Tipo de Atendimento
+	tipoAtendimento = new TipoAtendimento();
+	daoTipoAtendimento = new TipoAtendimentoDAO(conn);
+	tipoAtendimento = daoTipoAtendimento.procurarTipoAtendimento(" WHERE cdTipoAtendimento = "+cdTipoAtendimento );
+	nomeTipoAtendimento  = tipoAtendimento.getDsTipoAtendimento();
+	
+	//Condição de Pagamento
+	condPagto = new CondPagto();
+	daoCondPagto = new CondPagtoDAO(conn);
+	condPagto = daoCondPagto.procurarCondPagto(" WHERE cdCondPagto = "+cdCondPagto );
+	nomeCondPagto = condPagto.getDsCondPagto();
+	
+	// Tipo
+	if(tipo.equalsIgnoreCase("o")){
+		nomeTipo = "Orçamento";
+	}else if(tipo.equalsIgnoreCase("s")){
+		nomeTipo = "Ordem de Serviço";
+	}
+}
+%>
+
+<body>
+<h1 class='texto'><center><%=nomeTipo%></center></h1>
+<hr>
+<form method="post" action="listarOrdemServico.jsp?acao=<%=acao%>">
+<input type="hidden" name="acao" value="<%=acao%>"/>
+<input type="hidden" id="idOrdemServico" name="idOrdemServico" value="<%=idOrdemServico%>"/>
+<input type="hidden" id="idOrdemServicoObjeto" name="idOrdemServicoObjeto" value="<%=idOrdemServicoObj %>"/>
+<!--  Cabeçalho  -->
+<table border="0" align="center" width="100%">
+	<tr>
+		<th class="texto">Entidade</th>
+		<td class="texto_or">&nbsp;<%=nomeEntidade %></td>
+		<th class="texto">Loja</th>
+		<td class="texto_or">&nbsp;<%=nomeLoja %></td>
+	</tr>
+	<tr>
+		<th class="texto">Colaborador</th>
+		<td class="texto_or">&nbsp;<%=nomeColaborador %></td>
+		<th class="texto">Tipo</th>
+		<td class="texto_or">&nbsp;<%=nomeTipo %></td>
+	</tr>
+	<tr>
+		<th class="texto">Tipo Atendimento</th>
+		<td class="texto_or">&nbsp;<%=nomeTipoAtendimento %></td>
+	</tr>
+	<tr>
+		<th class="texto">Responsável</th>
+		<td class="texto_or">&nbsp;<%=pessoaResponsavel %></td>
+		
+		<!--  Orçamento ou OS  -->	
+		<%if(tipo.equalsIgnoreCase("o")) {%>
+			<th class="texto">Data do Orçamento</th>
+			<td class="texto_or">&nbsp;<%=ConverteDate.dateToString(dtOrc) %></td>
+		<%} else if(tipo.equalsIgnoreCase("s")){ %>
+			<th class="texto">Data da OS</th>
+			<td class="texto_or">&nbsp;<%=ConverteDate.dateToString(dtOS) %></td>
+		<%} %>
+	</tr>
+	<tr>
+		<th class="texto">Status :</th>
+		<% 
+		if(status.equalsIgnoreCase("I")){
+			nomeStatus = "Incompleta";
+		}else if(status.equalsIgnoreCase("NA")){
+			nomeStatus = "Não Avaliada";
+		}else if(status.equalsIgnoreCase("R")){
+			nomeStatus = "Recusada";
+		}else if(status.equalsIgnoreCase("A")){
+			nomeStatus = "Aberta";
+		}else if(status.equalsIgnoreCase("TB")){
+			nomeStatus = "Em Trabalho";
+		}else if(status.equalsIgnoreCase("AG")){
+			nomeStatus = "Aguardando";
+		}else if(status.equalsIgnoreCase("AT")){
+			nomeStatus = "Atrasada";
+		}else if(status.equalsIgnoreCase("P")){
+			nomeStatus = "Pronta";
+		}else if(status.equalsIgnoreCase("E")){
+			nomeStatus = "Entregue";
+		}else if(status.equalsIgnoreCase("F")){
+			nomeStatus = "Faturada";
+		}else if(status.equalsIgnoreCase("C")){
+			nomeStatus = "Cancelada";
+		}
+		%>
+		<td class="texto_or">&nbsp;<%=nomeStatus %></td>
+		
+		<th class="texto" style="color:red">TOTAL</th>
+		<td class="texto_or" style="color:red">&nbsp;<%=Utilitaria.formatarDinheiro(vlTotalOrdemServico) %></td>
+	</tr>
+</table>
+<%
+List listPedido;
+PedidoSaidaDAO daoPedidoSaida = new PedidoSaidaDAO(conn);
+PedidoSaida pedidoSaida = null;
+listPedido = daoPedidoSaida.listarPedidoOrdemServico(Integer.parseInt(idOrdemServico), idLoja);
+int contPedido = 0;
+String linkPedido = "";
+for ( Iterator itPedido = listPedido.iterator(); itPedido.hasNext(); ) {
+	pedidoSaida = (PedidoSaida) itPedido.next();
+	linkPedido = "editarFormPedido.jsp?idPedidoSaida="+pedidoSaida.getIdPedidoSaida()+"&acao=atu";
+	contPedido++;
+	
+%>
+<p align="right"><a target="blank" href="comercial/editarFormPedido.jsp?idPedidoSaida=<%=pedidoSaida.getIdPedidoSaida()%>&acao=atu"   style="font-size: 14px; float: right;" span style="padding-left:20px"><%="|"+"Pedido nº:"+pedidoSaida.getIdPedidoSaida()+"|"%></a>
+<%} %>
+<br>
+<br>
+<hr>
+<%// Objetos - Campos ConfigServiços
+
+//CAMPOS de CONFIG SERVICO
+daoConfig = new ConfigServicoDAO(conn);
+configServico = new ConfigServico();
+configServico = daoConfig.procurarConfigServico(" WHERE idLoja = "+idLoja);
+%>
+<table border="0" width="100%">
+	<tr>
+		<th class="texto" colspan="8">Objetos</th>
+	</tr>
+	<tr>
+		<%if(!configServico.getDsCmpOb1().equalsIgnoreCase("")){ %>
+			<th class="texto"><center><%=configServico.getDsCmpOb1() %></center></th>
+		<%} %>
+		<%if(!configServico.getDsCmpOb2().equalsIgnoreCase("")){ %>
+			<th class="texto"><center><%=configServico.getDsCmpOb2() %></center></th>
+		<%} %>
+		<%if(!configServico.getDsCmpOb3().equalsIgnoreCase("")){ %>
+			<th class="texto"><center><%=configServico.getDsCmpOb3() %></center></th>
+		<%} %>
+		<%if(!configServico.getDsCmpOb4().equalsIgnoreCase("")){ %>
+			<th class="texto"><center><%=configServico.getDsCmpOb4() %></center></th>
+		<%} %>
+		<th class="texto"><center>Data da Garantia</center></th>
+		<th class="texto"><center>Controle</center></th>
+		
+	</tr>
+	
+<%  
+//seleciona todos os registros do banco de dados
+List listObjeto;
+daoObjeto = new OrdemServicoObjetoDAO(conn);
+clausulaObj = clausulaObj +" WHERE idOrdemServico = "+idOrdemServico;
+listObjeto = daoObjeto.listar(clausulaObj);
+int cont = 0;
+
+for ( Iterator itObjeto = listObjeto.iterator(); itObjeto.hasNext(); ) {
+	ordemServicoObjeto = (OrdemServicoObjeto) itObjeto.next();
+	cont++;
+%>
+	<tr>
+		<%if(!configServico.getDsCmpOb1().equalsIgnoreCase("")){ %>
+				<td class="texto_or" width="22%"><center>
+				
+				<!-- FUNÇÃO PARA MOSTRAR TODOS SERVIÇOS DE UM MESMO OBJETO -->
+					<%=ordemServicoObjeto.getCampo1() %>
+					
+				<!-- FUNÇÃO PARA PERMITIR EDITAR UMA 'ordemServicoObjeto' -->
+					<%//href="javascript:abrirPopup('formOrdemServicoObjeto.jsp?acao=<%=acao>&idOrdemServico=<%=idOrdemServico >&idOrdemServicoObjeto=<%=ordemServicoObjeto.getIdOrdemServicoObjeto() >');" ></a> %>
+				</center></td>
+		<%} %>
+		<%if(!configServico.getDsCmpOb2().equalsIgnoreCase("")){ %>
+			<td class="texto_or" width="20%"><center><%=ordemServicoObjeto.getCampo2() %></center></td>
+		<%} %>
+		<%if(!configServico.getDsCmpOb3().equalsIgnoreCase("")){ %>
+			<td class="texto_or" width="20%"><center><%=ordemServicoObjeto.getCampo3() %></center></td>			
+		<%} %>
+		<%if(!configServico.getDsCmpOb4().equalsIgnoreCase("")){ %>
+			<td class="texto_or" width="20%"><center><%=ordemServicoObjeto.getCampo4() %></center></td>
+		<%} %>
+		<td class="texto_or"><center><%if(ordemServicoObjeto.getDtGarantia() != null){ %><%=ConverteDate.dateToString(ordemServicoObjeto.getDtGarantia()) %><%} else { %> - <%} %></center></td>
+		<td class="texto_or"><center><%=ordemServicoObjeto.getNrControle() %></center></td>
+		
+		<!--  ELABORAR FUNÇÃO PARA EXCLUSÃO DO OBJETO QUE JÁ POSSUA UM SERVIÇO ASSOCIADO A ELE -->		
+	</tr>
+	
+
+<!-- ADICIONAR SERVIÇO -->
+
+<% } // fim do objeto %>
+</table>
+<hr>
+<table border="0" width="100%">
+	<tr>
+		<th class="texto" colspan="8">Serviços</th>
+	</tr>
+	<tr>
+		<th class="texto">Descrição</th>
+		<th class="texto">Desc. Serviço</th>
+		<th class="texto">Valor (Unitário) (R$)</th>
+		<th class="texto">Quantidade</th>
+		<th class="texto">Desconto (%)</th>
+		<th class="texto">Valor (R$)</th>
+		
+	</tr>
+<%
+ordemServicoItem = new OrdemServicoItem();
+daoItem = new OrdemServicoItemDAO(conn);
+List <OrdemServicoItem> listItem = null;
+String id[] = null;
+float valorTotal = 0;
+for ( Iterator itObjetoItem = listObjeto.iterator(); itObjetoItem.hasNext(); ) {
+	ordemServicoObjeto = (OrdemServicoObjeto) itObjetoItem.next();
+	//Montar Clausula Item  -->  Se for NULL mostrará todos os serviços
+	
+clausulaItem = " WHERE idOrdemServicoObjeto = "+ordemServicoObjeto.getIdOrdemServicoObjeto();
+daoItem = new OrdemServicoItemDAO(conn);
+listItem = daoItem.listar(clausulaItem);
+int cont2 = 0;
+// Associar Objeto com o serviço
+String nomeObjeto = "";
+String nomeServico = "";
+
+for ( Iterator itServico = listItem.iterator(); itServico.hasNext(); ) {
+	ordemServicoItem = (OrdemServicoItem) itServico.next();
+	cont2++;
+	
+	//NOME DO OBJETO
+	servicoObjeto = new OrdemServicoObjeto();
+	servicoObjeto  = daoObjeto.procurarOrdemServicoObjeto(" WHERE idOrdemServicoObjeto = "+ordemServicoItem.getIdOrdemServicoObjeto());
+	nomeObjeto = servicoObjeto.getCampo1();
+	
+	//NOME SERVIÇO
+	listaServico = new ListaServico();
+	daoListaServico = new ListaServicoDAO(conn);
+	listaServico = daoListaServico.procurarListaServico(" WHERE idListaServico = "+ordemServicoItem.getIdListaServico());
+	nomeServico = listaServico.getDsListaServico();
+	
+	valorTotal += ordemServicoItem.getValor();
+%>
+	<tr>
+		<td class="texto_or" width="20%"><center><%=ordemServicoItem.getDsCompServico() %></center></td>
+		<td class="texto_or" width="20%"><center><%=nomeServico %></center></td>
+		<td class="texto_or" width="20%"><center><%=Utilitaria.formatarNumero(ordemServicoItem.getVlUni(), 2) %></center></td>
+		<td class="texto_or" width="20%"><center><%=Utilitaria.formatarNumero(ordemServicoItem.getQuant(), 0) %></center></td>
+		<td class="texto_or" width="20%"><center><%=Utilitaria.formatarNumero(ordemServicoItem.getpDesc(), 2) %></center></td>
+		<td class="texto_or" width="20%"><center><%=Utilitaria.formatarNumero(ordemServicoItem.getValor(), 2) %></center></td>
+				
+	</tr>
+<%} %>
+<%} %>
+</table>
+<hr>
+<table border="0" width="100%">
+	<tr>
+	         <th class="texto" colspan="250">Total (R$)</th>
+		<th class="texto_or"></th>
+		<th class="texto_or"></th>
+		<th class="texto_or"></th>
+		<th class="texto_or"></th>
+		<th class="texto_or"></th>
+		<th class="texto_or"><%=Utilitaria.formatarNumero(valorTotal, 2) %></th>
+		
+	</tr>
+</table>
+<%--
+<hr>
+<table border="0" width="100%">
+
+	<tr>
+		<th class="texto" colspan="8">Tarefas</th>
+	</tr>
+	<tr>
+		<th class="texto">Serviço</th>
+		<th class="texto">Descrição</th>
+		<th class="texto">Desc. Tarefa</th>
+		<th class="texto">Valor (Unitário)</th>
+		<th class="texto">Quantidade</th>
+		<th class="texto">Valor </th>
+		
+	</tr>
+<%
+
+
+List<OrdemServicoTarefa> listTarefa = null;
+daoTarefa = new OrdemServicoTarefaDAO(conn);
+listTarefa = daoTarefa.listarIdOrdemServico(Integer.parseInt(idOrdemServico));
+int cont3 = 0;
+// Associar Objeto com o serviço
+String nomeServ = "";
+String nomeTarefa = "";
+
+for ( Iterator itTarefa = listTarefa.iterator(); itTarefa.hasNext(); ) {
+	ordemServicoTarefa = (OrdemServicoTarefa) itTarefa.next();
+	cont3++;
+
+	//NOME TAREFA
+	daoListaTarefa = new ListaTarefaDAO(conn);
+	listaTarefa = daoListaTarefa.procurarListaTarefa(" WHERE idListaTarefa = "+ordemServicoTarefa.getIdListaTarefa());
+	nomeTarefa = listaTarefa.getDsListaTarefa();
+	
+	
+	//NOME SERVIÇO
+	daoListaServico = new ListaServicoDAO(conn);
+	listaServico = daoListaServico.procurarListaServico(" WHERE idListaServico = "+ordemServicoItem.getIdListaServico());
+	if(listaServico.getDsListaServico() != null){
+	    nomeServ = listaServico.getDsListaServico();
+	}else{
+		nomeServ = "-";
+	}
+	
+
+%>
+
+	<tr>
+		<td class="texto_or" width="15%"><center><%=nomeServ %></center></td>
+		<td class="texto_or" width="15%"><center><%=nomeTarefa %></center></td>
+		<td class="texto_or" width="15%"><center><%=ordemServicoTarefa.getDsCompTarefa()%></center></td>
+		<td class="texto_or" width="15%"><center><%=Utilitaria.formatarNumero(ordemServicoTarefa.getVlUni(), 2) %></center></td>
+		<td class="texto_or" width="15%"><center><%=Utilitaria.formatarNumero(ordemServicoTarefa.getQuant(), 0) %></center></td>
+		<td class="texto_or" width="15%"><center><%=Utilitaria.formatarNumero(ordemServicoTarefa.getValor(), 2) %></center></td>
+				
+	</tr>
+<%}%>
+
+</table>
+ --%>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.Produto" %>
+<%@ page import="afero.model.Unidade" %>
+<%@ page import="afero.model.Estoque" %>
+<%@ page import="afero.model.Preco" %>
+<%@page import="afero.model.PedidoSaidaSubItens"%>
+<%@ page import="afero.model.Loja" %>
+<%@ page import="afero.persistence.ProdutoDAO" %>
+<%@ page import="afero.persistence.UnidadeDAO" %>
+<%@ page import="afero.persistence.EstoqueDAO" %>
+<%@ page import="afero.persistence.LojaDAO" %>
+<%@ page import="afero.persistence.PrecoDAO" %>
+<%@page import="afero.persistence.PedidoSaidaSubItensDAO"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@page import="afero.util.Utilitaria"%>
+
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/></script>
+
+<script>
+function localizar() {
+  document.forms[0].action="formCadastroSubItens.jsp?acao=listar";
+  document.forms[0].submit();
+}  
+function novaPesquisa() {
+  document.forms[0].action="formCadastroSubItens.jsp?acao=listar";
+  document.all.nomeProduto.value = '';
+  document.all.status.value = ''; //não está limpando
+  document.forms[0].submit();
+} 
+function salvar() {
+  if (document.all.quantidade == '0') {
+      window.alert("Quantidade tem que ser maior que 0.");
+      document.all.quantidade.focus();
+  }
+  document.forms[0].action="formCadastroSubItens.jsp?acao=gravar";
+  document.forms[0].submit();
+  
+}
+function cancelar() {
+  document.forms[0].action="formCadastroSubItens.jsp?acao=listar";
+  document.forms[0].submit();
+}
+
+function CheckContent(evt){
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        return (charCode>=48 && charCode<=57 || charCode<20);
+}
+function atualizaQuant(I) {
+    var comp = document.getElementById('compPedido_'+I).value;
+    var larg = document.getElementById('largPedido_'+I).value; 
+    var preco = document.getElementById('preco_'+I).value;
+    var quant =comp.replace(",",".") * larg.replace(",",".");
+    document.getElementById('quantidadePedido_'+I).value= quant.toFixed(2);
+    //function FormataValor(campo,tecla, dec, fl_neg) 
+    
+}
+function atualizaQuantidadeValor(I) {
+    var preco = document.getElementById('preco_'+I).value;
+    var quant = document.getElementById('quantidadePedido_'+I).value
+    var valor = quant;
+    var total = valor.replace(",",".")*preco.replace(",",".");
+    document.getElementById('vlUniPedido_'+I).value=total.toFixed(2);
+    //function FormataValor(campo,tecla, dec, fl_neg) 
+    
+}
+      
+</script>
+<%
+String idLojaUsuario = (String)session.getAttribute("idLoja");
+List list = null;
+List listarEstoque = null;
+ProdutoDAO dao;
+EstoqueDAO daoEstoque;
+Produto prod = null;
+Estoque estoque =null;
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null)mensagem = "";
+String nomeProduto = request.getParameter("nomeProduto");
+if(nomeProduto == null)nomeProduto = "";
+String clausula = "";
+int cont = 0;
+String preco = "0";
+int quantidadePedido = 0;
+//-----------------------------
+float largPedidoSubItens = 0;
+float compPedidoSubItens = 0;
+int idAgrupamento = 0;
+String dsCompProduto = "";
+float valorTotalSubItem = 0;
+//-----------------------------
+float pDescPedido = 0;
+float vlUniPedido = 0;
+if(acao.equalsIgnoreCase("gravar")){
+	String[] idProduto = request.getParameterValues("produto");
+	PedidoSaidaSubItens pedidoSaidaItem = new PedidoSaidaSubItens();
+	PedidoSaidaSubItensDAO daoPedidoSaidaItemDAO = new PedidoSaidaSubItensDAO(conn);
+	for(int I=0;I<idProduto.length;I++){
+	  if(request.getParameter("idProduto_"+idProduto[I])!= null){
+		  float quant = Float.parseFloat(request.getParameter("quantidadePedido_"+idProduto[I]));
+		  if((quant > 0.0) || (quant > 0)){
+			  float precoInsert = Utilitaria.toNumber(request.getParameter("preco_"+idProduto[I])).floatValue();
+			  float pDescInsert = Utilitaria.toNumber(request.getParameter("pDescPedido_"+idProduto[I])).floatValue();
+			  //float vlUniInsert = Utilitaria.toNumber(request.getParameter("vlUniPedido_"+idProduto[I])).floatValue();
+			  pedidoSaidaItem.setIdPedidoSaidaItem(Integer.parseInt(idPedidoSaidaItem));
+			  pedidoSaidaItem.setIdProduto(Integer.parseInt(request.getParameter("idProduto_"+idProduto[I])));
+			  pedidoSaidaItem.setIdUnidade(Integer.parseInt(request.getParameter("idUnidade_"+idProduto[I])));
+			  pedidoSaidaItem.setComp(Utilitaria.toNumber(request.getParameter("compPedido_"+idProduto[I])).floatValue());
+			  pedidoSaidaItem.setLarg(Utilitaria.toNumber(request.getParameter("largPedido_"+idProduto[I])).floatValue());
+			  pedidoSaidaItem.setQuant(quant);
+			  pedidoSaidaItem.setVlUni(precoInsert);
+			  pedidoSaidaItem.setpDesc(pDescInsert);
+			  float calculoDesc = (pDescInsert * pedidoSaidaItem.getVlUni())/100;
+			  pedidoSaidaItem.setVlUni(pedidoSaidaItem.getVlUni()- calculoDesc);
+			  pedidoSaidaItem.setUsuario(usuario);
+			  daoPedidoSaidaItemDAO.incluir(pedidoSaidaItem);  
+		  }else{
+			  response.sendRedirect("formCadastroSubItens.jsp?acao=listar&mensagem=Quantidade tem que ser maior que 0 !!!&idPedidoSaida="+idPedidoSaida+"&idLoja="+idLoja+"&idColaborador="+idColaborador+"&usuario="+usuario);
+		  }
+		  
+		  
+	  }
+	}
+}
+%>
+<body onload="document.forms[0].elements[0].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<form method="post" action="formCadastroSubItens.jsp?acao=listar">
+<input type="hidden" name="cont" value="<%=cont%>"/>
+<input type="hidden" name="idPedidoSaidaItem" value="<%=idPedidoSaidaItem%>"/>
+<input type="hidden" name="usuario" value="<%=usuario%>"/>
+<input type="hidden" name="idPedidoSaida" value="<%=idPedidoSaida%>"/>
+<input type="hidden" name="idLoja" value="<%=idLojaUsuario%>"/>
+
+<table colspan="2">
+  <tr>
+    <th class='label'>Descrição do Produto</th>
+    <td><input type="text" name="nomeProduto" <%if (nomeProduto != null) { %>value="<%=nomeProduto%>"<% }%>  size="40" maxlength="40"></td>
+    <td><input class="button" type="button" value="Localizar" onClick="javascript: localizar();" /></td>
+    <td><input class="button" type="button" value="Nova pesquisa" onClick="javascript: novaPesquisa();" /></td>
+  </tr>
+  <tr>
+    <th class="label">Status</th>
+    <td class="label_radio">
+      <input type="radio" class="radio" name="statusConsulta" value="" <%= (statusConsulta.equals("")? "checked": "") %>>Todos
+      <input type="radio" class="radio" name="statusConsulta" value="A" <%= (statusConsulta.equals("A")? "checked": "") %>>Ativo
+      <input type="radio" class="radio" name="statusConsulta" value="I" <%= (statusConsulta.equals("I")? "checked": "") %>>Inativo</td>
+  </tr>
+</table>
+<hr>
+<%-- mostra todos os registros do banco de dados --%>
+<table border="0" width="100%">
+    <tr">
+      
+      <th class="grid"><center></center></th>
+       <th class="grid">Selecionar</th>
+      <th class="grid"><center>Descrição do Produto</center></th>
+      <th class="grid">Preço</th>
+      <th class="grid">Estoque</th>
+      <th class="grid">Comp.</th>
+      <th class="grid">Larg.</th>
+      <th class="grid">Quant.</th>
+      <th class="grid">% Desc.</th>
+      <th class="grid">Vl.Unitário</th>
+      <th class="grid">Unidade</th>
+    </tr>
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+  if (nomeProduto!= null) {
+ 	     clausula = " WHERE p.dsProduto LIKE '"+nomeProduto+"%' OR p.cdBarra LIKE '"+nomeProduto+"%' ";
+  } 
+  if (!statusConsulta.isEmpty()) {
+  if (clausula.isEmpty()) {
+  	    clausula = " WHERE p.status='"+statusConsulta+"'";
+  } else {
+   		   clausula = clausula+" AND p.status='"+statusConsulta+"'";
+  }
+ }	
+
+dao = new ProdutoDAO(conn);
+clausula = clausula+" ORDER BY p.dsProduto ";
+if(nomeProduto != ""){
+	list = dao.listarProdutoPrecoLoja(clausula, Integer.parseInt(idLojaUsuario));
+ for ( Iterator it = list.iterator(); it.hasNext();) {
+	prod = (Produto) it.next();
+	daoEstoque = new EstoqueDAO(conn);
+	listarEstoque = daoEstoque.procurarEstoquePreco(prod.getIdProduto(), Integer.parseInt(idLojaUsuario));
+	if(listarEstoque != null){
+	for (Iterator itListar = listarEstoque.iterator(); itListar.hasNext();){
+		cont++;
+		estoque = (Estoque) itListar.next();
+		LojaDAO lojaPreco = new LojaDAO(conn);
+		Loja lojaEstoque = lojaPreco.procurarLoja(estoque.getIdLoja());
+		PrecoDAO daoPrecoListar = new PrecoDAO(conn);
+		Preco precoListar = daoPrecoListar.procurarPrecoEstoqueLoja(estoque.getIdEstoque(), Integer.parseInt(idLojaUsuario));
+		if(precoListar!=null){
+			preco = Utilitaria.formatarNumero(precoListar.getPreco(), 2).toString();
+			UnidadeDAO daoUnidade = new UnidadeDAO(conn);
+			Unidade unidadeListar = daoUnidade.procurarUnidade(precoListar.getIdUnidade());
+%>
+    <tr>
+      <td class = "grid" width="1%"><center><%=cont%></center></td>
+      <td class = "grid" width="3%"><input type="checkbox" name="idProduto_<%=prod.getIdProduto()%>" value="<%=prod.getIdProduto()%>"></td>
+      <td class = "grid" width="10%"><center><%=prod.getDsProduto() %></center></td>
+      <td class = "grid" width="2%"><center><%=preco%></center></td>
+      <%if (estoque.getQtEstoque()<=estoque.getQtMinimo()){ %>
+      	 <td class = "grid" width="3%" title="ESTOQUE ESTÁ COM A QUANTIDADE MINIMA NO LIMITE OU ULTRAPASSOU."><center><font color="red"><b><i><%=Utilitaria.formatarNumero(estoque.getQtEstoque(),2)%></i></b></font></center></td>
+      <%}else{%>
+      	 <td class = "grid" width="3%" ><center><%=Utilitaria.formatarNumero(estoque.getQtEstoque(),2)%></center></td>
+      <%}%>
+      <td class = "grid" width="3%"><input type="text" name="compPedido_<%=prod.getIdProduto()%>" value="<%=compPedidoSubItens%>" size="7" maxlength="7" onkeyup="FormataValor(this,event)"></td>
+      <td class = "grid" width="3%"><input type="text" name="largPedido_<%=prod.getIdProduto()%>" value="<%=largPedidoSubItens%>" size="7" maxlength="7" onkeyup="FormataValor(this,event)" onblur="atualizaQuant(<%=prod.getIdProduto()%>)"></td>
+      <td class = "grid" width="3%"><input type="text" id="quantidade" name="quantidadePedido_<%=prod.getIdProduto()%>" value="<%=quantidadePedido%>" size="7" maxlength="7"  onblur="atualizaQuantidadeValor(<%=prod.getIdProduto()%>)"></td>
+      <td class = "grid" width="3%"><input type="text" name="pDescPedido_<%=prod.getIdProduto()%>" value="<%=pDescPedido%>" size="7" maxlength="7"></td>
+      <td class = "grid" width="3%"><input disabled type="text" name="vlUniPedido_<%=prod.getIdProduto()%>" value="<%=vlUniPedido%>" size="7" maxlength="7"></td>
+      <td class = "grid" width="2%"><center><%=unidadeListar.getDsUnidade()%></center></td>
+  </tr>
+  <input type="hidden" name="produto" value="<%=prod.getIdProduto()%>"/>
+   <input type="hidden" name="idUnidade_<%=prod.getIdProduto()%>" value="<%=unidadeListar.getIdUnidade()%>"/>
+   <input type="hidden" name="preco_<%=prod.getIdProduto()%>" value="<%=preco%>" >
+
+<%
+		}
+	}
+	}
+}
+ }
+ %>
+ </table>
+ <table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+    <br>
+	<td><input class="button" type="button" value="Adicionar" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" /></td>
+</tr>
+</table>
+ </form>

@@ -1,0 +1,26 @@
+<%@page import ="afero.model.Escolaridade" %>
+<%@page import ="afero.persistence.EscolaridadeDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EscolaridadeDAO daoEscolaridade;
+List listEscolaridade;
+daoEscolaridade = new EscolaridadeDAO(conn);
+String clausulaEscolaridade = "  WHERE status='A'";
+listEscolaridade = daoEscolaridade.listarEscolaridade(clausulaEscolaridade);
+Iterator itEscolaridade = listEscolaridade.iterator();
+while (itEscolaridade.hasNext()) { 
+	Escolaridade escolaridade = (Escolaridade) itEscolaridade.next();
+%>
+<option value="<%=escolaridade.getCdEscolaridade()%>"><%= escolaridade.getDsEscolaridade()%></option>
+<%
+}
+%>
+
+
+
+
+
+
+
+

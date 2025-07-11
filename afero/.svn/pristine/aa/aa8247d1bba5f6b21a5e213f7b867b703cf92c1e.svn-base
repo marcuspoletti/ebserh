@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Usuario" %>
+<%@page import ="afero.persistence.UsuarioDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<% 
+UsuarioDAO daoUsuario;
+List listUsuario;
+daoUsuario = new UsuarioDAO(conn);
+String clausulaUsuario = "  WHERE status='A' ORDER BY login";
+listUsuario = daoUsuario.listarUsuario(clausulaUsuario);
+Iterator itUsuario = listUsuario.iterator();
+while (itUsuario.hasNext()) { 
+	Usuario usuario = (Usuario) itUsuario.next();
+%>
+
+<option value="<%=usuario.getIdUsuario()%>"><%=usuario.getLogin()%></option>
+<%
+}
+%>

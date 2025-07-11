@@ -1,0 +1,157 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.OrdemServicoObjeto" %>
+<%@page import="afero.model.ConfigServico" %>
+<%@page import="afero.model.ListaObjeto" %>
+<%@page import="afero.persistence.OrdemServicoObjetoDAO" %>
+<%@page import="afero.persistence.ConfigServicoDAO" %>
+<%@page import="afero.persistence.ListaObjetoDAO" %>
+
+<%@page import="afero.util.ConverteDate" %>
+<%@page import="java.util.Iterator" %>
+<%@page import="java.util.Date" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/></script>
+<script>
+function salvar() {
+	if (isNaN(document.all.nrControle.value)) {
+		window.alert("O campo 'Número de Controle' não pode conter letras.");
+	}else{
+		document.forms[0].submit();
+	}
+}
+</script>
+</head>
+<%
+ListaObjeto listaObjeto;
+ListaObjetoDAO daoListaObjeto;
+
+String acao = request.getParameter("acao");
+acao += "Obj";
+String idOrdemServicoObjeto = request.getParameter("idOrdemServicoObjeto");
+String cdListaObjeto = request.getParameter("idListaObjeto");
+int idListaObjeto = 0;
+
+if (acao == null) acao = "inc";
+if(idOrdemServicoObjeto == null) idOrdemServicoObjeto = "0";
+if(cdListaObjeto != null){
+	idListaObjeto = Integer.parseInt(cdListaObjeto);
+}
+
+int idOrdemServico = 0;
+String cdOrdemServico = request.getParameter("idOrdemServico");
+if(cdOrdemServico != null){
+	idOrdemServico = Integer.parseInt(cdOrdemServico);
+}
+
+
+String campo1 = "";
+String campo2 = "";
+String campo3 = "";
+String campo4 = "";
+String observacao = "";
+Date dtGarantia = null;
+int nrControle = 0;
+Date dtMod = null;
+String usuario = (String)session.getAttribute("Login");
+
+if (acao.equalsIgnoreCase("atuObj")){
+	
+	OrdemServicoObjetoDAO dao = new OrdemServicoObjetoDAO(conn);
+	OrdemServicoObjeto ordemServicoObjeto = dao.procurarOrdemServicoObjeto(" WHERE idOrdemServicoObjeto = "+Integer.parseInt(idOrdemServicoObjeto));
+	
+	idOrdemServico = ordemServicoObjeto.getIdOrdemServico();
+	idListaObjeto = ordemServicoObjeto.getIdListaObjeto();
+	campo1 = ordemServicoObjeto.getCampo1();
+	campo2 = ordemServicoObjeto.getCampo2();
+	campo3 = ordemServicoObjeto.getCampo3();
+	campo4 = ordemServicoObjeto.getCampo4();
+	observacao = ordemServicoObjeto.getObservacao();
+	dtGarantia = ordemServicoObjeto.getDtGarantia();
+	nrControle = ordemServicoObjeto.getNrControle();
+	dtMod = ordemServicoObjeto.getDtMod();
+	usuario = ordemServicoObjeto.getUsuario();
+	
+}else if(acao.equalsIgnoreCase("incObj")){
+	
+	listaObjeto = new ListaObjeto();
+	daoListaObjeto = new ListaObjetoDAO(conn);
+	listaObjeto = daoListaObjeto.procurarListaObjeto(" WHERE idListaObjeto = "+idListaObjeto );
+	
+	campo1 = listaObjeto.getCampo1();
+	campo2 = listaObjeto.getCampo2();
+	campo3 = listaObjeto.getCampo3();
+	campo4 = listaObjeto.getCampo4();
+	
+}
+//CAMPOS de CONFIG SERVICO
+ConfigServicoDAO daoConfig = new ConfigServicoDAO(conn);
+ConfigServico configServico = new ConfigServico();
+configServico = daoConfig.procurarConfigServico(" ORDER BY idLoja ");
+
+
+%>
+<body onload="document.forms[0].elements[2].focus();" >
+<h1 class="cabecalho_pagina">Cadastro de Objeto</h1>
+<form method="post" action="consultarOrdemServicoObjeto.jsp?acao=<%=acao%>">
+<input type="hidden" name="acao" value="<%=acao%>"/>
+<input type="hidden" id="idOrdemServicoObjeto" name="idOrdemServicoObjeto" value="<%=idOrdemServicoObjeto %>"/>
+<input type="hidden" id="idOrdemServico" name="idOrdemServico" value="<%=idOrdemServico%>"/>
+<input type="hidden" id="idListaObjeto" name="idListaObjeto" value="<%=idListaObjeto %>"/>
+
+<iframe width=174 height=189 name="gToday:normal:"../js/calendar/agenda.js"
+            id="gToday:normal:"../js/calendar/agenda.js" src="../js/calendar/ipopeng.htm"
+            scrolling="no" frameborder="0" style="visibility:visible; z-index:999; 
+    position:absolute; top:-500px; left:-500px;">
+</iframe>
+<table border="0" width="100%">
+	<%if (!configServico.getDsCmpOb1().equalsIgnoreCase("")){ %>
+		<tr>
+			<th class="grid"><%=configServico.getDsCmpOb1() %></th>
+			<td><input readonly="readonly" type="text" id="campo1" name="campo1" value="<%=campo1 %>" size="40" maxlength="20" /></td>
+		</tr>
+	<%} %>
+	<%if (!configServico.getDsCmpOb2().equalsIgnoreCase("")){ %>
+		<tr>
+			<th class="grid"><%=configServico.getDsCmpOb2() %></th>
+			<td><input readonly="readonly" type="text" id="campo2" name="campo2" value="<%=campo2 %>" size="40" maxlength="20" /></td>
+		</tr>
+	<%} %>
+	<%if (!configServico.getDsCmpOb3().equalsIgnoreCase("")){ %>
+		<tr>
+			<th class="grid"><%=configServico.getDsCmpOb3() %></th>
+			<td><input readonly="readonly" type="text" id="campo3" name="campo3" value="<%=campo3 %>" size="40" maxlength="20" /></td>
+		</tr>
+	<%} %>
+	<%if (!configServico.getDsCmpOb4().equalsIgnoreCase("")){ %>
+		<tr>
+			<th class="grid"><%=configServico.getDsCmpOb4() %></th>
+			<td><input readonly="readonly" type="text" id="campo4" name="campo4" value="<%=campo4 %>" size="40" maxlength="20" /></td>
+		</tr>
+	<%} %>
+	<tr>
+		<th class="grid">Data de Garantia</th>
+		<td><input type="text" name="dtGarantia" size="15" <%if (dtGarantia != null) { %>value="<%=ConverteDate.dateToString(dtGarantia) %>"<%} %> onblur="chkData(this,'dd/MM/yyyy')" maxlength="10" class="inputs">
+			<a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dtGarantia );return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+		</td>
+	</tr>
+	<tr>
+		<th class="grid">Número de Controle</th>
+		<td><input type="text" id="nrControle" name="nrControle" value="<%=nrControle %>" size="40" maxlength="20" /></td>		
+	</tr>
+</table><hr>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td>
+			<input class="button" type="button" value="Adicionar" onClick="javascript: salvar();" />
+			<input class="button" type="button" value="Voltar" onClick="javascript:history.back(1);" />
+		</td>
+	</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

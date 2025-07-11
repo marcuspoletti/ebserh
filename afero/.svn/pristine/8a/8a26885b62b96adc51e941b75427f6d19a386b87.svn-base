@@ -1,0 +1,19 @@
+<%@page import ="afero.model.EntidadeJuridica" %>
+<%@page import ="afero.persistence.EntidadeJuridicaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EntidadeJuridicaDAO daoEntidadeJuridica;
+List listEntidadeJuridica;
+daoEntidadeJuridica = new EntidadeJuridicaDAO(conn);
+String clausulaEntidadeJuridica = "  WHERE status='A' ORDER BY j.razaoSocial";
+listEntidadeJuridica = daoEntidadeJuridica.listarEntidadesJuridica(clausulaEntidadeJuridica);
+Iterator itEntidadeJuridica = listEntidadeJuridica.iterator();
+while (itEntidadeJuridica.hasNext()) { 
+	EntidadeJuridica entidadeJuridica = (EntidadeJuridica) itEntidadeJuridica.next();
+%>
+
+<option value="<%=entidadeJuridica.getIdEntidade()%>"><%=entidadeJuridica.getRazaoSocial()%></option>
+<%
+}
+%>

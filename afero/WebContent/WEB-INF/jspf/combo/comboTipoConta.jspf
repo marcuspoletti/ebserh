@@ -1,0 +1,19 @@
+<%@page import ="afero.model.TipoConta" %>
+<%@page import ="afero.persistence.TipoContaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoContaDAO daoTipoConta;
+List listTipoConta;
+daoTipoConta = new TipoContaDAO(conn);
+String clausulaTipoConta = "  WHERE status='A' ";
+listTipoConta = daoTipoConta.listarTipoConta(clausulaTipoConta);
+Iterator itTipoConta = listTipoConta.iterator();
+while (itTipoConta.hasNext()) { 
+	TipoConta tipoConta = (TipoConta) itTipoConta.next();
+%>
+
+<option value="<%=tipoConta.getIdTipoConta()%>"><%=tipoConta.getDsTipoConta()%></option>
+<%
+}
+%>

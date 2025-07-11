@@ -1,0 +1,16 @@
+
+
+<%
+	EstadoDAO daoEstadoUf;
+	List listEstadoUf;
+	daoEstadoUf = new EstadoDAO(conn);
+	String clausulaEstadoUf = "  WHERE status='A' ORDER BY ufEstado";
+	listEstadoUf = daoEstadoUf.listarEstado(clausulaEstadoUf);
+	Iterator itEstadoUf = listEstadoUf.iterator();
+    while (itEstadoUf.hasNext()) { 
+		Estado comboEstadoUf = (Estado) itEstadoUf.next();
+%>
+<option value="<%=comboEstadoUf.getSiglaEstado()%>"><%= comboEstadoUf.getSiglaEstado()%></option>
+<%
+    }
+%>

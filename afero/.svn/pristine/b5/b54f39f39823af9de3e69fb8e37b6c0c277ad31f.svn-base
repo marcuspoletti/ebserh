@@ -1,0 +1,19 @@
+<%@page import ="afero.model.Colaborador" %>
+<%@page import ="afero.persistence.ColaboradorDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+ColaboradorDAO daoColaborador;
+List listColaborador;
+daoColaborador = new ColaboradorDAO(conn);
+String clausulaColaborador = "  WHERE status='A' ORDER BY apelido";
+listColaborador = daoColaborador.listarColaborador(clausulaColaborador);
+Iterator itColaborador = listColaborador.iterator();
+while (itColaborador.hasNext()) { 
+	Colaborador colaborador = (Colaborador) itColaborador.next();
+%>
+
+<option value="<%=colaborador.getIdColaborador()%>"><%=colaborador.getApelido()%>/<%=colaborador.getNome()%></option>
+<%
+}
+%>

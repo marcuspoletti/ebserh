@@ -1,0 +1,19 @@
+<%@page import ="afero.model.CstIcms" %>
+<%@page import ="afero.persistence.CstIcmsDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CstIcmsDAO daoCstIcms;
+List listCstIcms;
+daoCstIcms = new CstIcmsDAO(conn);
+String clausulaCstIcms = " ORDER BY dsCstIcms";
+listCstIcms = daoCstIcms.listarCstIcms(clausulaCstIcms);
+Iterator itCstIcms = listCstIcms.iterator();
+while (itCstIcms.hasNext()) { 
+	CstIcms cstIcms = (CstIcms) itCstIcms.next();
+%>
+
+<option value="<%=cstIcms.getCdCstIcms()%>"><%=cstIcms.getCdCstIcms()+"/"%><%=cstIcms.getDsCstIcms()%></option>
+<%
+}
+%>

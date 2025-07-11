@@ -1,0 +1,192 @@
+<%@ page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@ page import="afero.model.DuplicataParcela"%>
+<%@ page import="afero.model.Entidade"%>
+<%@page import="afero.model.PedidoEntrada"%>
+<%@page import="afero.persistence.PedidoEntradaDAO"%>
+<%@ page import="afero.persistence.DuplicataParcelaDAO"%>
+<%@ page import="afero.persistence.EntidadeDAO"%>
+<%@ page import="java.util.List"%>
+<%@ page import="java.util.Iterator"%>
+<%@ page import="java.util.Date" %>
+<%@ page import="afero.util.ConverteDate"%>
+<%@ page import="afero.util.Utilitaria"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script language=JavaScript src="../js/abas.js" type=text/javascript></script>
+<script src="../js/common.js" /></script>
+
+<script>
+
+function atualizar() {
+  document.forms[0].submit();
+}  
+
+function novaPesquisa() {
+  document.all.nmDuplicata.value = '';
+  document.all.status.value = ''; //não está limpando
+  document.forms[0].submit();
+}  
+</script>
+
+<%
+
+String dataIni = request.getParameter("dataIni");
+String dataFim = request.getParameter("dataFim");
+PedidoEntradaDAO daoPedidoSaida = new PedidoEntradaDAO(conn);
+if (dataIni == null) {
+	   dataIni = daoPedidoSaida.dataAtualPedido();
+}
+if (dataFim == null) {
+	    dataFim = daoPedidoSaida.dataAtualPedido();
+}
+ConverteDate converte = null;
+DuplicataParcelaDAO dao;
+String numDoc = request.getParameter("numDoc");
+if(numDoc == null)numDoc="0";
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null)mensagem = "";
+String acao = request.getParameter("acao");
+if (acao == null) acao = "listar";
+String status ="A";
+String usuario = (String) session.getAttribute("Login");
+String dsEntidade = request.getParameter("dsEntidade");
+if(dsEntidade == null)dsEntidade = "";
+String nmDuplicata = "";
+String clausula = "";
+dao = new DuplicataParcelaDAO(conn);
+if(!acao.equalsIgnoreCase("voltar")) {
+    nmDuplicata= request.getParameter("nmDuplicata");
+    status = request.getParameter("status");
+    if (status == null) status = "A";
+  }
+if (nmDuplicata!= null) {
+    clausula = " WHERE e.nome LIKE'"+nmDuplicata+"%'";
+} 
+if(!status.isEmpty()) {
+    if (clausula.isEmpty()) {
+      clausula = " WHERE dp.status='"+status+"'";
+    }else {
+      clausula += " AND dp.status='"+status+"'";
+   }
+  }
+/*
+if(status.equals("")){
+	 if (clausula.isEmpty()) {
+	      clausula = " WHERE dp.status is not null ";
+	 }else {
+	      clausula += " AND dp.status is not null ";
+	 }
+}
+*/
+if(!numDoc.equalsIgnoreCase("0") && !numDoc.equalsIgnoreCase("")){
+     clausula += " AND d.nrDoc = "+Integer.parseInt(numDoc);	
+}
+//seleciona todos os registros do banco de dados
+List list;
+dao = new DuplicataParcelaDAO(conn);
+clausula = clausula+" AND d.dc = 'C' AND dp.dtVenc BETWEEN '"+converte.DMYToYMDI(dataIni)+" 00:00:00' AND '"+converte.DMYToYMDI(dataFim)+" 23:59:59'";
+list = dao.listarDuplicataParcela(clausula);
+
+int cont = 0;
+%>
+<h1 class="cabecalho_pagina">Consulta Contas a Receber</h1>
+<body onload="document.forms[0].elements[0].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<form action="relatorioContasReceber.jsp">
+<iframe width=174 height=189 name="gToday:normal:"../js/calendar/agenda.js"
+            id="gToday:normal:"../js/calendar/agenda.js" src="../js/calendar/ipopeng.htm"
+            scrolling="no" frameborder="0" style="visibility:visible; z-index:999; 
+    position:absolute; top:-500px; left:-500px;">
+</iframe>
+<table colspan="2">
+  <tr>
+    <th class='label'>Devedor / Cliente</th>
+    <td><input type="text" name="nmDuplicata" <%if (nmDuplicata != null) { %>value="<%=nmDuplicata %>"<% }%>  size="40" maxlength="40"></td>
+  </tr>
+    <tr>
+    <th class='label'>Número do Doc</th>
+    <td><input type="text" name="numDoc" <%if (numDoc != null) { %>value="<%=numDoc %>"<% }%>  size="40" maxlength="40"></td>
+  </tr>
+  <tr>
+    <th class="label">Status</th>
+    <td class="label_radio"><input type="radio" class="radio"
+    name="status" value="A" 
+    <%=(status.equals("A") ? "checked" : "")%>>A Receber <input
+    type="radio" class="radio" name="status" value="Q"
+    <%=(status.equals("Q") ? "checked" : "")%>>Quitado
+    <input type="radio" class="radio" name="status" value="C"
+    <%=(status.equals("C") ? "checked" : "")%>>Cancelado
+</td>
+</tr>
+</table>
+<table border="0" width="100%">
+    <tr>
+      <td class='grid'>Data Inicial 
+	<input type="text" name="dataIni" size="15" value="<%= dataIni %>" onblur="chkData(this,'dd/MM/yyyy')" maxlength="10" class="inputs"><a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dataIni);return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+      </td>
+      <td class='grid'>Data Final 
+	<input type="text"  name="dataFim" size="15" value="<%= dataFim %>" maxlength="10" onblur="chkData(this,'dd/MM/yyyy')" class="inputs"><a href="javascript:void(0)" onclick="if(self.gfPop)gfPop.fPopCalendar(document.forms[0].dataFim);return false;" HIDEFOCUS><img class="PopcalTrigger" align="absmiddle" src="../js/calendar/calbtn.gif" width="34" height="22" border="0" alt=""></a>
+      </td>
+	<td align="center">
+        <input type="button" value="Atualizar" class="botao" onclick="atualizar();">
+        <input type="button" value="Imprimir" class="botao" onclick="print();">
+    </td>
+    </tr>
+<hr>
+
+<%-- mostra todos os registros do banco de dados --%>
+<table border="0" width="100%">
+    <tr>
+      <th class="grid">&nbsp;</th>
+      <th class="grid"><center>Emissão</center></th>
+      <th class="grid"><center>Vencimento</center></th>
+      <th class="grid"><center>Devedor / Cliente</center></th>
+      <th class="grid"><center>Núm. Doc./Parc.</center></th>
+      <th class="grid"><center>Valor (R$)</center></th>
+      <th class="grid">Status</th>
+    </tr>
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+String msgStatus = "";
+String nomeCliente = "";
+Entidade entidade = null;
+EntidadeDAO daoEntidade = new EntidadeDAO(conn);
+double total = 0;
+for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	DuplicataParcela dup = (DuplicataParcela) it.next();
+	if(dup.getStatus().equals("C")){
+		msgStatus = "Cancelado";
+	}else if(dup.getStatus().equals("A")){
+		msgStatus = "A Receber";
+	}else if(dup.getStatus().equals("Q")){
+		msgStatus = "Quitado";
+	}
+	
+	entidade = daoEntidade.procurarEntidade(dao.getCdEntidade(dup.getIdDuplicataParcela()));
+	nomeCliente = entidade.getNome();
+	total +=dup.getValor();
+    cont++;
+
+%>
+    <tr>
+      <td class = "grid" width="2%"><center><%=cont%></center></td>
+      <td class = "grid" width="2%"><center><%=converte.dateToStr(dup.getDtEmissao(),"dd/MM/yyyy")%></center></td>
+      <td class = "grid" width="2%"><center><%=converte.dateToStr(dup.getDtVenc(),"dd/MM/yyyy")%></center></td>
+      <td class = "grid" width="10%"><center><%=nomeCliente%></center></td>
+      <td class = "grid" width="5%"><center><%=dup.getNrDoc()+"/"+dup.getNrParcela()%></center></td>
+      <td class = "grid" width="5%"><center><%=Utilitaria.formatarNumero(dup.getValor(),2)%></center></td>
+      <td class = "grid" width="5%"><center><%=msgStatus%></center></td>
+  </tr>
+<%
+}
+%> 
+<tr>
+<th class="grid">Total</th>
+ <td colspan="6" class="grid"><%=Utilitaria.formatarNumero(total,2)%></td>
+  
+</tr>
+ 
+</table>
+</form> 
+</html>

@@ -1,0 +1,291 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import afero.model.OrdemServicoItem;
+
+public class OrdemServicoItemDAO {
+	
+	public Connection conn;
+
+	public OrdemServicoItemDAO(Connection conn) {
+		this.conn = conn;
+	}
+	
+	// INSERIR
+	
+	public void incluir(OrdemServicoItem ordemServicoItem) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (ordemServicoItem == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+		
+		try {
+			String sql = "INSERT INTO tbOrdemServicoItem ( idOrdemServicoObjeto, idListaServico, dsCompServico, comp, larg, quant, valor, pDesc, " +
+						" vlUni, idColaborador, dtMod, usuario ) " +
+						" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?)";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, ordemServicoItem.getIdOrdemServicoObjeto());
+			ps.setInt(2, ordemServicoItem.getIdListaServico());
+			ps.setString(3, ordemServicoItem.getDsCompServico());
+			ps.setFloat(4, ordemServicoItem.getComp());
+			ps.setFloat(5, ordemServicoItem.getLarg());
+			ps.setFloat(6, ordemServicoItem.getQuant());
+			ps.setFloat(7, ordemServicoItem.getValor());
+			ps.setFloat(8, ordemServicoItem.getpDesc());
+			ps.setFloat(9, ordemServicoItem.getVlUni());
+			ps.setInt(10, ordemServicoItem.getIdColaborador());
+			ps.setString(11, ordemServicoItem.getUsuario());
+			
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+
+	// ATUALIZAR 
+	
+	public void atualiza(OrdemServicoItem ordemServicoItem) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (ordemServicoItem == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+		
+		try {
+			String sql = "UPDATE tbOrdemServicoItem SET idOrdemServicoObjeto = ?, idListaServico = ?, dsCompServico = ?, comp = ?, larg = ?, " +
+						" quant = ?, valor = ?, pDesc = ?, vlUni = ?, idColaborador = ?, dtMod = now(), usuario = ? " +
+						" WHERE idOrdemServicoItem = ?";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, ordemServicoItem.getIdOrdemServicoObjeto());
+			ps.setInt(2, ordemServicoItem.getIdListaServico());
+			ps.setString(3, ordemServicoItem.getDsCompServico());
+			ps.setFloat(4, ordemServicoItem.getComp());
+			ps.setFloat(5, ordemServicoItem.getLarg());
+			ps.setFloat(6, ordemServicoItem.getQuant());
+			ps.setFloat(7, ordemServicoItem.getValor());
+			ps.setFloat(8, ordemServicoItem.getpDesc());
+			ps.setFloat(9, ordemServicoItem.getVlUni());
+			ps.setInt(10, ordemServicoItem.getIdColaborador());
+			ps.setString(11, ordemServicoItem.getUsuario());
+			ps.setInt(12, ordemServicoItem.getIdOrdemServicoItem());
+			
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+	
+	// EXCLUIR
+	
+	public void excluir(OrdemServicoItem ordemServicoItem) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (ordemServicoItem == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbOrdemServicoItem WHERE idOrdemServicoItem = ?");
+			ps.setInt(1, ordemServicoItem.getIdOrdemServicoItem());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+	
+	// BUSCAR
+	
+	public OrdemServicoItem procurarOrdemServicoItem (String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		OrdemServicoItem ordemServicoItem = null;
+		
+		try {
+			String sql = "SELECT  idOrdemServicoItem, idOrdemServicoObjeto, idListaServico, dsCompServico, comp, larg, quant, valor, pDesc, vlUni, " +
+						"idColaborador, dtMod, usuario " +
+						" FROM tbOrdemServicoItem";
+			
+			if(clausula != null)
+				sql += clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				
+				ordemServicoItem = new OrdemServicoItem();
+				
+				ordemServicoItem.setIdOrdemServicoItem(rs.getInt(1));
+				ordemServicoItem.setIdOrdemServicoObjeto(rs.getInt(2));
+				ordemServicoItem.setIdListaServico(rs.getInt(3));
+				ordemServicoItem.setDsCompServico(rs.getString(4));
+				ordemServicoItem.setComp(rs.getFloat(5));
+				ordemServicoItem.setLarg(rs.getFloat(6));
+				ordemServicoItem.setQuant(rs.getFloat(7));
+				ordemServicoItem.setValor(rs.getFloat(8));
+				ordemServicoItem.setpDesc(rs.getFloat(9));
+				ordemServicoItem.setVlUni(rs.getFloat(10));
+				ordemServicoItem.setIdColaborador(rs.getInt(11));
+				ordemServicoItem.setDtMod(rs.getDate(12));
+				ordemServicoItem.setUsuario(rs.getString(13));	
+
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao procurar dados:" + sqle);
+		}catch (Exception e){
+			throw new AferoDAOException ("Erro ao procurar dados:" + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+		return ordemServicoItem;
+	}
+	
+	// LISTAR
+	
+	public List<OrdemServicoItem> listar(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<OrdemServicoItem> list = null;
+
+		try {
+			String sql = "SELECT idOrdemServicoItem, idOrdemServicoObjeto, idListaServico, dsCompServico, comp, larg, quant, valor, pDesc, vlUni, " +
+						" idColaborador, dtMod, usuario " +
+						" FROM tbOrdemServicoItem ";
+			
+			if (clausula != null)
+				sql += clausula;
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<OrdemServicoItem>();
+			
+			
+			while (rs.next()){
+				
+				int idOrdemServicoItem = rs.getInt(1);
+				int idOrdemServicoObjeto = rs.getInt(2);
+				int idListaServico = rs.getInt(3);
+				String dsCompServico = rs.getString(4);
+				float comp = rs.getFloat(5);
+				float larg = rs.getFloat(6);
+				float quant = rs.getFloat(7);
+				float valor = rs.getFloat(8);
+				float pDesc = rs.getFloat(9);
+				float vlUni = rs.getFloat(10);
+				int idColaborador = rs.getInt(11);
+				Date dtMod = rs.getDate(12);
+				String usuario = rs.getString(13);
+				
+				list.add(new OrdemServicoItem(idOrdemServicoItem, idOrdemServicoObjeto, idListaServico, dsCompServico, comp, larg, quant, valor, pDesc, vlUni, idColaborador, dtMod, usuario));
+				
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao listar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao listar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+		return list;
+	}
+	
+	public List<OrdemServicoItem> listarServicoObjeto(int idOrdemServico) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<OrdemServicoItem> list = null;
+
+		try {
+			String sql = "SELECT s.idOrdemServicoItem, s.idOrdemServicoObjeto, s.idListaServico, s.dsCompServico, s.comp, s.larg, s.quant, s.valor, s.pDesc, s.vlUni, " +
+						"s.idColaborador, s.dtMod, s.usuario " +
+						"FROM tbordemservicoitem s "+
+						"JOIN tbordemservicoobjeto o on s.idOrdemServicoObjeto = o.idOrdemServicoObjeto "+
+						"WHERE o.idOrdemServico = ? ";
+			
+			
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idOrdemServico);
+			rs = ps.executeQuery();
+			list = new ArrayList<OrdemServicoItem>();
+			
+			
+			while (rs.next()){
+				
+				int idOrdemServicoItem = rs.getInt(1);
+				int idOrdemServicoObjeto = rs.getInt(2);
+				int idListaServico = rs.getInt(3);
+				String dsCompServico = rs.getString(4);
+				float comp = rs.getFloat(5);
+				float larg = rs.getFloat(6);
+				float quant = rs.getFloat(7);
+				float valor = rs.getFloat(8);
+				float pDesc = rs.getFloat(9);
+				float vlUni = rs.getFloat(10);
+				int idColaborador = rs.getInt(11);
+				Date dtMod = rs.getDate(12);
+				String usuario = rs.getString(13);
+				
+				list.add(new OrdemServicoItem(idOrdemServicoItem, idOrdemServicoObjeto, idListaServico, dsCompServico, comp, larg, quant, valor, pDesc, vlUni, idColaborador, dtMod, usuario));
+				
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao listar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao listar dados: " + e);
+		} 
+		return list;
+	}
+	public boolean existeServico(int idOrdemServicoItem) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean id = false;
+		
+		try {
+			String sql = " SELECT s.idOrdemServicoItem " +
+					     " FROM tbordemservicoitem s " +
+					     " JOIN tbordemservicotarefa t on s.idOrdemServicoItem = t.idOrdemServicoItem"+
+					     " WHERE s.idOrdemServicoItem = ? ";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idOrdemServicoItem);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				id =true;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return id;
+	}
+}

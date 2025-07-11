@@ -1,0 +1,19 @@
+<%@page import ="afero.model.CstCofins" %>
+<%@page import ="afero.persistence.CstCofinsDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CstCofinsDAO daoCstConfins;
+List listCstConfins;
+daoCstConfins = new CstCofinsDAO(conn);
+String clausulaCstCofins = " ORDER BY dsCstCofins";
+listCstConfins = daoCstConfins.listarCstCofins(clausulaCstCofins);
+Iterator itCstConfins = listCstConfins.iterator();
+while (itCstConfins.hasNext()) { 
+	CstCofins cstConfins = (CstCofins) itCstConfins.next();
+%>
+
+<option value="<%=cstConfins.getCdCstCofins()%>"><%=cstConfins.getCdCstCofins()+"/"%><%=cstConfins.getDsCstCofins()%></option>
+<%
+}
+%>

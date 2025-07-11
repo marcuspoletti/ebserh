@@ -1,0 +1,43 @@
+@CHARSET "ISO-8859-1";
+.abas-tb-tabela {
+	border-left: 1px solid #000000;
+}
+
+.abas-menu {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: normal;
+	color: #000033;
+	background-color: #FFFFFF;
+	border-top: 1px solid #000000;
+	border-right: 1px solid #000000;
+	border-bottom: 1px solid #000000;
+	padding: 5px;
+	cursor: hand;
+}
+
+.abas-menu-sel {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	color: #000033;
+	background-color: #ECE9D8;
+	border-top: 1px solid #000000;
+	border-right: 1px solid #000000;
+	padding: 5px;
+	cursor: hand;
+}
+
+.abas-tb-conteudo {
+	border-right: 1px solid #000000;
+	border-bottom: 1px solid #000000;
+}
+
+.abas-conteudo {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: normal;
+	color: #000033;
+	background-color: ##ECE9D8;
+	padding: 5px;
+}

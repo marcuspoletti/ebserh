@@ -1,0 +1,241 @@
+package afero.model;
+
+import java.util.Date;
+
+public class Tributacao {
+	
+	private int idTributacao = 0;
+	private int idCatTributacao = 0;
+	private int cdEstado = 0;
+	private String crt = "";
+	private int cdCstIcms = 0;
+	private int cdCsosn = 0;
+	private String origem = "";
+	private String modBCIcms = "";
+	private float pReduBCIcms = 0;
+	private float pBCOperacao = 0;
+	private float pMargemIcms = 0;
+	private float aliquotaIcms = 0;
+	private String modBCIcmsST = "";
+	private float pReduBCIcmsST = 0;
+	private float pMargemIcmsST = 0;
+	private float aliquotaIcmsST = 0;
+	private int cdEstadoIcmsST = 0;
+	private float aliquotaCredito = 0;
+	private String observacao = "";
+	private Date dtMod = null;
+	private String usuario = "";
+	
+	//------------
+	private float percCargaTrib = 0;
+	
+	
+	public Tributacao() {
+		
+	}
+	
+	public Tributacao(int idTributacao, int idCatTributacao, int cdEstado,
+			String crt, int cdCstIcms, int cdCsosn, String origem,
+			String modBCIcms, float pReduBCIcms, float pBCOperacao,
+			float pMargemIcms, float aliquotaIcms, String modBCIcmsST,
+			float pReduBCIcmsST, float pMargemIcmsST, float aliquotaIcmsST,
+			int cdEstadoIcmsST, float aliquotaCredito, String observacao,
+			Date dtMod, String usuario, float percCargaTrib) {
+		
+		this.idTributacao = idTributacao;
+		this.idCatTributacao = idCatTributacao;
+		this.cdEstado = cdEstado;
+		this.crt = crt;
+		this.cdCstIcms = cdCstIcms;
+		this.cdCsosn = cdCsosn;
+		this.origem = origem;
+		this.modBCIcms = modBCIcms;
+		this.pReduBCIcms = pReduBCIcms;
+		this.pBCOperacao = pBCOperacao;
+		this.pMargemIcms = pMargemIcms;
+		this.aliquotaIcms = aliquotaIcms;
+		this.modBCIcmsST = modBCIcmsST;
+		this.pReduBCIcmsST = pReduBCIcmsST;
+		this.pMargemIcmsST = pMargemIcmsST;
+		this.aliquotaIcmsST = aliquotaIcmsST;
+		this.cdEstadoIcmsST = cdEstadoIcmsST;
+		this.aliquotaCredito = aliquotaCredito;
+		this.observacao = observacao;
+		this.dtMod = dtMod;
+		this.usuario = usuario;
+		this.percCargaTrib = percCargaTrib;
+	}
+
+	public Tributacao(int idTributacao, int idCatTributacao, int cdEstado,
+			String crt, int cdCstIcms, int cdCsosn, String origem,
+			String modBCIcms, float pReduBCIcms, float pBCOperacao,
+			float pMargemIcms, float aliquotaIcms, String modBCIcmsST,
+			float pReduBCIcmsST, float pMargemIcmsST, float aliquotaIcmsST,
+			int cdEstadoIcmsST, float aliquotaCredito, String observacao,
+			Date dtMod, String usuario) {
+		
+		this.idTributacao = idTributacao;
+		this.idCatTributacao = idCatTributacao;
+		this.cdEstado = cdEstado;
+		this.crt = crt;
+		this.cdCstIcms = cdCstIcms;
+		this.cdCsosn = cdCsosn;
+		this.origem = origem;
+		this.modBCIcms = modBCIcms;
+		this.pReduBCIcms = pReduBCIcms;
+		this.pBCOperacao = pBCOperacao;
+		this.pMargemIcms = pMargemIcms;
+		this.aliquotaIcms = aliquotaIcms;
+		this.modBCIcmsST = modBCIcmsST;
+		this.pReduBCIcmsST = pReduBCIcmsST;
+		this.pMargemIcmsST = pMargemIcmsST;
+		this.aliquotaIcmsST = aliquotaIcmsST;
+		this.cdEstadoIcmsST = cdEstadoIcmsST;
+		this.aliquotaCredito = aliquotaCredito;
+		this.observacao = observacao;
+		this.dtMod = dtMod;
+		this.usuario = usuario;
+	}
+
+	public int getIdCatTributacao() {
+		return idCatTributacao;
+	}
+	public void setIdCatTributacao(int idCatTributacao) {
+		this.idCatTributacao = idCatTributacao;
+	}
+	public int getCdEstado() {
+		return cdEstado;
+	}
+	public void setCdEstado(int cdEstado) {
+		this.cdEstado = cdEstado;
+	}
+	public String getCrt() {
+		return crt;
+	}
+	public void setCrt(String crt) {
+		this.crt = crt;
+	}
+	public int getCdCstIcms() {
+		return cdCstIcms;
+	}
+	public void setCdCstIcms(int cdCstIcms) {
+		this.cdCstIcms = cdCstIcms;
+	}
+	public int getCdCsosn() {
+		return cdCsosn;
+	}
+	public void setCdCsosn(int cdCsosn) {
+		this.cdCsosn = cdCsosn;
+	}
+	public String getOrigem() {
+		return origem;
+	}
+	public void setOrigem(String origem) {
+		this.origem = origem;
+	}
+	public String getModBCIcms() {
+		return modBCIcms;
+	}
+	public void setModBCIcms(String modBCIcms) {
+		this.modBCIcms = modBCIcms;
+	}
+	public float getpReduBCIcms() {
+		return pReduBCIcms;
+	}
+	public void setpReduBCIcms(float pReduBCIcms) {
+		this.pReduBCIcms = pReduBCIcms;
+	}
+	public float getpBCOperacao() {
+		return pBCOperacao;
+	}
+	public void setpBCOperacao(float pBCOperacao) {
+		this.pBCOperacao = pBCOperacao;
+	}
+	public float getpMargemIcms() {
+		return pMargemIcms;
+	}
+	public void setpMargemIcms(float pMargemIcms) {
+		this.pMargemIcms = pMargemIcms;
+	}
+	public float getAliquotaIcms() {
+		return aliquotaIcms;
+	}
+	public void setAliquotaIcms(float aliquotaIcms) {
+		this.aliquotaIcms = aliquotaIcms;
+	}
+	public String getModBCIcmsST() {
+		return modBCIcmsST;
+	}
+	public void setModBCIcmsST(String modBCIcmsST) {
+		this.modBCIcmsST = modBCIcmsST;
+	}
+	public float getpReduBCIcmsST() {
+		return pReduBCIcmsST;
+	}
+	public void setpReduBCIcmsST(float pReduBCIcmsST) {
+		this.pReduBCIcmsST = pReduBCIcmsST;
+	}
+	public float getpMargemIcmsST() {
+		return pMargemIcmsST;
+	}
+	public void setpMargemIcmsST(float pMargemIcmsST) {
+		this.pMargemIcmsST = pMargemIcmsST;
+	}
+	public float getAliquotaIcmsST() {
+		return aliquotaIcmsST;
+	}
+	public void setAliquotaIcmsST(float aliquotaIcmsST) {
+		this.aliquotaIcmsST = aliquotaIcmsST;
+	}
+	public int getCdEstadoIcmsST() {
+		return cdEstadoIcmsST;
+	}
+	public void setCdEstadoIcmsST(int cdEstadoIcmsST) {
+		this.cdEstadoIcmsST = cdEstadoIcmsST;
+	}
+	public float getAliquotaCredito() {
+		return aliquotaCredito;
+	}
+	public void setAliquotaCredito(float aliquotaCredito) {
+		this.aliquotaCredito = aliquotaCredito;
+	}
+	public String getObservacao() {
+		return observacao;
+	}
+	public void setObservacao(String observacao) {
+		this.observacao = observacao;
+	}
+	public Date getDtMod() {
+		return dtMod;
+	}
+	public void setDtMod(Date dtMod) {
+		this.dtMod = dtMod;
+	}
+	public String getUsuario() {
+		return usuario;
+	}
+	public void setUsuario(String usuario) {
+		this.usuario = usuario;
+	}
+
+	public int getIdTributacao() {
+		return idTributacao;
+	}
+
+	public void setIdTributacao(int idTributacao) {
+		this.idTributacao = idTributacao;
+	}
+
+	public float getPercCargaTrib() {
+		return percCargaTrib;
+	}
+
+	public void setPercCargaTrib(float percCargaTrib) {
+		this.percCargaTrib = percCargaTrib;
+	}
+	
+	
+	
+	
+
+}

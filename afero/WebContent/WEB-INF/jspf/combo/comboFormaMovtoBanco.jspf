@@ -1,0 +1,17 @@
+<%
+	out.println("<option value=\"B00\">Depósito dinheiro (C)</option>");
+	out.println("<option value=\"B01\">Depósito cheque (C)</option>");
+	out.println("<option value=\"B02\">Transferência (C)</option>");
+	out.println("<option value=\"B03\">Resgate (C)</option>");
+	out.println("<option value=\"B04\">Cobrança (C)</option>");
+	out.println("<option value=\"B09\">Outros créditos (C)</option>");
+	out.println("<option value=\"B10\">Saque (D)</option>");
+	out.println("<option value=\"B11\">Cheque (D)</option>");
+	out.println("<option value=\"B12\">Transferência (D)</option>");
+	out.println("<option value=\"B13\">Aplicação (D)</option>");
+	out.println("<option value=\"B14\">Débito cobrança (D)</option>");
+	out.println("<option value=\"B15\">Pagamento (D)</option>");
+	out.println("<option value=\"B16\">Débito automático (D)</option>");
+	out.println("<option value=\"B17\">Tarifas bancárias (D)</option>");
+	out.println("<option value=\"B19\">Outros débitos (D)</option>");
+%>

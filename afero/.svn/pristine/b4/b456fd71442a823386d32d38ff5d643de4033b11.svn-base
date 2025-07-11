@@ -1,0 +1,20 @@
+<%@page import ="afero.model.Cfop" %>
+<%@page import ="afero.persistence.CfopDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+CfopDAO daoCfopServico;
+List listCfopServico;
+daoCfopServico = new CfopDAO(conn);
+String clausulaCfopServico = " ORDER BY dsCfop";
+listCfopServico = daoCfopServico.listarCfop(clausulaCfopServico);
+Iterator itCfopServico = listCfopServico.iterator();
+while (itCfopServico.hasNext()) { 
+	Cfop cfopServico = (Cfop) itCfopServico.next();
+	
+%>
+
+<option value="<%=cfopServico.getCdCfop()%>"><%=cfopServico.getCdCfop() + " - "+cfopServico.getDsCfop()%></option>
+<%
+}
+%>

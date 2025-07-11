@@ -1,0 +1,383 @@
+package afero.servlet;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.*;
+import java.util.zip.GZIPOutputStream;
+import org.apache.commons.codec.binary.Base64;
+
+import afero.persistence.AferoDAOException;
+import afero.util.ConnectionFactory;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.text.NumberFormat;
+import java.util.Locale;
+import afero.util.ConverteDate;
+
+public class VendaAssistida extends HttpServlet {
+	
+	
+	
+
+	private Connection conn;
+
+
+
+	
+	
+	ConverteDate converte = new ConverteDate();
+	
+	
+
+    public VendaAssistida() throws AferoDAOException{
+    	try {
+    		conn = ConnectionFactory.getConnection();
+    		
+
+    	}catch (Exception e) {
+    		throw new AferoDAOException("Erro: " + ":\n" + e.getMessage());
+    	}
+    }
+
+    public void doGet(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    public void doPost(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    private void processRequest(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException, IOException {
+
+        try {
+            byte[] bytes = gerar(request, conn).getBytes();
+
+            response.setDateHeader("Expires", 30);
+            response.setContentLength(bytes.length);
+            response.setContentType("text/plain");
+            response.setCharacterEncoding("ISO-8859-1");
+            response.getOutputStream().write(bytes);
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+    }
+
+    public String gerar(HttpServletRequest request, Connection con) throws Exception {
+    	  
+        try {
+            String id_empresa = request.getParameter("id_empresa");
+            String tipo = request.getParameter("tipo");
+            String id_pedido = ifNull(request.getParameter("id_pedido"));
+            boolean in_bootstrap = "S".equals(ifNull(request.getParameter("in_bootstrap")));
+            String data_ini = ifNull(request.getParameter("data_ini"));
+            String data_fim = ifNull(request.getParameter("data_fim"));
+          
+
+            if("LISTA".equals(tipo)){
+                return listaPedidos(id_empresa, conn, in_bootstrap, data_ini, data_fim);
+            } else if ("PEDIDO".equals(tipo)) {
+                return pedido(id_pedido, conn);
+            } else {
+                return null;
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "ERRO\n\n"+e.getMessage();
+        }
+      
+
+    }
+	
+    
+    //TODO Neste método, basta ajustar o SQL
+    private String listaPedidos(String id_empresa, Connection con, boolean in_bootstrap,String data_ini,String data_fim)throws Exception{
+        StringBuilder retorno = new StringBuilder();
+        
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                    "SELECT p.idPedidoSaida as id_pedido, p.idPedidoSaida as nr_pedido, e.nome as nm_entidade, c.nome as nm_entidade_vendedor, p.vlPed as valor "+
+                    "from tbpedidosaida p "+
+                    "LEFT Join tbentidade e on p.cdEntidade = e.cdEntidade "+
+                    "LEFT Join tbcolaborador c on p.idColaborador = c.idColaborador "+
+                    "WHERE p.idLoja = ? AND p.integracao = 'S' AND " +
+                    "p.dtPed BETWEEN '"+converte.DMYToYMDI(data_ini)+" 00:00:00' AND '"+converte.DMYToYMDI(data_fim)+" 23:59:59'"); 
+                //TODO Ajuste o SQL para trazer os pedidos para emissão de NFC-e, lembrando que data_ini e data_fim pode vir preenchido do PDV
+                // NAO MUDE o nome das colunas
+        //    if(data_ini.trim().length()>0 && data_fim.trim().length()>0){
+       //         ps.setString(1, converte.DMYToYMDI(data_ini));
+        //        ps.setString(2, data_fim);
+        //    }
+            
+            ps.setInt(1, Integer.parseInt(id_empresa));
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                do{
+                    if(in_bootstrap){
+                        retorno.append("<tr>");
+                        retorno.append("<td class='text-center'><button type='button'  class='btn btn-default' onclick=\"importar('")
+                                .append(rs.getInt("id_pedido"))
+                                .append("','").append("Pedido ").append(rs.getString("nr_pedido")).append("', 'PD');\" > ")
+                                .append("Pedido ").append(rs.getInt("nr_pedido"))            
+                                .append("</button></td>");
+                        retorno.append("<td class='text-left'>").append(rs.getString("nm_entidade")).append("</td>");
+                        retorno.append("<td class='text-left'>").append(ifNull(rs.getString("nm_entidade_vendedor"), "-")).append("</td>");
+                        retorno.append("<td class='text-right'>").append(formatarDinheiro(rs.getDouble("valor"))).append("</td>");
+                        retorno.append("</tr>");
+                    }else{
+                        retorno.append("<tr>");
+                        retorno.append("<td class=\"grid\"><input type=\"button\" class=\"botao\" onclick=\"importar('").append(rs.getInt("id_pedido"))
+                                .append("','").append(rs.getString("tipo")).append(" ").append(rs.getString("nr_pedido")).append("', 'PD');\" value=\" ")
+                                .append(rs.getString("tipo")).append(" ").append(rs.getInt("nr_pedido")).append(" \"></td>");
+                        retorno.append("<td class=\"grid_left\">").append(rs.getString("nm_entidade")).append("</td>");
+                        retorno.append("<td class=\"grid_left\">").append(ifNull(rs.getString("nm_entidade_vendedor"), "<center>-</center>")).append("</td>");
+                        retorno.append("<td class=\"grid_right\">").append(formatarDinheiro(rs.getDouble("valor"))).append("</td>");
+                        retorno.append("</tr>");
+                    }
+                }while(rs.next());
+            }
+            rs.close();
+            ps.close();
+           // ConnectionFactory.closeConnection(this.conn);
+
+        } catch (Exception e) {
+                retorno.append("<tr><td class=\"mensagem\" colspan=\"4\">").append(e.getMessage()).append("</td></tr>");
+        }
+        return retorno.toString();
+        
+        
+    }
+
+    //TODO Método para gerar o arquivo com os dados do pedido, relação dos produtos e informação do financeiro (opcional)
+    private String pedido(String id_pedido, Connection con)throws Exception{
+        StringBuffer linha = new StringBuffer();
+        
+        PreparedStatement psPedido = conn.prepareStatement("select p.idPedidoSaida as nr_pedido, e.nome as nm_entidade, "+
+                       "if(e.tpInsc='F',f.cpf, j.cnpj) as nr_cpf_cnpj, m.dsEmail as e_mail, j.InscEstadual as nr_inscricao_estadual, "+ 
+                       "r.dsEndereco as ds_endereco, r.nroEndereco as numero_endereco, r.baiEndereco as ds_bairro, r.cmpEndereco as ds_complemento, "+
+					   "c.cdMunicipio as cd_ibge, r.cepEndereco as nr_cep, p.idColaborador as id_entidade_vendedor "+ 
+                       "from tbpedidosaida      p "+
+					   "JOIN tbentidade         e on p.cdEntidade = e.cdEntidade "+  
+					   "JOIN tbentidadeendereco r on e.cdEntidade = r.cdEntidade "+
+					   "JOIN tbcidade           c on r.idCidade   = c.idCidade "+
+					   "LEFT JOIN tbentidadefisica f on e.cdEntidade = f.cdEntidade "+
+					   "LEFT JOIN tbentidadejuridica j on e.cdEntidade = j.cdEntidade "+ 
+					   "LEFT JOIN tbentidadeemail m on e.cdEntidade = m.cdEntidade "+
+                       "where p.idPedidoSaida = ? AND p.integracao = 'S'");
+        
+        psPedido.setInt(1, Integer.parseInt(id_pedido));
+        
+        ResultSet rsPedido = psPedido.executeQuery();
+        if (rsPedido.next()){
+            linha.append("1");
+            linha.append(cbEsquerda(rsPedido.getString("nr_pedido"), 10));
+            linha.append(cb(rsPedido.getString("nm_entidade"), 80));
+            
+            String nr_cpf_cnpj = rsPedido.getString("nr_cpf_cnpj").trim();
+            //TODO Fazer teste de CPF/CNPJ válido para enviar para a NFC-e. Caso não seja válido, será considerado como consumidor final.
+            boolean temCPFouCNPJValido = false;
+            
+            if (temCPFouCNPJValido) {
+                linha.append(cb(limpar(rsPedido.getString("nr_cpf_cnpj"), "0123456789"), 14));
+                linha.append(cb(ifNull(rsPedido.getString("e_mail")), 40));
+                String nr_inscricao_estadual = ifNull(rsPedido.getString("nr_inscricao_estadual"));
+                if ("ISENTO".equals(nr_inscricao_estadual)){
+                    nr_inscricao_estadual = "";
+                }
+                linha.append(cb(nr_inscricao_estadual, 14));
+                linha.append(cb(ifNull(rsPedido.getString("ds_endereco")), 80));
+                linha.append(cbEsquerda(ifNull(rsPedido.getString("numero_endereco"), "0"), 5));
+                linha.append(cb(ifNull(rsPedido.getString("ds_bairro")), 80));
+                linha.append(cb(ifNull(rsPedido.getString("ds_complemento")), 80));
+                linha.append(rsPedido.getString("cd_ibge"));
+                linha.append(cb(limpar(rsPedido.getString("nr_cep"), "0123456789"), 8));
+            } else {
+                linha.append(cb("", 14));
+                linha.append(cb("", 40));
+                linha.append(cb("", 14));
+                linha.append(cb("", 80));
+                linha.append(cbEsquerda("", 5));
+                linha.append(cb("", 80));
+                linha.append(cb("", 80));
+                linha.append(cb("", 7));
+                linha.append(cb("", 8));
+            }
+            linha.append(fd(0, 2, 13));
+            linha.append(cbEsquerda(rsPedido.getString("id_entidade_vendedor"), 10));
+            linha.append(cbEsquerda("", 10));
+            linha.append(fd(0, 2, 13));
+            linha.append("\n");
+        }
+        rsPedido.close();
+        psPedido.close();
+        
+        //TODO Ajustar o SQL para retornar os produtos do pedido. NAO MUDE o nome das colunas
+        PreparedStatement psProduto = conn.prepareStatement("select u.dsUnidade as unidade, ps.valor as vl_unidade, ps.idProduto as id_produto, "+
+        	       "if(ps.pDesc > 0, ps.pDesc, p.vlDesc) as vl_desconto_percentual, ps.quant as qtde_pedida, 0 as vl_custo_medio, "+
+        	       "ps.dsCompProduto as ds_observacao_produto, c.nome as nm_usuario_desconto, "+
+        		   "icms.cdCstIcms as cst_tributacao_icms, t.aliquotaIcms as vl_aliquota_icms, 0 as vl_aliquota_icms_fora_estado "+
+        	       "from tbpedidosaidaitem ps "+
+        		   "JOIN tbpedidosaida p on ps.idPedidoSaida = p.idPedidoSaida "+
+        		   "JOIN tbproduto pr on ps.idProduto = pr.idProduto "+
+        		   "LEFT JOIN tbcattributaria cat on pr.idCatTributaria = cat.idCatTributaria "+
+        		   "LEFT JOIN tbtributacao t on cat.idCatTributaria = t.idCatTributaria "+
+        		   "LEFT JOIN tbcsticms icms on t.cdCstIcms = icms.cdCstIcms "+
+        		   "LEFT JOIN tbcolaborador c on p.idColaborador = c.idColaborador "+ 
+        	       "LEFT JOIN tbunidade u on ps.idUnidade = u.idUnidade "+
+        	       "where p.idPedidoSaida = ? AND p.integracao = 'S'");
+        
+        psProduto.setInt(1, Integer.parseInt(id_pedido));
+        
+        ResultSet rsProduto = psProduto.executeQuery();
+        
+        while(rsProduto.next()){
+            linha.append("2");
+            linha.append(cbEsquerda(rsProduto.getString("id_produto"), 10));
+            linha.append(cb(rsProduto.getString("unidade"), 6));
+            linha.append(cb("", 150));
+            linha.append(fd(rsProduto.getDouble("vl_unidade"), 8, 17));
+            linha.append(fd(rsProduto.getDouble("qtde_pedida"), 2, 11));
+            linha.append(fd(rsProduto.getDouble("vl_desconto_percentual"), 6, 11));
+            linha.append(cb(ifNull(rsProduto.getString("nm_usuario_desconto")), 100));
+            linha.append(cb(ifNull(rsProduto.getString("cst_tributacao_icms")), 3));
+            linha.append(fd(rsProduto.getDouble("vl_custo_medio"), 2, 13));
+            linha.append(fd(0, 2, 13));
+            linha.append(fd(0, 2, 13));
+            linha.append(fd(rsProduto.getDouble("vl_aliquota_icms"), 2, 13));
+            linha.append(fd(rsProduto.getDouble("vl_aliquota_icms_fora_estado"), 2, 13));
+            linha.append("\n");
+        }
+        rsProduto.close();
+        psProduto.close();
+       // ConnectionFactory.closeConnection(this.conn);
+        
+
+        //TODO Ajuste o SQL para trazer o financeiro do pedido, caso tenha. NAO MUDE o nome das colunas
+//        PreparedStatement psLancamento = conn.prepareStatement(
+//                "select 0 as id_modalidade_pagamento, '' as nr_banco, '' as nr_cheque, '' as nr_agencia, '' as nr_conta, 0 as valor, "
+//                + "'DD/MM/YYYY' as vencimento "
+//                + "from tb_lancamento l "
+//                + "where l.id_pedido = ? ");
+//        psLancamento.setInt(1, Integer.parseInt(id_pedido));
+//        
+//        ResultSet rsLancamento = psLancamento.executeQuery();
+//        
+//        while(rsLancamento.next()){
+//            linha.append("3");
+//            linha.append(cbEsquerda(rsLancamento.getString("id_modalidade_pagamento"), 10));
+//            linha.append(cb(ifNull(rsLancamento.getString("nr_banco")), 5));
+//            linha.append(cb(ifNull(rsLancamento.getString("nr_agencia")), 10));
+//            linha.append(cb(ifNull(rsLancamento.getString("nr_conta")), 15));
+//            linha.append(cb(ifNull(rsLancamento.getString("nr_cheque")), 15));
+//            linha.append(cb(ifNull(rsLancamento.getString("vencimento")), 10));
+//            linha.append(fd(rsLancamento.getDouble("valor"), 2, 17));
+//            linha.append("\n");
+//        }
+//        rsLancamento.close();
+//        psLancamento.close();
+        
+        return linha.toString();
+    }
+
+    private String compactarZipBase64(String conteudo) throws Exception {
+        ByteArrayOutputStream bt = new ByteArrayOutputStream();
+        GZIPOutputStream gz = new GZIPOutputStream(bt);
+        gz.write(conteudo.getBytes("ISO-8859-1"));
+        gz.close();
+        String encodedBytes = new String(Base64.encodeBase64(bt.toByteArray()), "ISO-8859-1");
+        bt.close();
+        return encodedBytes;
+    }
+	
+    private String cbEsquerda(String str, int tamanho) {
+        if (str == null ) {
+            str = "";
+        }
+
+        if (str.length() >= tamanho) {
+            str = str.substring(0, tamanho);
+
+            return str;
+        }
+
+        StringBuffer sb = new StringBuffer(str);
+
+        for (int i = 0; i < tamanho; i++) {
+            sb.insert(0, ' ');
+        }
+
+        sb.delete(0, sb.length() - tamanho);
+
+        return sb.toString();
+    }
+    
+    private String cb(String texto, int tamanho) {
+        if (texto == null) {
+            texto = "";
+        }
+
+        StringBuffer sb = new StringBuffer(texto);
+
+        for (int i = 0; i < tamanho; i++) {
+            sb.append(' ');
+        }
+
+        sb.delete(tamanho, sb.length());
+
+        return sb.toString();
+    }
+
+    private String ifNull(String parametro) {
+        return (parametro == null ? "" : parametro);
+    }
+    
+    private String ifNull(String parametro, String padrao) {
+        return (parametro == null ? padrao : parametro);
+    }
+    
+    private String formatarDinheiro(double numero) {
+        NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+        nf.setMinimumFractionDigits(2);
+        nf.setMaximumFractionDigits(2);
+
+        return nf.format(numero);
+    }
+    
+    private String limpar(String str, String validos) {
+        String aux = "";
+
+        for (int i = 0; i < str.length(); i++) {
+            if (validos.indexOf(str.substring(i, i + 1)) != -1) {
+                aux += str.substring(i, i + 1);
+            }
+        }
+
+        return aux;
+    }
+
+    private String fd (double valor, int casaDecimal, int tamanho){
+        String retorno = "";
+        if (valor > 0){
+            retorno = String.valueOf(Math.round(valor * Math.pow(10, casaDecimal)));
+            retorno = cbEsquerda(retorno, tamanho - 1);
+            retorno = retorno.substring(0, (tamanho - 1) - casaDecimal) + "." + retorno.substring((tamanho - 1) - casaDecimal).replace(' ', '0');
+            int posicao = retorno.indexOf(".");
+            boolean vazio = retorno.substring(posicao - 1, posicao).trim().length() == 0;
+            if (vazio){
+                retorno = retorno.substring(0, posicao - 1) + "0" + retorno.substring(posicao);
+            }
+        } else {
+            retorno = "0.";
+            for (int i = 0; i < casaDecimal; i++) {
+                retorno += "0";
+            }
+            retorno = cbEsquerda(retorno, tamanho);
+        }
+
+        return retorno;
+    }
+}

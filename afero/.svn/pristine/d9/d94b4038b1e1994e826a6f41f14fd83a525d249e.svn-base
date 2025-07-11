@@ -1,0 +1,947 @@
+package afero.servlet;
+import java.io.*;
+import java.net.URLDecoder;
+import java.sql.*;
+import java.util.Calendar;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
+import afero.persistence.AferoDAOException;
+import afero.util.ConnectionFactory;
+import afero.util.Utilitaria;
+import java.util.List;
+import java.util.Iterator;
+import java.sql.Connection;
+import javax.servlet.http.*;
+import java.util.zip.GZIPOutputStream;
+import afero.util.ConnectionFactory;
+import afero.integracao.xprocess.NfeProdutoServico;
+import afero.integracao.xprocess.NfeFormaPagamento;
+import afero.integracao.xprocess.NfeLancamento;
+import afero.integracao.xprocess.persistence.NfeDAO;
+import afero.integracao.xprocess.persistence.NfeProdutoServicoDAO;
+import afero.integracao.xprocess.persistence.NfeFormaPagamentoDAO;
+import afero.integracao.xprocess.persistence.NfeLancamentoDAO;
+import afero.model.Estoque;
+import afero.model.Loja;
+import afero.persistence.EstoqueDAO;
+import afero.persistence.PedidoSaidaDAO;
+import afero.integracao.xprocess.Nfe;
+import afero.integracao.xprocess.NfeCancelamento;
+import afero.integracao.xprocess.persistence.NfeDAO;
+import afero.integracao.xprocess.persistence.NfeCancelamentoDAO;
+
+
+
+
+
+
+/**
+ *
+ * @author xprocess
+ */
+public class ReceberNFCe extends HttpServlet {
+
+	private Connection conn;
+    private static final Object bloqueio = new Object();
+    private final boolean exibirTempo = true;
+    private Loja loja = new Loja();
+
+   
+  public ReceberNFCe() throws AferoDAOException{
+    	
+    	try {
+    		conn = ConnectionFactory.getConnection();
+
+    	}catch (Exception e) {
+    		throw new AferoDAOException("Erro: " + ":\n" + e.getMessage());
+    	}
+    }
+  public void doGet(HttpServletRequest request,
+	        HttpServletResponse response) throws ServletException, IOException {
+	        processRequest(request, response);
+	    }
+
+	    public void doPost(HttpServletRequest request,
+	        HttpServletResponse response) throws ServletException, IOException {
+	        processRequest(request, response);
+	    }
+
+	    private void processRequest(HttpServletRequest request,
+	        HttpServletResponse response) throws ServletException, IOException {
+
+	        try {
+	            byte[] bytes = gerar(request, conn).getBytes();
+
+	            response.setDateHeader("Expires", 30);
+	            response.setContentLength(bytes.length);
+	            response.setContentType("text/plain");
+	            response.setCharacterEncoding("ISO-8859-1");
+	            response.getOutputStream().write(bytes);
+	        } catch (Exception e) {
+	            throw new ServletException(e);
+	        }
+	    }
+    protected String gerar(HttpServletRequest request, Connection con)
+            throws AferoDAOException {
+        long inicio = Calendar.getInstance().getTimeInMillis();
+        String retorno = "ERRO";
+        String nomeArquivoZip = request.getParameter("nm_arquivo");
+        
+        HttpSession session = request.getSession(); //Colocado por mim
+		
+
+        try {
+        	
+           String dir = session.getServletContext().getRealPath("/nfce/temp/") + "/";
+           File dirTemp = new File(dir);
+            dirTemp.mkdirs();
+            String conteudoZip = URLDecoder.decode(request.getParameter("conteudo"), "ISO-8859-1");
+
+            if (!nomeArquivoZip.startsWith("nfce-nfe-emp") && !nomeArquivoZip.startsWith("nfce-cancelamento")) {
+                throw new Exception("Formato de arquivo inválido.");
+            }
+            File fZip = new File(dir + nomeArquivoZip);
+            FileOutputStream fos = new FileOutputStream(fZip);
+            IOUtils.write(Base64.decodeBase64(conteudoZip.getBytes()), fos);
+            
+            //File fZip = new File("c:/temp/nfce/" + nomeArquivoZip);
+            ZipFile arqZip = new ZipFile(fZip);
+            Enumeration e = arqZip.entries();
+            HashMap<String, String> hmArquivos = new HashMap<String, String>();
+            while (e.hasMoreElements()) {
+                ZipEntry entrada = (ZipEntry) e.nextElement();
+                String nomeEntrada = entrada.getName();
+                InputStream is = arqZip.getInputStream(entrada);
+                String conteudoEntrada = IOUtils.toString(is);
+                is.close();
+                hmArquivos.put(nomeEntrada, conteudoEntrada);
+            }
+            arqZip.close();
+            fos.close();
+            fZip.delete();
+
+            synchronized (bloqueio) {
+                con.setAutoCommit(false);
+                try {
+                    if (nomeArquivoZip.startsWith("nfce-nfe-emp")) {
+                        int id_nfe = 0;
+                        int id_lote = 0;
+                        int nr_pedido = 0;
+                        int id_entidade_vendedor = 0;
+                        boolean nfeJaExiste = false;
+                        String nomeUsuario = "Integrador NFCe";
+
+                        //Inportando nfe.tb_nfe
+                        if (hmArquivos.containsKey("nfe.tb_nfe.txt")) {
+                            String[] linhas = hmArquivos.get("nfe.tb_nfe.txt").split("\n");
+                            String linha;
+                            boolean dados = false;
+                            boolean fisco = false;
+                            boolean informacoescomplementares = false;
+                            boolean dadosadicionaisdanfe = false;
+                            boolean xml = false;
+                            boolean portal = false;
+                            boolean qrcode = false;
+                            String infadfisco = "";
+                            String infcpl = "";
+                            String ds_dados_adicionais_danfe = "";
+                            String ds_xml = "";
+                            String link_portal_nfc = "";
+                            String link_qrcode_nfc = "";
+                            HashMap<String, String> hm_tb_nfe = new HashMap<String, String>();
+
+                            for (int i = 0; i < linhas.length; i++) {
+                                linha = linhas[i];
+                                if (linha.startsWith("#")) {
+                                    dados = false;
+                                    fisco = false;
+                                    informacoescomplementares = false;
+                                    dadosadicionaisdanfe = false;
+                                    xml = false;
+                                    portal = false;
+                                    qrcode = false ;
+                                    if ("#dados".equals(linha)) {
+                                        dados = true;                                        
+                                        continue;
+                                    } else if ("#infadfisco".equals(linha)) {                                        
+                                        fisco = true;                                        
+                                        continue;
+                                    } else if ("#infcpl".equals(linha)) {
+                                        informacoescomplementares = true;
+                                        continue;
+                                    } else if ("#ds_dados_adicionais_danfe".equals(linha)) {
+                                        dadosadicionaisdanfe = true;
+                                        continue;
+                                    } else if ("#ds_xml".equals(linha)) {
+                                        xml = true;
+                                        continue;
+                                    }else if ("#link_portal_nfc".equals(linha)) {
+                                        portal = true;
+                                        continue;
+                                    }else if ("#link_qrcode_nfc".equals(linha)) {
+                                        qrcode = true ;
+                                        continue;
+                                    }
+                                    
+                                }
+
+                                if (dados) {
+                                    int posicao = linha.indexOf("=");
+                                    String variavel = linha.substring(0, posicao);
+                                    String valor = linha.substring(posicao + 1).trim();
+                                    hm_tb_nfe.put(variavel, valor);
+                                    if ("nr_pedido".equals(variavel) && valor.length() > 0) {
+                                        nr_pedido = Integer.parseInt(valor);
+                                    }
+                                    if ("id_entidade_vendedor".equals(variavel) && valor.length() > 0) {
+                                        id_entidade_vendedor = Integer.parseInt(valor);
+                                    }
+                                    if ("nm_usuario".equals(variavel) && valor.length() > 0) {
+                                        nomeUsuario = valor;
+                                    }
+                                } else if (fisco) {
+                                    infadfisco += infadfisco.trim().length() > 0 ? "\n" + linha : linha;
+                                } else if (informacoescomplementares) {
+                                    infcpl += infcpl.trim().length() > 0 ? "\n" + linha : linha;
+                                } else if (dadosadicionaisdanfe) {
+                                    ds_dados_adicionais_danfe += ds_dados_adicionais_danfe.trim().length() > 0 ? "\n" + linha : linha;
+                                } else if (xml) {
+                                    ds_xml += ds_xml.trim().length() > 0 ? "\n" + linha : linha;
+                                }else if (portal) {
+                                    link_portal_nfc += link_portal_nfc.trim().length() > 0 ? "\n" + linha : linha;
+                                }else if (qrcode) {
+                                    link_qrcode_nfc += link_qrcode_nfc.trim().length() > 0 ? "\n" + linha : linha;
+                                }
+                            }
+
+                            hm_tb_nfe.put("infadfisco", infadfisco);
+                            hm_tb_nfe.put("infcpl", infcpl);
+                            hm_tb_nfe.put("ds_dados_adicionais_danfe", ds_dados_adicionais_danfe);
+                            hm_tb_nfe.put("ds_xml", ds_xml);
+                            hm_tb_nfe.put("link_portal_nfc", link_portal_nfc);
+                            
+                            // Alguns links tem & e ? e precisam de ajustes para o QRCode
+                            int pos = link_qrcode_nfc.indexOf("?");
+                            if (pos != -1) {
+                                link_qrcode_nfc = link_qrcode_nfc.substring(0, pos + 1) + link_qrcode_nfc.substring(pos + 1).replaceAll("\\?", "").replaceAll("\\&", "%26");
+                            }
+
+                            hm_tb_nfe.put("link_qrcode_nfc", link_qrcode_nfc);
+
+                            synchronized (bloqueio) {
+                                String[] ret = gerarNFe(con, hm_tb_nfe);
+                                id_nfe = Integer.parseInt(ret[0]);
+                                nfeJaExiste = "S".equals(ret[1]);
+                            }
+                        } else {
+                            throw new Exception("Faltou arquivo nfe.tb_nfe.txt");
+                        }
+
+                        if (id_nfe > 0 && !nfeJaExiste) {
+                            //Importando nfe.tb_produto_servico
+                            if (hmArquivos.containsKey("nfe.tb_nfe_produto_servico.txt")) {
+                                String[] linhas = hmArquivos.get("nfe.tb_nfe_produto_servico.txt").split("\n");
+                                String linha;
+
+                                boolean dados = false;
+                                boolean infAdicionaisProduto = false;
+                                String infadprod = "";
+                                int contProdutos = 0;
+                                HashMap<String, String> hm_tb_nfe_produto_servico = new HashMap<String, String>();
+
+                                for (int i = 0; i < linhas.length; i++) {
+                                    linha = linhas[i];
+                                    contProdutos++;
+                                    if (linha.startsWith("#")) {
+                                        if ("#dados".equals(linha)) {
+                                            dados = true;
+                                            infAdicionaisProduto = false;
+                                            if (contProdutos > 1) {
+                                                hm_tb_nfe_produto_servico.put("infadprod", infadprod);
+                                                gerarNFeProdutos(con, hm_tb_nfe_produto_servico, id_nfe, nr_pedido);
+                                                hm_tb_nfe_produto_servico = new HashMap<String, String>();
+                                                infadprod = "";
+                                            }
+                                            continue;
+                                        } else if ("#infadprod".equals(linha)) {
+                                            dados = false;
+                                            infAdicionaisProduto = true;
+                                            continue;
+                                        }
+                                    }
+
+                                    if (dados) {
+                                        int posicao = linha.indexOf("=");
+                                        String variavel = linha.substring(0, posicao);
+                                        String valor = linha.substring(posicao + 1).trim();
+                                        hm_tb_nfe_produto_servico.put(variavel, valor);
+                                    } else if (infAdicionaisProduto) {
+                                        infadprod += infadprod.trim().length() > 0 ? "\n" + linha : linha;
+                                    }
+
+                                }
+                                hm_tb_nfe_produto_servico.put("infadprod", infadprod);
+                                gerarNFeProdutos(con, hm_tb_nfe_produto_servico, id_nfe, nr_pedido);
+                            } else {
+                                throw new Exception("Faltou arquivo nfe.tb_nfe_produto_servico.txt");
+                            }
+
+                            //Importando nfe.tb_formas_pagamento_nfc
+                            if (hmArquivos.containsKey("nfe.tb_formas_pagamento_nfc.txt")) {
+                                String[] linhas = hmArquivos.get("nfe.tb_formas_pagamento_nfc.txt").split("\n");
+                                String linha;
+
+                                boolean dados = false;
+                                int contFormas = 0;
+                                HashMap<String, String> hm_tb_formas_pagamento_nfc = new HashMap<String, String>();
+
+                                for (int i = 0; i < linhas.length; i++) {
+                                    linha = linhas[i];
+                                    contFormas++;
+                                    if (linha.startsWith("#")) {
+                                        if ("#dados".equals(linha)) {
+                                            dados = true;
+
+                                            if (contFormas > 1) {
+                                                gerarFormaPagamento(con, hm_tb_formas_pagamento_nfc, id_nfe);
+                                                hm_tb_formas_pagamento_nfc = new HashMap<String, String>();
+                                            }
+                                            continue;
+                                        }
+                                    }
+
+                                    if (dados) {
+                                        int posicao = linha.indexOf("=");
+                                        if (linha.trim().length() == 0) {
+                                            continue;
+                                        }
+                                        String variavel = linha.substring(0, posicao);
+                                        String valor = linha.substring(posicao + 1).trim();
+
+                                        hm_tb_formas_pagamento_nfc.put(variavel, valor);
+                                    }
+                                }
+                                gerarFormaPagamento(con, hm_tb_formas_pagamento_nfc, id_nfe);
+                            } else {
+                                throw new Exception("Faltou arquivo nfe.tb_formas_pagamento_nfc.txt");
+                            }
+
+                            //Importando tb_lancamento (Uso para OS)
+                            if (hmArquivos.containsKey("tb_lancamento.txt")) {
+                                String[] linhas = hmArquivos.get("tb_lancamento.txt").split("\n");
+                                String linha;
+
+                                boolean dados = false;
+                                int contLancamento = 0;
+                                HashMap<String, String> hm_tb_lancamento = new HashMap<String, String>();
+
+                                for (int i = 0; i < linhas.length; i++) {
+                                    linha = linhas[i];
+                                    contLancamento++;
+                                    if (linha.startsWith("#")) {
+                                        if ("#dados".equals(linha)) {
+                                            dados = true;
+
+                                            if (contLancamento > 1) {
+                                                gerarLancamento(con, hm_tb_lancamento, id_nfe);
+                                                hm_tb_lancamento = new HashMap<String, String>();
+                                            }
+                                            continue;
+                                        }
+                                    }
+
+                                    if (dados) {
+                                        int posicao = linha.indexOf("=");
+                                        if (linha.trim().length() == 0) {
+                                            continue;
+                                        }
+                                        String variavel = linha.substring(0, posicao);
+                                        String valor = linha.substring(posicao + 1).trim();
+
+                                        hm_tb_lancamento.put(variavel, valor);
+                                    }
+                                }
+                                gerarLancamento(con, hm_tb_lancamento, id_nfe);
+                            }
+
+                            //Importando nfe.tb_contingencia
+                            if (hmArquivos.containsKey("nfe.tb_contingencia.txt")) {
+                                String[] linhas = hmArquivos.get("nfe.tb_contingencia.txt").split("\n");
+                                String linha;
+
+                                boolean dados = false;
+                                boolean motivo = false;
+                                String ds_motivo = "";
+                                int contContingencias = 0;
+                                HashMap<String, String> hm_tb_contingencia = new HashMap<String, String>();
+
+                                for (int i = 0; i < linhas.length; i++) {
+                                    linha = linhas[i];
+                                    contContingencias++;
+                                    if (linha.startsWith("#")) {
+                                        if ("#dados".equals(linha)) {
+                                            dados = true;
+                                            motivo = false;
+
+                                            if (contContingencias > 1) {
+                                                hm_tb_contingencia.put("ds_motivo", ds_motivo);
+                                                gerarContingencia(con, hm_tb_contingencia, id_nfe);
+                                                hm_tb_contingencia = new HashMap<String, String>();
+                                                ds_motivo = "";
+                                            }
+
+                                            continue;
+                                        } else if ("#ds_motivo".equals(linha)) {
+                                            dados = false;
+                                            motivo = true;
+                                            continue;
+                                        }
+                                    }
+
+                                    if (dados) {
+                                        int posicao = linha.indexOf("=");
+                                        String variavel = linha.substring(0, posicao);
+                                        String valor = linha.substring(posicao + 1).trim();
+
+                                        hm_tb_contingencia.put(variavel, valor);
+
+                                    } else if (motivo) {
+                                        ds_motivo += ds_motivo.trim().length() > 0 ? "\n" + linha : linha;
+                                    }
+                                }
+                                hm_tb_contingencia.put("ds_motivo", ds_motivo);
+                                gerarContingencia(con, hm_tb_contingencia, id_nfe);
+                            } else {
+                                throw new Exception("Faltou arquivo nfe.tb_contingencia.txt");
+                            }
+
+                            if (nr_pedido > 0) {
+                                //TODO Se for NFC-e de venda assistida, atualizar o pedido do AFERO
+                            } else {
+                                //TODO Se for NFC-e criada diretamente no PDV, criar pedido no AFERO.
+                            }
+                        }
+                        retorno = "OK";
+                    }
+
+                    if (nomeArquivoZip.startsWith("nfce-cancelamento")) {
+                        //Importando nfe.tb_cancelamento_nfe
+                        if (hmArquivos.containsKey("nfe.tb_cancelamento_nfe.txt")) {
+                            String[] linhas = hmArquivos.get("nfe.tb_cancelamento_nfe.txt").split("\n");
+                            String linha;
+
+                            boolean dados = false;
+                            boolean xml = false;
+                            boolean xml_recebido = false;
+                            String ds_xml = "";
+                            String ds_xml_recebido = "";
+                            int contCancelamentos = 0;
+                            int id_nfe = 0;
+                            HashMap<String, String> hm_tb_cancelamento_nfe = new HashMap<String, String>();
+
+                            //obtendoDadosNfe
+                            for (int i = 0; i < linhas.length; i++) {
+                                linha = linhas[i];
+                                contCancelamentos++;
+                                if (linha.startsWith("#")) {
+                                    if ("#dados".equals(linha)) {
+                                        dados = true;
+                                        xml = false;
+                                        xml_recebido = false;
+
+                                        if (contCancelamentos > 1) {
+                                            hm_tb_cancelamento_nfe.put("ds_xml", ds_xml);
+                                            hm_tb_cancelamento_nfe.put("ds_xml_recebido", ds_xml_recebido);
+                                            gerarCancelarNFe(con, hm_tb_cancelamento_nfe, id_nfe);
+                                            hm_tb_cancelamento_nfe = new HashMap<String, String>();
+                                            ds_xml = "";
+                                            ds_xml_recebido = "";
+                                        }
+                                        continue;
+                                    } else if ("#ds_xml".equals(linha)) {
+                                        dados = false;
+                                        xml = true;
+                                        xml_recebido = false;
+                                        continue;
+                                    } else if ("#ds_xml_recebido".equals(linha)) {
+                                        dados = false;
+                                        xml = false;
+                                        xml_recebido = true;
+                                        continue;
+                                    }
+                                }
+
+                                if (dados) {
+                                    int posicao = linha.indexOf("=");
+                                    String variavel = linha.substring(0, posicao);
+                                    String valor = linha.substring(posicao + 1).trim();
+                                    hm_tb_cancelamento_nfe.put(variavel, valor);
+                                    if ("chnfe".equals(variavel)) {
+                                        id_nfe = obterIdNfe(valor);
+                                    }
+
+                                } else if (xml) {
+                                    ds_xml += ds_xml.trim().length() > 0 ? "\n" + linha : linha;
+                                } else if (xml_recebido) {
+                                    ds_xml_recebido += ds_xml_recebido.trim().length() > 0 ? "\n" + linha : linha;
+                                }
+
+                            }
+                            hm_tb_cancelamento_nfe.put("ds_xml", ds_xml);
+                            hm_tb_cancelamento_nfe.put("ds_xml_recebido", ds_xml_recebido);
+                            gerarCancelarNFe(con, hm_tb_cancelamento_nfe, id_nfe);
+                            cancelarPedido(con, id_nfe);
+
+                        }
+                        retorno = "OK";
+                    }
+
+                    con.commit();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    con.rollback();
+                } finally {
+                    con.setAutoCommit(true);
+                }
+            }
+            hmArquivos.clear();
+            hmArquivos = null; // Para agilizar o GC
+        } catch (Exception e) {
+            retorno = "ERRO - " + e.getMessage();
+            e.printStackTrace();
+        }
+        long fim = Calendar.getInstance().getTimeInMillis();
+        if (exibirTempo) {
+        	PedidoSaidaDAO pedidoSaidaDAO = new PedidoSaidaDAO(conn);
+            System.out.println("[" + pedidoSaidaDAO.dataAtualPedido() + "] Tempo Total " + (fim - inicio) / 1000 + "s - " + nomeArquivoZip);
+        }
+        return retorno;
+    }
+
+    private String[] gerarNFe(Connection con, HashMap<String, String> hm) throws Exception {
+        String[] retorno = new String[2];
+        retorno[0] = "0"; //id_nfe
+        retorno[1] = "N"; //já existe NFe
+        Nfe nfe = new Nfe();
+    	NfeDAO daoNfe= new NfeDAO(ConnectionFactory.getConnection());
+    	if (hm.size() > 0) {
+            //primeiro verifica se ja existe a nota no midas
+            String nnf = hm.get("nnf");
+            String serie = hm.get("serie");
+            String id_empresa = hm.get("id_empresa");
+            loja.setIdLoja(Integer.parseInt(id_empresa));
+            retorno[0] = nnf;
+    	    nfe.setIdPedidoSaida(hm.get("nr_pedido"));
+        	nfe.setCuf(hm.get("cuf"));
+        	nfe.setCnf(hm.get("cnf"));
+        	nfe.setNatop(hm.get("natop"));
+        	nfe.setIndpag(hm.get("indpag"));
+        	nfe.setMod(hm.get("mod"));
+        	nfe.setSerie(hm.get("serie"));
+        	nfe.setNnf(hm.get("nnf"));
+        	nfe.setDemi(hm.get("demi"));
+        	nfe.setDsaient(hm.get("dsaient"));
+        	nfe.setTpnf(hm.get("tpnf"));
+        	nfe.setCmunfg(hm.get("cmunfg"));
+        	nfe.setTpimp(hm.get("tpimp"));
+        	nfe.setTpemis(hm.get("tpemis"));
+        	nfe.setTpamb(hm.get("tpamb"));
+        	nfe.setFinnfe(hm.get("finnfe"));
+        	nfe.setProcemi(hm.get("procemi"));
+        	nfe.setEmit_cnpj(hm.get("emit_cnpj"));
+        	nfe.setEmit_xnome(hm.get("emit_xnome"));
+        	nfe.setEmit_xfant(hm.get("emit_xfant"));
+        	nfe.setEmit_xlgr(hm.get("emit_xlgr"));
+        	nfe.setEmit_nro(hm.get("emit_nro"));
+        	nfe.setEmit_xcpl(hm.get("emit_xcpl"));
+        	nfe.setEmit_xbairro(hm.get("emit_xbairro"));
+        	nfe.setEmit_cmun(hm.get("emit_cmun"));
+        	nfe.setEmit_xmun(hm.get("emit_xmun"));
+        	nfe.setEmit_uf(hm.get("emit_uf"));
+        	nfe.setEmit_cep(hm.get("emit_cep"));
+        	nfe.setEmit_fone(hm.get("emit_fone"));
+        	nfe.setEmit_ie(hm.get("emit_ie"));
+        	nfe.setEmit_iest(hm.get("emit_iest"));
+        	nfe.setEmit_im(hm.get("emit_im"));
+        	nfe.setEmit_cnae(hm.get("emit_cnae"));
+        	nfe.setDest_cnpj(hm.get("dest_cnpj"));
+        	nfe.setDest_cpf(hm.get("dest_cpf"));
+        	nfe.setDest_xnome(hm.get("dest_xnome"));
+        	nfe.setDest_xlgr(hm.get("dest_xlgr"));
+        	nfe.setDest_nro(hm.get("dest_nro"));
+        	nfe.setDest_xcpl(hm.get("dest_xcpl"));
+        	nfe.setDest_xbairro(hm.get("dest_xbairro"));
+        	nfe.setDest_cmun(hm.get("dest_cmun"));
+        	nfe.setDest_xmun(hm.get("dest_xmun"));
+        	nfe.setDest_uf(hm.get("dest_uf"));
+        	nfe.setDest_cep(hm.get("dest_cep"));
+        	nfe.setDest_fone(hm.get("dest_fone"));
+        	nfe.setDest_ie(hm.get("dest_ie"));
+        	nfe.setDest_isuf(hm.get("dest_isuf"));
+        	nfe.setRetirada_cnpj(hm.get("retirada_cnpj"));
+          	nfe.setRetirada_xlgr(hm.get("retirada_xlgr"));
+        	nfe.setRetirada_nro(hm.get("retirada_nro"));
+        	nfe.setRetirada_xcpl(hm.get("retirada_xcpl"));
+        	nfe.setRetirada_xbairro(hm.get("retirada_xbairro"));
+        	nfe.setRetirada_cmun(hm.get("retirada_cmun"));
+        	nfe.setRetirada_xmun(hm.get("retirada_xmun"));
+        	nfe.setEntrega_cnpj(hm.get("entrega_cnpj"));
+        	nfe.setEntrega_xlgr(hm.get("entrega_xlgr"));
+        	nfe.setEntrega_nro(hm.get("entrega_nro"));
+        	nfe.setEntrega_xcpl(hm.get("entrega_xcpl"));
+        	nfe.setEntrega_xbairro(hm.get("entrega_xbairro"));
+        	nfe.setEntrega_cmun(hm.get("entrega_cmun"));
+        	nfe.setEntrega_xmun(hm.get("entrega_xmun"));
+        	nfe.setIcmstot_vbc(hm.get("icmstot_vbc"));
+        	nfe.setIcmstot_vicms(hm.get("icmstot_vicms"));
+        	nfe.setIcmstot_vbcst(hm.get("icmstot_vbcst"));
+        	nfe.setIcmstot_vst(hm.get("icmstot_vst"));
+        	nfe.setIcmstot_vprod(hm.get("icmstot_vprod"));
+        	nfe.setIcmstot_vfrete(hm.get("icmstot_vfrete"));
+        	nfe.setIcmstot_vseg(hm.get("icmstot_vseg"));
+        	nfe.setIcmstot_vdesc(hm.get("icmstot_vdesc"));
+        	nfe.setIcmstot_vii(hm.get("icmstot_vii"));
+        	nfe.setIcmstot_vipi(hm.get("icmstot_vipi"));
+        	nfe.setIcmstot_vpis(hm.get("icmstot_vpis"));
+        	nfe.setIcmstot_vcofins(hm.get("icmstot_vcofins"));
+        	nfe.setIcmstot_voutro(hm.get("icmstot_voutro"));
+        	nfe.setIcmstot_vnf(hm.get("icmstot_vnf"));
+        	nfe.setRettrib_vretpis(hm.get("rettrib_vretpis"));
+        	nfe.setRettrib_vretcofins(hm.get("rettrib_vretcofins"));
+        	nfe.setRettrib_vretcsll(hm.get("rettrib_vretcsll"));
+        	nfe.setRettrib_vbcirrf(hm.get("rettrib_vbcirrf"));
+        	nfe.setRettrib_virrf(hm.get("rettrib_virrf"));
+        	nfe.setRettrib_vbcretprev(hm.get("rettrib_vbcretprev"));
+        	nfe.setRettrib_vretprev(hm.get("rettrib_vretprev"));
+        	nfe.setTransp_modfrete(hm.get("transp_modfrete"));
+        	nfe.setTransp_cnpj(hm.get("transp_cnpj"));
+        	nfe.setTransp_cpf(hm.get("transp_cpf"));
+        	nfe.setTransp_xnome(hm.get("transp_xnome"));
+        	nfe.setTransp_ie(hm.get("transp_ie"));
+        	nfe.setTransp_xender(hm.get("transp_xender"));
+        	nfe.setTransp_xmun(hm.get("transp_xmun"));
+        	nfe.setTransp_uf(hm.get("transp_uf"));
+        	nfe.setTransp_vserv(hm.get("transp_vserv"));
+        	nfe.setTransp_vbcret(hm.get("transp_vbcret"));
+        	nfe.setTransp_picmsret(hm.get("transp_picmsret"));
+        	nfe.setTransp_vicmsret(hm.get("transp_vicmsret"));
+        	nfe.setTransp_cfop(hm.get("transp_cfop"));
+        	nfe.setTransp_cmunfg(hm.get("transp_cmunfg"));
+        	nfe.setTransp_placa(hm.get("transp_placa"));
+        	nfe.setTransp_uf_placa(hm.get("transp_uf_placa"));
+        	nfe.setTransp_rntc(hm.get("transp_rntc"));
+        	nfe.setCobr_nfat(hm.get("cobr_nfat"));
+        	nfe.setCobr_vorig(hm.get("cobr_vorig"));
+        	nfe.setCobr_vdesc(hm.get("cobr_vdesc"));
+        	nfe.setCobr_vliq(hm.get("cobr_vliq"));
+        	nfe.setCompra_xnemp(hm.get("compra_xnemp"));
+        	nfe.setCompra_xped(hm.get("compra_xped"));
+        	nfe.setCompra_xcont(hm.get("compra_xcont"));
+        	nfe.setChnfe(hm.get("chnfe"));
+        	nfe.setNprot(hm.get("nprot"));
+        	nfe.setId_empresa(hm.get("id_empresa"));
+        	nfe.setCstat(hm.get("cstat"));
+        	nfe.setXmotivo(hm.get("xmotivo"));
+        	nfe.setDtprot(hm.get("dtprot"));
+        	nfe.setIn_status(hm.get("in_status"));
+        	nfe.setCd_barras_contigencia(hm.get("cd_barras_contigencia"));
+        	nfe.setId_contingencia(hm.get("id_contingencia"));
+        	nfe.setNm_usuario(hm.get("nm_usuario"));
+        	nfe.setDt_registro(hm.get("dt_registro"));
+        	nfe.setEmit_crt(hm.get("emit_crt"));
+        	nfe.setDhcont(hm.get("dhcont"));
+        	nfe.setXjust(hm.get("xjust"));
+        	nfe.setDest_email(hm.get("dest_email"));
+        	nfe.setRetirada_cpf(hm.get("retirada_cpf"));
+        	nfe.setEntrega_cpf(hm.get("entrega_cpf"));
+        	nfe.setDest_cpais(hm.get("dest_cpais"));
+        	nfe.setDest_xpais(hm.get("dest_xpais"));
+        	nfe.setTransp_qvol(hm.get("transp_qvol"));
+        	nfe.setTransp_pesol(hm.get("transp_pesol"));
+        	nfe.setTransp_pesob(hm.get("transp_pesob"));
+        	nfe.setDt_envio_email(hm.get("dt_envio_email"));
+        	nfe.setEmail_enviado(hm.get("email_enviado"));
+        	nfe.setUfembarq(hm.get("ufembarq"));
+        	nfe.setDest_iddest(hm.get("dest_iddest"));
+        	nfe.setIndfinal(hm.get("indfinal"));
+            nfe.setIndpres(hm.get("indpres"));
+        	nfe.setDt_inicio_transacao(hm.get("dt_inicio_transacao"));
+        	nfe.setDt_termino_transacao(hm.get("dt_termino_transacao"));
+        	nfe.setNr_pedido(hm.get("nr_pedido"));
+        	nfe.setNr_os(hm.get("nr_os"));
+        	nfe.setId_entidade_vendedor(hm.get("id_entidade_vendedor"));
+        	nfe.setDigval(hm.get("digval"));
+        	nfe.setIcmstot_vtottrib(hm.get("icmstot_vtottrib"));
+        	nfe.setNr_tempo_gasto_solicitacao(hm.get("nr_tempo_gasto_solicitacao"));
+        	nfe.setNr_tempo_gasto_solicitacao(hm.get("nr_tempo_gasto_solicitacao"));
+        	nfe.setVerproc(hm.get("verproc"));
+        	nfe.setDs_xml(hm.get("ds_xml"));
+        	nfe.setLink_portal_nfc(hm.get("link_portal_nfc"));
+        	nfe.setLink_qrcode_nfc(hm.get("link_qrcode_nfc"));
+        	if(!daoNfe.existeNota(Integer.parseInt(nfe.getNnf()), nfe.getSerie())){
+        		daoNfe.incluir(nfe);
+        	}else{
+        		System.out.println("Já existe a nota: " + nfe.getNnf());
+        	}
+        }
+        return retorno;
+    }
+    private void gerarNFeProdutos(Connection con, HashMap<String, String> hm, int idNfe, Integer nr_pedido) throws Exception {
+    		NfeProdutoServico nfeProdutoServico = new NfeProdutoServico();
+	    	NfeProdutoServicoDAO daoNfeProdutoServico = new NfeProdutoServicoDAO(ConnectionFactory.getConnection());
+	    	nfeProdutoServico.setIdPedidoSaida(nr_pedido);
+	    	nfeProdutoServico.setIdNfe(idNfe);
+	    	nfeProdutoServico.setTp_registro(hm.get("tp_registro"));
+	    	nfeProdutoServico.setTp_produto_especifico(hm.get("tp_produto_especifico"));
+	    	nfeProdutoServico.setNitem(hm.get("nitem"));
+	    	nfeProdutoServico.setCprod(hm.get("cprod"));//codigo Produto
+	    	nfeProdutoServico.setQcom(hm.get("qcom"));//quantidade
+	    	if(nr_pedido == 0){
+	    		Double quant;
+	    		Estoque estoque = new Estoque();
+	    		EstoqueDAO daoEstoque = new EstoqueDAO(ConnectionFactory.getConnection());
+	    		estoque.setIdLoja(loja.getIdLoja());
+	    		String user = "nfe_integracao";
+	    		estoque.setUsuario(user);
+	    		estoque.setIdProduto(Integer.parseInt(nfeProdutoServico.getCprod()));
+	    		quant = Utilitaria.toNumber(nfeProdutoServico.getQcom()).doubleValue();
+	    		Estoque buscaEstoque = daoEstoque.procurarEstoqueLojaProdutoSstatus(estoque.getIdLoja(), estoque.getIdProduto());
+	    		if(buscaEstoque != null){
+	    			estoque.setStatus(buscaEstoque.getStatus());
+	 	    		estoque.setStatus("A");
+	 	    		estoque.setIdEstoque(buscaEstoque.getIdEstoque());
+	 	    		estoque.setQtMaximo(buscaEstoque.getQtMaximo());
+	 	    		estoque.setQtMinimo(buscaEstoque.getQtMinimo());
+	 	    		estoque.estoqueSaida(buscaEstoque.getQtEstoque(), quant);
+	 	    		daoEstoque.atualizarEstoque(estoque);
+	    		}else{
+	    			System.out.println(estoque.getIdEstoque());
+	    			System.out.println(estoque.getIdLoja());
+	    			System.out.println(estoque.getIdProduto());
+	    			System.out.println(loja.getIdLoja());
+	    			System.out.println(nfeProdutoServico.getCprod());
+	    			System.out.println(loja.getIdLoja());
+	    			System.out.println("Erro ao buscar o estoque");
+	    		}
+	    	}else{
+	    		PedidoSaidaDAO daoPedidoSaida = new PedidoSaidaDAO(ConnectionFactory.getConnection());
+	    		daoPedidoSaida.atualizarIntegracaoNfeEmitida(nr_pedido);
+	    	}
+	    	nfeProdutoServico.setCean(hm.get("cean"));
+	    	nfeProdutoServico.setXprod(hm.get("xprod"));
+	    	nfeProdutoServico.setNcm(hm.get("ncm"));
+	    	nfeProdutoServico.setExtipi(hm.get("extipi"));
+	    	nfeProdutoServico.setGenero(hm.get("genero"));
+	    	nfeProdutoServico.setCfop(hm.get("cfop"));
+	    	nfeProdutoServico.setUcom(hm.get("ucom"));
+	    	nfeProdutoServico.setVuncom(hm.get("vuncom"));
+	    	nfeProdutoServico.setVprod(hm.get("vprod"));
+	    	nfeProdutoServico.setUtrib(hm.get("utrib"));
+	    	nfeProdutoServico.setQtrib(hm.get("qtrib"));
+	    	nfeProdutoServico.setVuntrib(hm.get("vuntrib"));
+	    	nfeProdutoServico.setVfrete(hm.get("vfrete"));
+	    	nfeProdutoServico.setVseg(hm.get("vseg"));
+	    	nfeProdutoServico.setVdesc(hm.get("vdesc"));
+	    	nfeProdutoServico.setImposto_orig(hm.get("imposto_orig"));
+	    	nfeProdutoServico.setImposto_cst(hm.get("imposto_cst"));
+	    	nfeProdutoServico.setImposto_modbc(hm.get("imposto_modbc"));
+	    	nfeProdutoServico.setImposto_predbc(hm.get("imposto_predbc"));
+	    	nfeProdutoServico.setImposto_vbc(hm.get("imposto_vbc"));
+	    	nfeProdutoServico.setImposto_picms(hm.get("imposto_picms"));
+	    	nfeProdutoServico.setImposto_vicms(hm.get("imposto_vicms"));
+	    	nfeProdutoServico.setImposto_modbcst(hm.get("imposto_modbcst"));
+	    	nfeProdutoServico.setImposto_pmvast(hm.get("imposto_pmvast"));
+	    	nfeProdutoServico.setImposto_predbcst(hm.get("imposto_predbcst"));
+	    	nfeProdutoServico.setImposto_vbcst(hm.get("imposto_vbcst"));
+	    	nfeProdutoServico.setImposto_picmsst(hm.get("imposto_picmsst"));
+	    	nfeProdutoServico.setImposto_vicmsst(hm.get("imposto_vicmsst"));
+	    	nfeProdutoServico.setImportacao_vbc(hm.get("importacao_vbc"));
+	    	nfeProdutoServico.setImportacao_vdespadu(hm.get("importacao_vdespadu"));
+	    	nfeProdutoServico.setImportacao_vii(hm.get("importacao_vii"));
+	    	nfeProdutoServico.setImportacao_viof(hm.get("importacao_viof"));
+	    	nfeProdutoServico.setPis_cst(hm.get("pis_cst"));
+	    	nfeProdutoServico.setPis_vbc(hm.get("pis_vbc"));
+	    	nfeProdutoServico.setPis_ppis(hm.get("pis_ppis"));
+	    	nfeProdutoServico.setPis_qbcprod(hm.get("pis_qbcprod"));
+	    	nfeProdutoServico.setPis_valiqprod(hm.get("pis_valiqprod"));
+	    	nfeProdutoServico.setPis_vpis(hm.get("pis_vpis"));
+	    	nfeProdutoServico.setPisst_vbc(hm.get("pisst_vbc"));
+	    	nfeProdutoServico.setPisst_ppis(hm.get("pisst_ppis"));
+	    	nfeProdutoServico.setPisst_qbcprod(hm.get("pisst_qbcprod"));
+	    	nfeProdutoServico.setPisst_valiqprod(hm.get("pisst_valiqprod"));
+	    	nfeProdutoServico.setPisst_vpis(hm.get("pisst_vpis"));
+	    	nfeProdutoServico.setCofins_cst(hm.get("cofins_cst"));
+	    	nfeProdutoServico.setCofins_vbc(hm.get("cofins_vbc"));
+	    	nfeProdutoServico.setCofins_pcofins(hm.get("cofins_pcofins"));
+	    	nfeProdutoServico.setCofins_qbcprod(hm.get("cofins_qbcprod"));
+	    	nfeProdutoServico.setCofins_valiqprod(hm.get("cofins_valiqprod"));
+	    	nfeProdutoServico.setCofins_vcofins(hm.get("cofins_vcofins"));
+	    	nfeProdutoServico.setCofinsst_vbc(hm.get("cofinsst_vbc"));
+	    	nfeProdutoServico.setCofinsst_pcofins(hm.get("cofinsst_pcofins"));
+	    	nfeProdutoServico.setCofinsst_qbcprod(hm.get("cofinsst_qbcprod"));
+	    	nfeProdutoServico.setCofinsst_valiqprod(hm.get("cofinsst_valiqprod"));
+	    	nfeProdutoServico.setCofinsst_vcofins(hm.get("cofinsst_vcofins"));
+	    	nfeProdutoServico.setIpi_cenq(hm.get("ipi_cenq"));
+	    	nfeProdutoServico.setIpi_cst(hm.get("ipi_cst"));
+	    	nfeProdutoServico.setIpi_vbc(hm.get("ipi_vbc"));
+	    	nfeProdutoServico.setIpi_qunid(hm.get("ipi_qunid"));
+	    	nfeProdutoServico.setIpi_vunid(hm.get("ipi_vunid"));
+	    	nfeProdutoServico.setIpi_pipi(hm.get("ipi_pipi"));
+	    	nfeProdutoServico.setIpi_vipi(hm.get("ipi_vipi"));
+	    	nfeProdutoServico.setVoutro(hm.get("voutro"));
+	    	nfeProdutoServico.setIndtot(hm.get("indtot"));
+	    	nfeProdutoServico.setImposto_motdesicms(hm.get("imposto_motdesicms"));
+	    	nfeProdutoServico.setImposto_pcredsn(hm.get("imposto_pcredsn"));
+	    	nfeProdutoServico.setImposto_vcredicmssn(hm.get("imposto_vcredicmssn"));
+	    	nfeProdutoServico.setCprod_alternativo(hm.get("cprod_alternativo"));
+	    	nfeProdutoServico.setIi_vbc(hm.get("ii_vbc"));
+	    	nfeProdutoServico.setIi_vdespadu(hm.get("ii_vdespadu"));
+	    	nfeProdutoServico.setIi_vii(hm.get("ii_vii"));
+	    	nfeProdutoServico.setIi_viof(hm.get("ii_viof"));
+	    	nfeProdutoServico.setVtottrib(hm.get("vtottrib"));
+	    	nfeProdutoServico.setNfci(hm.get("nfci"));
+	    	if(daoNfeProdutoServico.getSerie(idNfe, nr_pedido) != 0){
+	    		nfeProdutoServico.setSerie(daoNfeProdutoServico.getSerie(idNfe, nr_pedido)); 
+	    	}else{
+	    		System.out.println(daoNfeProdutoServico.getSerie(idNfe, nr_pedido));
+	    		nfeProdutoServico.setSerie(0);
+	    	}
+	    	if(!daoNfeProdutoServico.existeProduto(nfeProdutoServico.getIdNfe(), nfeProdutoServico.getCprod(), nfeProdutoServico.getCfop(), nfeProdutoServico.getNitem(), "".valueOf(nfeProdutoServico.getIdPedidoSaida()))){
+	    		daoNfeProdutoServico.incluir(nfeProdutoServico);
+	    	}else{
+	    	    System.out.println("Produto ja cadastrado : " + nfeProdutoServico.getIdNfe());	
+	    	}
+	    	
+    	
+        //TODO Registrar dados pertinentes aos produtos da NFC-e no AFERO
+    }
+
+    private void gerarFormaPagamento(Connection con, HashMap<String, String> hm, int id_nfe) throws Exception {
+	   	
+	    	NfeFormaPagamento nfeFormaPagamento= new NfeFormaPagamento();
+	    	NfeFormaPagamentoDAO daoNfeFormaPagamentoDAO = new NfeFormaPagamentoDAO(ConnectionFactory.getConnection());
+	    	nfeFormaPagamento.setIdNfe(id_nfe);
+	    	nfeFormaPagamento.setTpag(hm.get("tpag"));
+	    	nfeFormaPagamento.setVpag(hm.get("vpag"));
+	    	nfeFormaPagamento.setCnpj(hm.get("cnpj"));
+	    	nfeFormaPagamento.setTband(hm.get("tband"));
+	    	nfeFormaPagamento.setCaut(hm.get("caut"));
+	    	nfeFormaPagamento.setDt_registro(hm.get("dt_registro"));
+	    	nfeFormaPagamento.setDs_descricao_comercial_midas(hm.get("ds_descricao_comercial_midas"));
+	    	nfeFormaPagamento.setNr_banco(hm.get("nr_banco"));
+	    	nfeFormaPagamento.setNr_cheque(hm.get("nr_cheque"));
+	    	nfeFormaPagamento.setNr_conta(hm.get("nr_conta"));
+	    	nfeFormaPagamento.setNr_agencia(hm.get("nr_agencia"));
+	    	nfeFormaPagamento.setId_modalidade_pagamento(hm.get("id_modalidade_pagamento"));
+	    	nfeFormaPagamento.setDt_vencimento(hm.get("dt_vencimento"));
+	    	daoNfeFormaPagamentoDAO.incluir(nfeFormaPagamento);
+	  
+    	
+        //TODO Registrar dados pertinentes a forma de pagamento informada na NFC-e no AFERO
+    }
+    
+    private void gerarLancamento(Connection con, HashMap<String, String> hm, int id_nfe) throws Exception {
+    	
+	    	NfeLancamento nfeLancamento = new NfeLancamento();
+	    	NfeLancamentoDAO daoNfeLancamentoDAO = new NfeLancamentoDAO(ConnectionFactory.getConnection());
+	    	nfeLancamento.setIdNfe(id_nfe);
+	    	nfeLancamento.setDt_registro(hm.get("dt_registro"));
+	    	nfeLancamento.setId_modalidade_pagamento(hm.get("id_modalidade_pagamento"));
+	    	nfeLancamento.setDs_modalidade_pagamento(hm.get("ds_modalidade_pagamento"));
+	    	nfeLancamento.setValor(hm.get("valor"));
+	    	nfeLancamento.setDt_vencimento(hm.get("dt_vencimento"));
+	    	nfeLancamento.setCaut(hm.get("caut"));
+	    	nfeLancamento.setNr_banco(hm.get("nr_banco"));
+	    	nfeLancamento.setNr_cheque(hm.get("nr_cheque"));
+	    	nfeLancamento.setNr_conta(hm.get("nr_conta"));
+	    	nfeLancamento.setNr_agencia(hm.get("nr_agencia"));
+	    	daoNfeLancamentoDAO.incluir(nfeLancamento);
+    
+
+        //TODO Registrar dados pertinentes a forma de pagamento informada na NFC-e no AFERO
+    }
+
+    private void gerarContingencia(Connection con, HashMap<String, String> hm, int id_nfe) throws Exception {
+        //TODO Registrar dados pertinentes da contingência da NFC-e no AFERO (Só terá informações se a NFC-e foi emitida em contigência
+    }
+
+    private void gerarCancelarNFe(Connection con, HashMap<String, String> hm, int id_nfe) throws Exception {
+    	
+	    	NfeProdutoServicoDAO daoNfeProdutoServicoDAO = new NfeProdutoServicoDAO(ConnectionFactory.getConnection());
+	    	Integer nrPedido = daoNfeProdutoServicoDAO.procurarPedidoSaida(id_nfe);
+			if(nrPedido == 0){
+				List produtos = daoNfeProdutoServicoDAO.listarProdutosNfe(id_nfe);
+				for ( Iterator it = produtos.iterator(); it.hasNext(); ) {
+					 NfeProdutoServico nfeProdutoServico  = (NfeProdutoServico) it.next();
+			    	 EstoqueDAO daoEstoque = new EstoqueDAO(ConnectionFactory.getConnection());
+			    	 Estoque estoque = daoEstoque.procurarEstoqueLojaProdutoSstatus(loja.getIdLoja(), Utilitaria.toNumber(nfeProdutoServico.getCprod()).intValue());
+			    	 if(estoque != null){
+			    		 estoque.estoqueCompra(estoque.getQtEstoque(), Utilitaria.toNumber(nfeProdutoServico.getQcom()).floatValue());
+				    	 estoque.setUsuario("Int_Canc_Nfe");
+				    	 daoEstoque.atualizar(estoque);
+			    	 }
+			    	 
+				}
+			}else if(nrPedido != 0){
+				PedidoSaidaDAO daoPedidoSaida = new PedidoSaidaDAO(ConnectionFactory.getConnection());
+				daoPedidoSaida.atualizarIntegracaoNfeCancelada(nrPedido);
+			}
+			NfeCancelamento nfeCancelamento = new NfeCancelamento();
+			NfeCancelamentoDAO daoNfeCancelamento = new NfeCancelamentoDAO(ConnectionFactory.getConnection());
+			nfeCancelamento.setId_empresa(hm.get("id_empresa"));
+			nfeCancelamento.setChnfe(hm.get("chnfe"));
+			nfeCancelamento.setXjust(hm.get("xjust"));
+			nfeCancelamento.setTpamb(hm.get("tpamb"));
+			nfeCancelamento.setVeraplic(hm.get("veraplic"));
+			nfeCancelamento.setCstat(hm.get("cstat"));
+			nfeCancelamento.setXmotivo(hm.get("xmotivo"));
+			nfeCancelamento.setCuf(hm.get("cuf"));
+			nfeCancelamento.setNprotcanc(hm.get("nprotcanc"));
+			nfeCancelamento.setDhrecbto(hm.get("dhrecbto"));
+			nfeCancelamento.setDhrevento(hm.get("dhrevento"));
+			nfeCancelamento.setNm_usuario(hm.get("nm_usuario"));
+			nfeCancelamento.setDt_registro(hm.get("dt_registro"));
+			nfeCancelamento.setId(hm.get("id"));
+			nfeCancelamento.setTpevento(hm.get("tpevento"));
+			nfeCancelamento.setNseqevento(hm.get("nseqevento"));
+			nfeCancelamento.setDescevento(hm.get("descevento"));
+			nfeCancelamento.setNprot(hm.get("nprot"));
+			nfeCancelamento.setDs_xml(hm.get("ds_xml"));
+			nfeCancelamento.setDs_xml_recebido(hm.get("ds_xml_recebido"));
+			nfeCancelamento.setIdNfe("".valueOf(id_nfe));
+			daoNfeCancelamento.incluir(nfeCancelamento);
+			
+    	
+        //TODO Registrar dados pertinentes ao cancelamento da NFC-e no Afero
+    }
+
+    private void cancelarPedido(Connection con, int id_nfe) throws Exception {
+    	PedidoSaidaDAO daoPedidoSaida = new PedidoSaidaDAO(ConnectionFactory.getConnection());
+    	NfeProdutoServicoDAO daoNfeProdutoServicoDAO = new NfeProdutoServicoDAO(ConnectionFactory.getConnection());
+    	Integer nrPedido = daoNfeProdutoServicoDAO.procurarPedidoSaida(id_nfe);
+    	if(nrPedido > 0){
+    		daoPedidoSaida.atualizarIntegracaoNfeCancelada(nrPedido);
+    	}
+        //TODO Método chamado após o cancelamento da NFC-e
+    }
+
+    private int obterIdNfe(String chnfe) throws Exception {
+        //TODO Obter id_nfe a partir da chave de acesso
+    	String nnf = "0";
+    	NfeDAO daoNfe = new NfeDAO(ConnectionFactory.getConnection());
+    	nnf = daoNfe.obterIdNfe(chnfe);
+    	return Integer.parseInt(nnf);
+    	
+        //throw new UnsupportedOperationException("//TODO Obter id_nfe a partir da chave de acesso"); 
+    }
+    
+}

@@ -1,0 +1,20 @@
+<%@page import="afero.model.EntidadeDependente"%>
+<%@page import ="afero.persistence.EntidadeDependenteDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EntidadeDependenteDAO daoEntidadeDependente;
+List listEntidadeDependente;
+daoEntidadeDependente = new EntidadeDependenteDAO(conn);
+String clausulaEntidadeDependente = "  WHERE en.padrao='S' ";
+listEntidadeDependente = daoEntidadeDependente.listarEntidadeDependente(clausulaEntidadeDependente);
+Iterator itEntidadeDependente = listEntidadeDependente.iterator();
+while (itEntidadeDependente.hasNext()) { 
+	EntidadeDependente entidadeDependente = (EntidadeDependente) itEntidadeDependente.next();
+%>
+
+
+<option value="<%=entidadeDependente.getIdEntidadeDependente()%>"><%=entidadeDependente.getNmDependente()%></option>
+<%
+}
+%>

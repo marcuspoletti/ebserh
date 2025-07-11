@@ -1,0 +1,111 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.ConfigGeral"%>
+<%@page import="afero.persistence.ConfigGeralDAO"%>
+<%@page import ="java.util.*" %>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css"/>
+<script src="../js/common.js"/></script>
+
+<script>
+function salvar() {
+
+  	document.forms[0].submit();
+}
+
+function cancelar() {
+  document.forms[0].action="formConfigGeral.jsp";
+  document.forms[0].submit();
+}
+
+function voltar() {
+  document.forms[0].action = 'listarConfigGeral.jsp?acao=voltar'
+	document.forms[0].submit();
+}  
+</script>
+</head>
+<%
+String acao = request.getParameter("acao");
+String idLoja = request.getParameter("idLoja");
+String mensagem = request.getParameter("mensagem");
+String integracao = request.getParameter("integracao");
+if(integracao == null){
+   integracao = "N";
+}
+
+if (acao == null) acao = "inc";
+if(idLoja == null) idLoja = (String)session.getAttribute("idLoja");
+String menuModulo    = "";
+String emailServidor = "";
+String emailPorta    = "";
+String emailUsuario  = "";
+String emailSenha    = "";
+//verifica se acao foi atualizar
+if (acao.equalsIgnoreCase("atu")){
+	ConfigGeralDAO daoConfigGeralDAO = new ConfigGeralDAO(conn);
+	ConfigGeral configGeral = daoConfigGeralDAO.procurarConfigGeral(Integer.parseInt(idLoja));
+	menuModulo    = configGeral.getMenuModulo();
+	emailServidor = configGeral.getEmailServidor();
+	emailPorta    = configGeral.getEmailPorta();
+	emailUsuario  = configGeral.getEmailUsuario();
+	emailSenha    = configGeral.getEmailSenha();
+	integracao    = daoConfigGeralDAO.procurarIntegracaoPedSaidaFinan(Integer.parseInt(idLoja));
+}
+
+%>
+<body onload="document.forms[0].elements[2].focus();">
+<h1 class="cabecalho_pagina">Cadastro de Configuração Geral</h1>
+<hr><% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<form method="post" action="listarConfigGeral.jsp?idLoja=<%=idLoja%>">
+<input type="hidden" name="acao" value="<%=acao%>"/>
+
+<table border="0" width="100%">
+   <tr>
+      <th class="label">Loja*</th>
+      <td><select name="idLoja">
+          <option value='0'>Selecione...</option>
+          <%@include file="../WEB-INF/jspf/combo/comboLoja.jspf" %></select>
+          <script>comboSelect(document.forms[0].idLoja, '<%= idLoja %>');</script>
+      </td>
+  </tr>
+   <tr>
+    <th class="label">Módulo (menu)</th>
+    <td><input type="text" id="menuModulo" name="menuModulo" <%if (menuModulo!= null) { %>value="<%=menuModulo%>"<% }%>  size="100" maxlength="250" ></td>
+    </tr>
+    <tr>
+    <th class="label">Servidor de Email</th>
+    <td><input type="text" id="emailServidor" name="emailServidor" <%if (emailServidor!= null) { %>value="<%=emailServidor%>"<% }%>  size="100" maxlength="250" ></td>
+   </tr>
+   <tr>
+    <th class="label">Email Usuário</th>
+    <td><input type="text" id="emailUsuario" name="emailUsuario" <%if (emailUsuario!= null) { %>value="<%=emailUsuario%>"<% }%>  size="100" maxlength="250" ></td>
+  </tr>
+  <tr>
+    <th class="label">Email Porta</th>
+    <td><input type="text" id="emailPorta" name="emailPorta" <%if (emailPorta!= null) { %>value="<%=emailPorta %>"<% }%>  size="40" maxlength="40" ></td>
+  </tr>
+  <tr>
+    <th class="label">Senha*</th>
+    <td><input type="password" id="emailSenha" name="emailSenha" <%if (emailSenha != null) { %>value="<%=emailSenha%>"<% }%>  size="40" maxlength="40"></td>
+  </tr>
+  <tr>
+    <th class="label">Integração do Pedido de Saida com Financeiro</th>
+      <td class="label_radio"><input type="radio" class="radio" name="integracao" value="N" <%= (integracao.equals("N")? "checked": "") %>>Não
+      <input type="radio" class="radio" name="integracao" value="S" <%= (integracao.equals("S")? "checked": "") %>>Sim
+     </td>
+  </tr>
+  </table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Salvar" onClick="javascript: salvar();" />
+	<input class="button" type="button" value="Cancelar" onClick="javascript: cancelar();" />
+	<input class="button" type="button" value="Voltar" onClick="javascript: voltar();" /></td>
+	<td class="campo_obrigatorio">* Campos Obrigatórios</td>
+</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

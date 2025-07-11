@@ -1,0 +1,20 @@
+<%@page import="afero.model.EntidadeEndereco"%>
+<%@page import ="afero.persistence.EntidadeEnderecoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+EntidadeEnderecoDAO daoEntidadeEndereco;
+List listEntidadeEndereco;
+daoEntidadeEndereco = new EntidadeEnderecoDAO(conn);
+String clausulaEntidadeEndereco = "  WHERE ed.padrao='S' ORDER BY ed.dsEmdereco";
+listEntidadeEndereco = daoEntidadeEndereco.listarEntidadeEndereco(clausulaEntidadeEndereco);
+Iterator itEntidadeEndereco = listEntidadeEndereco.iterator();
+while (itEntidadeEndereco.hasNext()) { 
+	EntidadeEndereco entidadeEndereco = (EntidadeEndereco) itEntidadeEndereco.next();
+%>
+
+
+<option value="<%=entidadeEndereco.getIdEntidadeEndereco()%>"><%=entidadeEndereco.getDsEndereco()%> - <%=entidadeEndereco.getNroEndereco()%> - <%=entidadeEndereco.getBaiEndereco()%></option>
+<%
+}
+%>

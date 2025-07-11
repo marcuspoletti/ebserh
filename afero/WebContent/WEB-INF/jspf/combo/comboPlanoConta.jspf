@@ -1,0 +1,35 @@
+<%@page import="afero.model.PlanoConta"%>
+<%@page import ="afero.persistence.PlanoContaDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+
+<%
+String nmPlanoConta = "";
+String statusPlanoConta = "";
+PlanoContaDAO daoPlanoConta;
+List listPlanoConta;
+daoPlanoConta = new PlanoContaDAO(conn);
+String clausulaPlanoConta = "  WHERE status='A' ORDER BY cdPlanoConta ";
+listPlanoConta = daoPlanoConta.listarPlanoConta(clausulaPlanoConta);
+Iterator itPlanoConta = listPlanoConta.iterator();
+while (itPlanoConta.hasNext()) { 
+	PlanoConta planoConta = (PlanoConta) itPlanoConta.next();
+	if(planoConta.getIdPlanoContaPai()>0){
+		nmPlanoConta = "-";	
+	}else{
+		nmPlanoConta = "";
+	}
+	
+	if(planoConta.getDc().equalsIgnoreCase("D")){
+		statusPlanoConta = "(D)";
+	}else{
+		statusPlanoConta = "(C)";
+	}
+	
+%>
+
+
+<option value="<%=planoConta.getIdPlanoConta()%>"><%=nmPlanoConta+planoConta.getNmPlanoConta()%> - <%=statusPlanoConta%></option>
+<%
+}
+%>

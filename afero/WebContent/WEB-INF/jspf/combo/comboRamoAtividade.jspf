@@ -1,0 +1,20 @@
+<%@page import="afero.model.RamoAtividade" %>
+<%@page import ="afero.persistence.RamoAtividadeDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+RamoAtividadeDAO daoRamoAtividade;
+List listRamoAtividade;
+daoRamoAtividade = new RamoAtividadeDAO(conn);
+String clausulaRamoAtividade = "  WHERE status='A' ORDER BY dsRamoAtividade";
+listRamoAtividade = daoRamoAtividade.listarRamoAtividade(clausulaRamoAtividade);
+Iterator itRamoAtividade = listRamoAtividade.iterator();
+while (itRamoAtividade.hasNext()) { 
+	RamoAtividade RamoAtividade = (RamoAtividade) itRamoAtividade.next();
+%>
+
+
+<option value="<%=RamoAtividade.idRamoAtividade%>"><%=RamoAtividade.dsRamoAtividade%></option>
+<%
+}
+%>

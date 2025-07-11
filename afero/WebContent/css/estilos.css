@@ -1,0 +1,151 @@
+A {
+	color: #1C3875;
+	text-decoration: none;
+}
+
+A:hover {
+	color: #B1A808;
+}
+
+body {
+	background-color: lavender;
+	//#faf6f0 ; 
+	margin-left: 4px;
+	margin-top: 4px;
+	margin-right: 4px;
+	margin-bottom: 4px;
+	color: gray;
+	font-family: book antiqua;
+	font-size: 11pt;
+}
+
+p {
+	font-size: 11pt;
+	text-align: justify;
+}
+
+h1 {
+	font-size: 15pt;
+	font-weight: bold;
+	color: #fc0204;
+	border-bottom: 1px solid #fc0204;
+	padding: 4px;
+	margin: 2px;
+}
+
+h2 {
+	font-size: 13pt;
+	font-weight: bold;
+	text-align: right;
+	color: #e0e0ff;
+	background-color: #363636;
+	padding: 4px;
+	margin-bottom: 2px;
+}
+
+.cabecalho {
+	background-color: #26354a;
+	font-size: 10pt;
+	padding: 2px;
+	border-right: 1px solid steelblue;
+	margin-right: 2px;
+	border-bottom: 1px solid steelblue;
+	margin-bottom: 0px;
+	border-top: 1px solid steelblue;
+	margin-top: 2px;
+	border-left: 1px solid steelblue;
+	margin-left: 2px;
+}
+
+.corpo {
+	background-color: #b7c5ca;
+	font-size: 10pt;
+	padding: 2px;
+	border-right: 1px solid steelblue;
+	margin-right: 2px;
+	border-bottom: 1px solid steelblue;
+	margin-bottom: 0px;
+	border-top: 1px solid steelblue;
+	margin-top: 0px;
+	border-left: 1px solid steelblue;
+	margin-left: 2px;
+}
+
+.menu {
+	background-color: #e0e0ff;
+	font-size: 30pt;
+	padding: 2px;
+	border-right: 2px solid #4040a0;
+	margin-right: 8px;
+	border-bottom: 2px solid #4040a0;
+	margin-bottom: 2px;
+	border-top: 1px solid #a0a0f0;
+	margin-top: 0px;
+	border-left: 1px solid #a0a0f0;
+	margin-left: 2px;
+}
+
+.rodape {
+	background-color: #e0e0ff;
+	text-align: right;
+	font-size: 10pt;
+	color: #905050;
+	padding: 2px;
+	border-right: 1px solid #a0a0f0;
+	margin-right: 2px;
+	border-bottom: 1px solid #a0a0f0;
+	margin-bottom: 2px;
+	border-top: 1px solid #4040a0;
+	padding-top: 4px;
+	margin-top: 0px;
+	border-left: 1px solid #a0a0f0;
+	margin-left: 2px;
+}
+
+.islogan {
+	font: 14px Arial, Helvetica, sans-serif;
+	color: #D3DCE6;
+	letter-spacing: .3em;
+	line-height: 26px;
+}
+
+.colRotulo {
+	background-color: gray;
+	text-align: left;
+	border-width: Default;
+	color: black;
+	font-size: 10pt;
+	font-family: book antiqua;
+}
+
+.colCampo {
+	background-color: #FFFFFF;
+	border-width: 3;
+	color: #000000;
+	font-size: 10pt;
+	font-family: book antiqua;
+}
+
+.colEntrada {
+	background-color: #FFFFFF;
+	border-width: 3;
+	color: #000000;
+	font-size: 10pt;
+	font-family: book antiqua;
+}
+
+.colLeitura {
+	background-color: #CCCCCC;
+	border-width: 3;
+	color: #000000;
+	font-size: 10pt;
+	font-family: book antiqua;
+}
+
+.button {
+	background-color: gray;
+	border-width: Default;
+	color: #000000;
+	font-size: 11pt;
+	font-family: book antiqua;
+}

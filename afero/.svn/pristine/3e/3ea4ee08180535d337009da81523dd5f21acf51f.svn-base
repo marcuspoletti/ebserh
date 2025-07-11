@@ -1,0 +1,14 @@
+package afero.util;
+
+public class TesteMain {
+	public static void main(String[] args) {
+		try{
+           SendMail send = new SendMail();
+           send.sendMail("mvpoletti@yahoo.com.br","marcusvpoletti@gmail.com", "TESTE AFERO", "SERVIÇOS NOVOS DO AFERO, AGORA MANDA EMAIL");
+           System.out.println("SUCESSO DE ENVIO..........");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+}

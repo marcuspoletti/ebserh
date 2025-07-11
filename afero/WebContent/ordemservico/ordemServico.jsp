@@ -1,0 +1,247 @@
+<html>
+<head>
+<%@page contentType="text/html;charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
+<%@page import="afero.model.Orcamento"%>
+<%@page import="afero.model.OrdemServico"%>
+<%@page import="afero.model.PedidoEntrada"%>
+<%@page import="afero.model.PedidoEntradaItem"%>
+<%@page import="afero.model.OrcamentoItem"%>
+<%@page import="afero.model.Entidade"%>
+<%@page import="afero.model.Entrega"%>
+<%@page import="afero.model.Colaborador"%>
+<%@page import="afero.model.Loja"%>
+<%@page import="afero.persistence.LojaDAO"%>
+<%@page import="afero.persistence.PedidoEntradaDAO"%>
+<%@page import="afero.persistence.PedidoEntradaItemDAO"%>
+<%@page import="afero.persistence.EntidadeDAO"%>
+<%@page import="afero.persistence.EntregaDAO"%>
+<%@page import="afero.persistence.OrcamentoDAO"%>
+<%@page import="afero.persistence.ColaboradorDAO"%>
+<%@page import="afero.persistence.OrdemServicoDAO"%>
+<%@ page import="afero.util.Utilitaria" %>
+<%@ page import="afero.util.ConverteDate" %>
+<%@ page import="afero.model.Produto" %>
+<%@ page import="afero.model.Unidade" %>
+<%@ page import="afero.model.Estoque" %>
+<%@ page import="afero.model.Preco" %>
+<%@ page import="afero.persistence.ProdutoDAO" %>
+<%@ page import="afero.persistence.UnidadeDAO" %>
+<%@ page import="afero.persistence.EstoqueDAO" %>
+<%@ page import="afero.persistence.PrecoDAO" %>
+<%@ page import="afero.persistence.OrcamentoItemDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%@page import="afero.util.Utilitaria"%>
+<%@include file="../seguranca.jsp"%>
+<%@include file="../iniConexao.jsp"%>
+<link type="text/css" rel="Stylesheet" href="../css/afero.css" />
+<script src="../js/common.js"/>"</script>
+<script>
+function salvar() {
+  	document.forms[0].submit();
+}
+</script>
+<%
+String idLojaUsuario = (String)session.getAttribute("idLoja");
+String mensagem = request.getParameter("mensagem");
+if(mensagem == null)mensagem = "";
+OrdemServicoDAO daoOrdemServico = new OrdemServicoDAO(conn);
+String acao = request.getParameter("acao");
+if(acao == null)acao="listar";
+List list = null;
+List listarEstoque = null;
+List listarOrcamentoDAO = null;
+ProdutoDAO dao;
+EstoqueDAO daoEstoque;
+OrcamentoItemDAO daoOrcamentoItem;
+Produto prod = null;
+Estoque estoque =null;
+OrcamentoItem orcamentoItem = null;
+int cont = 0;
+String preco = "0";
+ConverteDate converte = new ConverteDate();
+String idOrdemServico = request.getParameter("idOrdemServico");
+String idOrcamento = request.getParameter("idOrcamento");
+OrcamentoDAO daoOrcamento = new OrcamentoDAO(conn);
+Orcamento orc = new Orcamento();
+orc = daoOrcamento.procurarOrcamento(Integer.parseInt(idOrcamento));
+int idColaborador = orc.getIdColaborador();
+Colaborador colaborador = new Colaborador();
+ColaboradorDAO daoColaborador = new ColaboradorDAO(conn);
+colaborador = daoColaborador.procurarColaborador(idColaborador);
+String dsColaborador = colaborador.getNome();
+int idLoja = orc.getIdLoja();
+Loja lojaListar = new Loja();
+LojaDAO daoLoja = new LojaDAO(conn);
+lojaListar = daoLoja.procurarLoja(idLoja);
+String dsLoja = lojaListar.getApelido() +" / "+ lojaListar.getRazaoSocial(); 
+int idEntrega = orc.getIdEntrega();
+Entrega entrega = new Entrega();
+EntregaDAO daoEntrega = new EntregaDAO(conn);
+entrega = daoEntrega.procurarEntrega(idEntrega);
+String dsEntrega = entrega.getDsEntrega();
+float valorEntrega = entrega.getTxEntrega();
+int cdEntidade = orc.getCdEntidade();
+//Entidade entidade = new Entidade();
+//EntidadeDAO daoEntidade = new EntidadeDAO(conn);
+//entidade = daoEntidade.procurarEntidade(cdEntidade);
+//String dsEntidade = entidade.getNome();
+int prazoValidade = orc.getPrazoValidade();
+daoOrcamentoItem = new OrcamentoItemDAO(conn);
+String status = request.getParameter("status");
+if(status==null){
+	OrdemServico ordServico =null;
+	ordServico = daoOrdemServico.procurarOrdemServico(Integer.parseInt(idOrdemServico));
+    status=ordServico.getStatus();
+}
+String dtOrc =converte.dateToString(orc.getDtOrc());
+String observacao = orc.getObservacao();
+double valorTotal = orc.getVlOrc();
+String dtVal = converte.dateToString(orc.getDtEntrega());
+if(acao.equalsIgnoreCase("gravar") && status.equals("F")){
+  if(!daoOrdemServico.getOrdemServico(Integer.parseInt(idOrdemServico))){
+	  
+	OrdemServico ordemServico = daoOrdemServico.procurarOrdemServico(Integer.parseInt(idOrdemServico));
+	ordemServico.setStatus(status);
+	ordemServico.setIdOrdemServico(Integer.parseInt(idOrdemServico));
+	daoOrdemServico.atualizar(ordemServico);
+	Orcamento orca = daoOrcamento.procurarOrcamento(ordemServico.getIdOrcamento());
+	PedidoEntrada pedidoEntrada= new PedidoEntrada();
+	pedidoEntrada.setIdOrdemServico(ordemServico.getIdOrdemServico());
+	pedidoEntrada.setCdEntidade(orca.getCdEntidade());
+	pedidoEntrada.setIdColaborador(orca.getIdColaborador());
+	pedidoEntrada.setIdLoja(orca.getIdLoja());
+	pedidoEntrada.setNrDoc("".valueOf(ordemServico.getIdOrdemServico()));
+	pedidoEntrada.setStatus("P");
+	pedidoEntrada.setOperacao("E");
+	pedidoEntrada.setVlPed(orca.getVlAprov());
+	pedidoEntrada.setUsuario((String)(String)session.getAttribute("Login"));
+	pedidoEntrada.setIdPedidoEntradaOrigem(0);
+	pedidoEntrada.setDtEmissao(orc.getDtAprov());
+	PedidoEntradaDAO daoPedidoEntrada = new PedidoEntradaDAO(conn);
+	daoPedidoEntrada.incluir(pedidoEntrada);
+	int idPedidoEntrada = daoPedidoEntrada.getIdPedidoEntrada();
+	PedidoEntradaItemDAO daoPedidoEntradaItem= new PedidoEntradaItemDAO(conn);
+	list = daoOrcamentoItem.procurarOrcamentoItem(ordemServico.getIdOrcamento());
+	for ( Iterator it = list.iterator(); it.hasNext(); ) {
+		orcamentoItem = (OrcamentoItem) it.next();
+		PedidoEntradaItem pedidoEntradaItem = new PedidoEntradaItem();
+		pedidoEntradaItem.setIdPedidoEntrada(idPedidoEntrada);
+		pedidoEntradaItem.setIdProduto(orcamentoItem.getIdProduto());
+		pedidoEntradaItem.setIdUnidade(orcamentoItem.getIdUnidade());
+		pedidoEntradaItem.setQuant(orcamentoItem.getQuant());
+		pedidoEntradaItem.setQuantPedida(orcamentoItem.getQuant());
+		pedidoEntradaItem.setUsuario((String)(String)session.getAttribute("Login"));
+		pedidoEntradaItem.setValor(orcamentoItem.getValorAprov());
+		pedidoEntradaItem.setDtVal(ConverteDate.stringToDate(dtVal));
+		daoPedidoEntradaItem.incluir(pedidoEntradaItem);	
+	}
+}else{
+	response.sendRedirect("ordemServico.jsp?mensagem=Já foi fechado a Ordem de Serviço&idOrdemServico="+idOrdemServico+"&idOrcamento="+idOrcamento);
+}
+}
+%>
+<body onload="document.forms[0].elements[2].focus();" >
+<% if (mensagem != null) { %><div class="mensagem"><center><%= mensagem %></center></div><hr><% } %>
+<h1 class="cabecalho_pagina">Ordem de Serviço</h1>
+<form method="post" action="ordemServico.jsp?acao=<%="gravar"%>">
+<input type="hidden" name="idOrcamento" value="<%=idOrcamento%>"/>
+<input type="hidden" name="idOrdemServico" value="<%=idOrdemServico%>"/>
+<table border="0" width="100%">
+   <tr>
+    <th class="label">Loja</th>
+    <td><input disabled type="text" name="dsLoja" <%if (dsLoja != null) { %>value="<%=dsLoja%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+     <tr>
+    <th class="label">Colaborador</th>
+    <td><input disabled type="text" name="dsColaborador" <%if (dsColaborador != null) { %>value="<%=dsColaborador%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+  <tr>
+  <tr>
+    <th class="label">Entrega</th>
+    <td><input disabled type="text" name="dsEntrega" <%if (dsEntrega != null) { %>value="<%=dsEntrega%>"<% }%>  size="60" maxlength="60"></td>
+  </tr>
+   <tr>
+    <th class="label">Data do Orçamento</th>
+    <td><input disabled type="text" name="dtOrc" <%if (dtOrc != null) { %>value="<%=dtOrc%>"<% }%>  size="30" maxlength="30"></td>
+  </tr>
+   <tr>
+    <th class="label">Prazo de Validade</th>
+    <td><input disabled type="text" name="prazoValidade" value="<%=prazoValidade%>"  size="10" onkeyup="FormataValor(this,event)" maxlength="10"></td>
+  </tr>
+  <tr>
+      <th class="label">Observação</th>
+      <td><textarea disabled="disabled"name="observacao" cols="60" rows="5"><%=observacao %></textarea></td>
+  </tr>
+  <tr>
+    <th class="label">Situação do Documento</th>
+      <td class="label_radio"><input disabled type="radio" class="radio" name="status" value="A" <%= (status.equals("A")? "checked": "") %>>Aberta
+      <input type="radio" class="radio" name="status" value="F" <%= (status.equals("F")? "checked": "") %>>Fechada</td>
+  </tr>
+</table><hr>
+<table border="0" width="100%">
+    <tr">
+      <th class="grid"><center></center></th>
+      <th class="grid">Loja</th>
+      <th class="grid"><center>Descrição do Produto</center></th>
+      <th class="grid">Quantidade</th>
+      <th class="grid">Unidade</th>
+      
+    </tr>
+<%
+//Utiliza o ResultSet para trazer os registros do banco de dados
+ float total = 0;
+ list = daoOrcamentoItem.procurarOrcamentoItem(Integer.parseInt(idOrcamento));
+ if(list != null){
+  for ( Iterator it = list.iterator(); it.hasNext(); ) {
+	orcamentoItem = (OrcamentoItem) it.next();
+	dao = new ProdutoDAO(conn);
+	prod = dao.procurarProduto(orcamentoItem.getIdProduto());
+	daoEstoque = new EstoqueDAO(conn);
+	listarEstoque = daoEstoque.procurarEstoquePreco(prod.getIdProduto(), Integer.parseInt(idLojaUsuario));
+	if(listarEstoque != null){
+	for (Iterator itListar = listarEstoque.iterator(); itListar.hasNext();){
+		cont++;
+		estoque = (Estoque) itListar.next();
+		LojaDAO loja = new LojaDAO(conn);
+		Loja lojaEstoque = loja.procurarLoja(estoque.getIdLoja());
+		PrecoDAO daoPrecoListar = new PrecoDAO(conn);
+		Preco precoListar = daoPrecoListar.procurarPrecoEstoque(estoque.getIdEstoque());
+		if(precoListar!=null){
+			
+			preco = Utilitaria.formatarNumero(precoListar.getPreco(), 2).toString();
+			UnidadeDAO daoUnidade = new UnidadeDAO(conn);
+			Unidade unidadeListar = daoUnidade.procurarUnidade(precoListar.getIdUnidade());	
+%>
+    <tr>
+      <td class = "grid" width="1%"><center><%=cont%></center></td>
+      <td class = "grid" width="5%"><center><%=lojaEstoque.getApelido()%>/<%=lojaEstoque.getRazaoSocial()%></center></td>
+      <td class = "grid" width="5%"><center><%=prod.getDsProduto() %></center></td>
+      <%float precoItem = Utilitaria.toNumber(preco).floatValue() * orcamentoItem.getQuant(); %>
+      <td class="grid" width="3%" name="quantidade%>" size="10" maxlength="10"><%=Utilitaria.formatarNumero(orcamentoItem.getQuant(),2)%></td>
+      <td class = "grid" width="3%"><center><%=unidadeListar.getDsUnidade()%></center></td>
+      <%total = total +  precoItem;%>
+  </tr>
+  <input type="hidden" name="idPreco" value="<%=precoListar.getIdPreco()%>"/>
+<%
+		}
+	}
+	}
+}
+%>
+   
+   <input type="hidden"  id="cont" value="<%=cont%>"/>
+<% 
+ }
+%> 
+  <br>
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td><input class="button" type="button" value="Gravar" onClick="javascript: salvar();" />
+</tr>
+</table>
+</form>
+<%@include file="../fimConexao.jsp"%>
+</body>
+</html>

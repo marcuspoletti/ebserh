@@ -1,0 +1,21 @@
+<%@page import="afero.model.TipoDocumento"%>
+<%@page import ="afero.persistence.TipoDocumentoDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoDocumentoDAO daoTipoDocumento;
+List listTipoDocumento;
+daoTipoDocumento = new TipoDocumentoDAO(conn);
+String clausulaTipoDocumento = "  WHERE status='A' ORDER BY dsTipoDocumento ";
+listTipoDocumento = daoTipoDocumento.listarTipoDocumento(clausulaTipoDocumento);
+Iterator itTipoDocumento = listTipoDocumento.iterator();
+while (itTipoDocumento.hasNext()) { 
+	TipoDocumento tipoDocumento = (TipoDocumento) itTipoDocumento.next();
+	tipoDocumento.getCdTipoDocumento();
+%>
+
+
+<option value="<%=tipoDocumento.getIdTipoDocumento()%>"><%=tipoDocumento.getDsTipoDocumento()%></option>
+<%
+}
+%>

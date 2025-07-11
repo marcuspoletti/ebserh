@@ -1,0 +1,19 @@
+<%@page import ="aferopet.model.TipoEspecie" %>
+<%@page import ="aferopet.persistence.TipoEspecieDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Iterator" %>
+<%
+TipoEspecieDAO daoTipoEspecie;
+List listTipoEspecie;
+daoTipoEspecie = new TipoEspecieDAO(conn);
+String clausulaTipoEspecie = "  WHERE status='A' ";
+listTipoEspecie = daoTipoEspecie.listarTipoEspecie(clausulaTipoEspecie);
+Iterator itTipoEspecie = listTipoEspecie.iterator();
+while (itTipoEspecie.hasNext()) { 
+	TipoEspecie tipoEspecie = (TipoEspecie) itTipoEspecie.next();
+%>
+
+<option value="<%=tipoEspecie.getCdTipoEspecie()%>"><%=tipoEspecie.getDsTipoEspecie()%></option>
+<%
+}
+%>

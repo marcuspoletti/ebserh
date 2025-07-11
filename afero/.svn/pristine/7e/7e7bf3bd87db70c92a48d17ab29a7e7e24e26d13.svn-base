@@ -1,0 +1,304 @@
+package afero.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import afero.model.ConfigServico;
+import afero.util.ConverteDate;
+
+public class ConfigServicoDAO {
+	
+	public Connection conn;
+
+	public ConfigServicoDAO(Connection conn) {
+		this.conn = conn;
+	}
+
+	// INSERIR
+	
+	public void incluir(ConfigServico configServico) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (configServico == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+
+		try {
+			String sql = "INSERT INTO tbConfigServico ( idLoja, tipoOS, dsCampo1, dsCampo2, dsCampo3, dsCampo4, msg1, msg2, msg3, msg4, msg5," +
+						" pCSocial, pCofins, pPis, pIrrf, tetoIrrf, pInss, pIss, cdCfopServico, cdCfopProduto, dsCmpOb1, dsCmpOb2, dsCmpOb3, " +
+						" dsCmpOb4 )" +
+						" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt (1, configServico.getIdLoja());
+			ps.setString(2, configServico.getTipoOS());
+			ps.setString(3, configServico.getDsCampo1());
+			ps.setString(4, configServico.getDsCampo2());
+			ps.setString(5, configServico.getDsCampo3());
+			ps.setString(6, configServico.getDsCampo4());
+			ps.setString(7, configServico.getMsg1());
+			ps.setString(8, configServico.getMsg2());
+			ps.setString(9, configServico.getMsg3());
+			ps.setString(10, configServico.getMsg4());
+			ps.setString(11, configServico.getMsg5());
+			ps.setFloat(12, configServico.getpCSocial());
+			ps.setFloat(13, configServico.getpCofins());
+			ps.setFloat(14, configServico.getpPis());
+			ps.setFloat(15, configServico.getpIrrf());
+			ps.setFloat(16, configServico.getTetoIrrf());
+			ps.setFloat(17, configServico.getpInss());
+			ps.setFloat(18, configServico.getpIss());
+			ps.setInt(19, configServico.getCdCfopServico());
+			ps.setInt(20, configServico.getCdCfopProduto());
+			ps.setString(21, configServico.getDsCmpOb1());
+			ps.setString(22, configServico.getDsCmpOb2());
+			ps.setString(23, configServico.getDsCmpOb3());
+			ps.setString(24, configServico.getDsCmpOb4());
+						
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao inserir dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao inserir dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+
+	// ATUALIZAR 
+	
+	public void atualiza(ConfigServico configServico) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		if (configServico == null)
+			throw new AferoDAOException("O valor passado não pode ser nulo");
+		
+		try {
+			String sql = "UPDATE tbConfigServico SET tipoOS = ?, dsCampo1 = ?, dsCampo2 = ?, dsCampo3 = ?, dsCampo4 = ?, msg1 = ?," +
+						" msg2 = ?, msg3 = ?, msg4 = ?, msg5 = ?, pCSocial = ?, pCofins = ?, pPis = ?, pIrrf = ?, tetoIrrf = ?, pInss = ?," +
+						" pIss = ?, cdCfopServico = ?, cdCfopProduto = ?, dsCmpOb1 = ?, dsCmpOb2 = ?, dsCmpOb3 = ?, dsCmpOb4 = ? " +
+						" WHERE idLoja = ? ";
+			
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, configServico.getTipoOS());
+			ps.setString(2, configServico.getDsCampo1());
+			ps.setString(3, configServico.getDsCampo2());
+			ps.setString(4, configServico.getDsCampo3());
+			ps.setString(5, configServico.getDsCampo4());
+			ps.setString(6, configServico.getMsg1());
+			ps.setString(7, configServico.getMsg2());
+			ps.setString(8, configServico.getMsg3());
+			ps.setString(9, configServico.getMsg4());
+			ps.setString(10, configServico.getMsg5());
+			ps.setFloat(11, configServico.getpCSocial());
+			ps.setFloat(12, configServico.getpCofins());
+			ps.setFloat(13, configServico.getpPis());
+			ps.setFloat(14, configServico.getpIrrf());
+			ps.setFloat(15, configServico.getTetoIrrf());
+			ps.setFloat(16, configServico.getpInss());
+			ps.setFloat(17, configServico.getpIss());
+			ps.setInt(18, configServico.getCdCfopServico());
+			ps.setInt(19, configServico.getCdCfopProduto());
+			ps.setString(20, configServico.getDsCmpOb1());
+			ps.setString(21, configServico.getDsCmpOb2());
+			ps.setString(22, configServico.getDsCmpOb3());
+			ps.setString(23, configServico.getDsCmpOb4());
+			ps.setInt (24, configServico.getIdLoja());
+			
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao atualizar dados: " + e);
+		} finally {
+			// ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+	
+	//EXCLUIR
+	public void excluir(ConfigServico configServico) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+
+		if (configServico == null)
+			throw new AferoDAOException(
+					"O valor passado não pode ser nulo");
+
+		try {
+			conn = this.conn;
+			ps = conn.prepareStatement("DELETE FROM tbConfigServico WHERE idLoja = ?");
+			ps.setInt(1, configServico.getIdLoja());
+			ps.executeUpdate();
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao excluir dados:" + sqle);
+		} finally {
+			//ConnectionFactory.closeConnection(conn, ps);
+		}
+	}
+	
+	// PROCURAR
+	public ConfigServico procurarConfigServico(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		ConfigServico configServico = null;
+
+		try {
+			String sql = "SELECT idLoja, tipoOS, dsCampo1, dsCampo2, dsCampo3, dsCampo4, msg1, msg2, msg3, msg4, msg5, " +
+						"pCSocial, pCofins, pPis, pIrrf, tetoIrrf, pInss, pIss, cdCfopServico, cdCfopProduto, dsCmpOb1, " +
+						"dsCmpOb2, dsCmpOb3, dsCmpOb4 " +
+						"FROM tbconfigservico ";
+			
+			if(clausula != null){
+				sql = sql + clausula;
+			}
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			
+			while (rs.next()){
+				
+				int idLoja = rs.getInt(1);
+				String tipoOS = rs.getString(2);
+				String dsCampo1 = rs.getString(3);
+				String dsCampo2 = rs.getString(4);
+				String dsCampo3 = rs.getString(5);
+				String dsCampo4 = rs.getString(6);
+				String msg1 = rs.getString(7);
+				String msg2 = rs.getString(8);
+				String msg3 = rs.getString(9);
+				String msg4 = rs.getString(10);
+				String msg5 = rs.getString(11);
+				float pCSocial = rs.getFloat(12);
+				float pCofins = rs.getFloat(13);
+				float pPis = rs.getFloat(14);
+				float pIrrf = rs.getFloat(15);
+				float tetoIrrf = rs.getFloat(16);
+				float pInss = rs.getFloat(17);
+				float pIss = rs.getFloat(18);
+				int cdCfopServico = rs.getInt(19);
+				int cdCfopProduto = rs.getInt(20);
+				String dsCmpOb1 = rs.getString(21);
+				String dsCmpOb2 = rs.getString(22);
+				String dsCmpOb3 = rs.getString(23);
+				String dsCmpOb4 = rs.getString(24);
+				
+				configServico = new ConfigServico(idLoja, tipoOS, dsCampo1, dsCampo2, dsCampo3, dsCampo4, msg1,
+						msg2, msg3, msg4, msg5, pCSocial, pCofins, pPis, pIrrf, tetoIrrf, pInss, pIss, cdCfopServico,
+						cdCfopProduto, dsCmpOb1, dsCmpOb2, dsCmpOb3, dsCmpOb4);
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao listar dados: " + sqle);
+		} 
+		return configServico;
+	}
+	
+	// LISTAR
+	public List<ConfigServico> listarConfigServico(String clausula) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<ConfigServico> list = null;
+
+		try {
+			String sql = "SELECT idLoja, tipoOS, dsCampo1, dsCampo2, dsCampo3, dsCampo4, msg1, msg2, msg3, msg4, msg5," +
+						" pCSocial, pCofins, pPis, pIrrf, tetoIrrf, pInss, pIss, cdCfopServico, cdCfopProduto, dsCmpOb1, " +
+						" dsCmpOb2, dsCmpOb3, dsCmpOb4 " +
+						" FROM tbconfigservico ";
+			
+			if(clausula != null)
+				sql+= clausula;
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			list = new ArrayList<ConfigServico>();
+			
+			while (rs.next()){
+				
+				int idLoja = rs.getInt(1);
+				String tipoOS = rs.getString(2);
+				String dsCampo1 = rs.getString(3);
+				String dsCampo2 = rs.getString(4);
+				String dsCampo3 = rs.getString(5);
+				String dsCampo4 = rs.getString(6);
+				String msg1 = rs.getString(7);
+				String msg2 = rs.getString(8);
+				String msg3 = rs.getString(9);
+				String msg4 = rs.getString(10);
+				String msg5 = rs.getString(11);
+				float pCSocial = rs.getFloat(12);
+				float pCofins = rs.getFloat(13);
+				float pPis = rs.getFloat(14);
+				float pIrrf = rs.getFloat(15);
+				float tetoIrrf = rs.getFloat(16);
+				float pInss = rs.getFloat(17);
+				float pIss = rs.getFloat(18);
+				int cdCfopServico = rs.getInt(19);
+				int cdCfopProduto = rs.getInt(20);
+				String dsCmpOb1 = rs.getString(21);
+				String dsCmpOb2 = rs.getString(22);
+				String dsCmpOb3 = rs.getString(23);
+				String dsCmpOb4 = rs.getString(24);
+
+				list.add( new ConfigServico(idLoja, tipoOS, dsCampo1, dsCampo2, dsCampo3, dsCampo4, msg1,
+						msg2, msg3, msg4, msg5, pCSocial, pCofins, pPis, pIrrf, tetoIrrf, pInss, pIss, 
+						cdCfopServico, cdCfopProduto, dsCmpOb1, dsCmpOb2, dsCmpOb3, dsCmpOb4));
+			}
+		} catch (SQLException sqle) {
+			throw new AferoDAOException("Erro ao listar dados: " + sqle);
+		} catch (Exception e) {
+			throw new AferoDAOException("Erro ao listar dados: " + e);
+		} 
+		return list;
+	}
+	public String dataAtual() throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		String dataAtual = "";
+		
+		try {
+			String sql = "select now();";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				dataAtual = ConverteDate.dateToString(rs.getDate(1));
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return dataAtual;
+	}
+	
+	public boolean getIdLoja(int idLoja) throws AferoDAOException {
+		PreparedStatement ps = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		boolean ok = true;
+		
+		try {
+			String sql = "select idLoja from tbconfigservico Where idLoja = ?";
+			conn = this.conn;
+			ps = conn.prepareStatement(sql);
+			ps.setInt(1, idLoja);
+			rs = ps.executeQuery();
+			if (rs.next()) {
+				ok = false;
+			}
+
+		} catch (SQLException sqle) {
+			throw new AferoDAOException(sqle);
+		} 
+		return ok;
+	}
+}
