@@ -1,0 +1,74 @@
+.container {
+    width: 500px;
+    margin: 0 auto;
+    margin-top: 20px;
+    background-color: #fff;
+    text-align: center;
+    box-shadow: 0px 0px 10px #777;
+    border-radius: 4px;
+    padding-bottom: 5px;
+}
+
+h2 {
+    text-align: center;
+    margin: 0;
+    padding: 30px 0;
+    background-color: #01bbd4;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.addItem {
+    margin-top: 20px;
+    width: 100%;
+    position: relative;
+}
+
+.addText {
+    width: 82%;
+    height: 35px;
+    padding: 0 10px;
+    font-size: 18px;
+}
+
+.addItem button {
+    border: 0px;
+    cursor: pointer;
+    padding: 10px;
+    background-color: #222;
+    color: #fff;
+    border-radius: 2px;
+    border: 2px solid #222;
+    transition: all .3s;
+}
+
+.addItem button:hover {
+    background: #fff;
+    color: #111;
+    border: 2px solid #222;
+}
+
+ul {
+    list-style: none;
+    margin-left: -40px;
+    font-size: 19px;
+    color: #333;
+    margin-bottom: 0px;
+
+}
+
+ul li {
+    border-bottom: 1px solid #bfbfbf;
+    background-color: #ebebeb;
+    padding: 10px 0;
+    margin: 5px;
+    padding-left: 25px;
+}
+
+span {
+    cursor: pointer;
+    position: relative;
+    float: right;
+    margin-right: 20px;
+    color: #333;
+}
