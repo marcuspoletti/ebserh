@@ -2,10 +2,10 @@ package util;
 
 public interface IDatabase {
 
-	public final String driver = "org.gjt.mm.mysql.Driver";
-	public final String url = "jdbc:mysql://localhost/afero";
-	public final String user = "root";
-	public final String password = "root";
+	public final String driver = "org.postgresql.Driver";
+	public final String url = "jdbc:postgresql://db-slave.aghu.hul.ebserh.net:6544/dbaghu";
+	public final String user = "ugen_integra";
+	public final String password = "ugen_integra";
 	//public final String password = "32859126";
 	
 	//

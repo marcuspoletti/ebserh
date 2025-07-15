@@ -35,7 +35,8 @@
 									<a class="gn-icon gn-icon-download">Downloads</a>
 									<ul class="gn-submenu">
 										<li><a class="gn-icon gn-icon-illustrator"  href="pages/ui-features/buttons.html" onclick="exibirIframe();">Vector Illustrations</a></li>
-										<li><a class="gn-icon gn-icon-photoshop">Photoshop files</a></li>
+											
+											<li><a class="gn-icon gn-icon-photoshop">Photoshop files</a></li>
 									</ul>
 								</li>
 								<li><a class="gn-icon gn-icon-cog">Settings</a></li>
@@ -52,22 +53,11 @@
 						</div><!-- /gn-scroller -->
 					</nav>
 				</li>
-				<li><a href="http://tympanus.net/codrops">Codrops</a></li>
-				<li><a class="codrops-icon codrops-icon-prev" href="http://tympanus.net/Development/HeaderEffects/"><span>Previous Demo</span></a></li>
-				<li><a class="codrops-icon codrops-icon-drop" href="http://tympanus.net/codrops/?p=16030"><span>Back to the Codrops Article</span></a></li>
+				<li><a href="http://acesso.hul-ufs.ebserh/" target="_blank">Acesso HUL</a></li>
+				<li><a href="https://aghu.hul-ufs.ebserh/aghu/pages/casca/casca.xhtml" target="_blank"><span>AGHU</span></a></li>
+				<li><a class="codrops-icon codrops-icon-drop" href="http://impressao.hul-ufs.ebserh:8082/" target="_blank"><span>Impressão Web</span></a></li>
 			</ul>
-			<header>
-				<h1>Google Nexus Website Menu <span>A sidebar menu as seen on the <a href="http://www.google.com/nexus/index.html">Google Nexus 7</a> page</span></h1>
-				<div>
-    				<iframe
-            			width="1100"
-            			height="500"
-            			id="iframe"
-            			src="https://www.google.com.br"
-            			scrolling="no">
-    				</iframe>
-				</div>	
-			</header> 
+			
 		</div><!-- /container -->
 		<script src="js/classie.js"></script>
 		<script src="js/gnmenu.js"></script>

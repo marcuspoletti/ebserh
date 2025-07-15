@@ -7,7 +7,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import afero.persistence.AferoDAOException;
+import util.AferoDAOException;
 
 public class ConnectionFactory {
 
