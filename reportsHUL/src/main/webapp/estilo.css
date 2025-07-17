@@ -1,0 +1,31 @@
+body{
+	margin: 0% !important;
+}
+
+
+
+.image { 
+	   position: relative; 
+	   width: 100%; /* for IE 6 */
+	   padding: 2%;
+}
+
+h2 { 
+   position: absolute; 
+   top: 249px;
+   left: 0; 
+   width: 100%; 
+}
+
+h2 span { 
+  
+   font: bold 35px/45px Segoe print, Sans-Serif; 
+   color: red !important;
+   padding: 10px; 
+}
+
+.breadcrumb{
+	position: absolute;
+	right: 0;
+	top: 0;
+}

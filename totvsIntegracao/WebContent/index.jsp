@@ -4,12 +4,6 @@
 <%@include file="menu.jsp"%>
 
 
-<%@ page import="model.Estoque" %>
-<%@ page import="utilitario.Utilitaria" %>
-<%@ page import="persistence.PesquisaProdutoDAO" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.util.Iterator" %>
-<%@include file="iniConexao.jsp"%>
   <style>
   
   /* 
@@ -88,20 +82,7 @@
   
 
   </style>
-<%
-int cont = 0;
-String codigo = request.getParameter("codigo"); 
-if( codigo != null){
-	codigo = codigo.toUpperCase();
-}
-String clausula =  " AND (BM_DESC LIKE '%"+codigo+"%' OR B1_NAUTOR LIKE '%"+codigo+"%' OR B1_COD = '"+codigo+"' OR B1_TITULO LIKE '%"+codigo+"%' OR B1_CODBAR LIKE '"+codigo+"%') "+ 
-"AND B1.D_E_L_E_T_ = '' AND BM.D_E_L_E_T_ = '' "+
-"ORDER BY B1_TITULO, B2_FILIAL ";
-List list;
-PesquisaProdutoDAO dao = new PesquisaProdutoDAO(conn);
-list = dao.listarProduto(clausula);
 
-%>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
 <%@include file="perfil.jsp"%>
@@ -136,9 +117,6 @@ list = dao.listarProduto(clausula);
          
         </div> 
        
-
- <% if( codigo != null){%> 
- <%if(list != null){ %>		
    
             <table id="mainTable" class="table table-bordered table-striped " >
               <thead>
@@ -156,45 +134,6 @@ list = dao.listarProduto(clausula);
                   </tr>
                 </thead>
                 <tbody>
-<%
-
-for ( Iterator it = list.iterator(); it.hasNext(); ) {
-	Estoque estoque = (Estoque) it.next();
-	cont++;
-	
-%>            
-                    <tr >
-                <!--mostra na tabela o produto encontrado-->
-                <td scope="row">
-                    <%=cont%>
-                  </td>
-                  <td scope="row">
-                    <%=estoque.getLojaDesc(estoque.getLoja()) %>
-                  </td>               
-                  <td scope="row">
-                    <%=estoque.getSaldo()%>
-                  </td>
-                  <td scope="row">
-                     <%=estoque.getCodProduto()%>
-                  </td>
-                  <td scope="row">
-                    <%=estoque.getCodBarras()%>
-                  </td>
-                  <td scope="row">
-                   <%=estoque.getNomeProduto()%>
-                  </td>
-                  <td scope="row">
-                     <%=estoque.getAutor()%>
-                  </td>
-                  <td scope="row">
-                    <%=estoque.getEditora()%>
-                  </td>
-                  <td scope="row">
-                    <%=estoque.getPreco()%>
-                  </td>
-                  </tr>
-   <%} %> 
-     
 
              
                   <!-- para exibir botÃƒÂ£o de voltar para o topo -->
@@ -202,21 +141,7 @@ for ( Iterator it = list.iterator(); it.hasNext(); ) {
                 </tbody>                                
             </table>
             
-   <%}else if(list.isEmpty()) { %>
-	       <div class="container table-responsive col-sm-12" >          
-	         <div class="row ano_vigente">
-	           <div class="col-sm-12">
-	             <h3>
-	               <center><%="Produto nÃ£o encontrado"%>  </center>
-	             </h3>
-	           </div>
-	         </div>
-	        </div>
-
-	   <%
-	   		}
- 		}
-	   %> 
+   
 
    
               
@@ -268,6 +193,6 @@ jQuery(document).ready(function() {
         });
 
 </script> 
-<%@include file="fimConexao.jsp"%>
+
 </body>
 </html>
