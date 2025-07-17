@@ -25,15 +25,15 @@
       <ul class="sidebar-menu">
         <li class="header">MENU</li>
         <!-- Optionally, you can add icons to the links -->
-        <li><a href="index.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Estoque Produtos</span></a></li>
+        <li><a href="http://acesso.hul-ufs.ebserh/" target="_blank"><i class="glyphicon glyphicon-hdd"></i> <span>Acesso HUL</span></a></li>
         
         <li class="treeview">
             <a href="#">
-                <i class="glyphicon glyphicon-menu-hamburger"></i> <span>Vendas</span>
+                <i class="glyphicon glyphicon-menu-hamburger"></i> <span>Reports</span>
                 <i class="fa fa-angle-left pull-right"></i>
             </a>
             <ul class="treeview-menu">	
-            	<li><a href="caixas.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Vendas Do Dia</span></a></li> 
+            	<li><a href="extratoPaciente.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Extrato do Paciente</span></a></li> 
         		<li><a href="vendasPeriodo.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Vendas por Periodo</span></a></li>
         		<li><a href="historicoPreco.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Historico de Preço</span></a></li>
         		<li><a href="movimentacaoPDVTipo.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Vendas Por Tipo</span></a></li>

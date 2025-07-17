@@ -7,7 +7,7 @@
       <!-- Sidebar user panel (optional) -->
       <div class="user-panel">
         <div class="pull-left image">
-          <img src="dist/img/logoLivro.png" class="img-circle" alt="User Image">
+          <img src="dist/img/logoLivro." class="img-circle" alt="User Image">
         </div>
         <div class="pull-left info">
         <!-- <p>Usuário(a) <?=$nome[0]?></p> -->
@@ -24,8 +24,7 @@
       
       <ul class="sidebar-menu">
         <li class="header">MENU</li>
-        <!-- Optionally, you can add icons to the links -->
-        <li><a href="index.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Estoque Produtos</span></a></li>
+        
         
         <li class="treeview">
             <a href="#">

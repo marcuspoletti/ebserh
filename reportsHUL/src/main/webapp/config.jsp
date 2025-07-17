@@ -50,7 +50,7 @@
             <p>
               Podem mandar e-mail para:
             </p>
-            <a href="mailto:ti@escariz.com.br" target="_parent">ti@escariz.com.br</a>
+            <a href="mailto:sgpti.hul@ebserh.gov.br" target="_parent">sgpti.hul@ebserh.gov.br</a>
           </div>
           <!-- /.form-group -->
         </form>

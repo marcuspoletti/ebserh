@@ -5,7 +5,7 @@
       <!-- mini logo for sidebar mini 50x50 pixels -->
       <span class="logo-mini"><b>E</b>sc</span>
       <!-- logo for regular state and mobile devices -->
-      <span class="logo-lg"><b>Escariz</b></span>
+      <span class="logo-lg"><b>HUL-UFS</b></span>
     </a>
 
     <!-- Header Navbar -->
@@ -24,7 +24,7 @@
               <!-- The user image in the navbar-->
               <img src="dist/img/logoLivro.png" class="user-image" alt="User Image">
               <!-- hidden-xs hides the username on small devices so only the image appears. -->
-              <span class="hidden-xs">Escariz</span>
+              <span class="hidden-xs">HUL-UFS</span>
             </a>
             <ul class="dropdown-menu">
               <!-- The user image in the menu -->
@@ -32,7 +32,7 @@
                 <img src="dist/img/logoLivro.png" class="img-circle" alt="User Image">
 
                 <p>
-                  Escariz Usuário  - Web Developer
+                  HUL-UFS Usuário  - Web Developer
                   <small>2021</small>
                 </p>
               </li>

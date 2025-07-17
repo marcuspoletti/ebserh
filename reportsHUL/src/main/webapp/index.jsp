@@ -95,57 +95,17 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <ol class="breadcrumb">
-        <li><a href="index.jsp"><i class="fa fa-dashboard"></i>Nível</a></li>
-        <li class="active">Estoque</li>
+        <li><a href="index.jsp"><i class="fa fa-dashboard"></i>HUL-UFS</a></li>
+        <li class="active">Teste</li>
       </ol>
     </section>
 <br>
     <!-- Main content -->
     <section class="content">
       <div class="container logo text-center col-sm-12">
-        <img src="assets/imagens/logo.png" alt="logo Escariz" />
+        <img src="assets/imagens/LOGO-HUL-HORIZONTAL" alt="logo HUL" />
       </div>
 <br>
-    
-        <div class="container text-center col-md-offset-3 col-sm-5 col-xs-12">
-          <form name="frmBusca" method="post" action="index.jsp?" >
-              <input type="text" name="codigo" autofocus class="form-control text-center" placeholder="Digite nome, codigo de barras do produto" required/>
-              <button type="text"  value="Buscar" class="btn btn-danger dropdown-toggle pull-right hidden-xs"> 
-              <i class="glyphicon glyphicon-search"></i> Buscar
-              </button>
-          </form>
-         
-        </div> 
-       
-   
-            <table id="mainTable" class="table table-bordered table-striped " >
-              <thead>
-                  <tr>
-                  <th style="width: 4%;"></th>
-                  <th style="width: 4%;">Loja</th>
-                  <th style="width: 4%;">Saldo</th>
-                  <th style="width: 7%;">Codigo do Produto</th>
-                  <th style="width: 7%;">Codigo de Barras</th>
-                  <th style="width: 35%;">Nome Produto</th>
-                  <th style="width: 20%;">Autor</th>
-                  <th style="width: 14%;">Editora</th>
-                  <th style="width: 9%;">Preco</th>
-                 
-                  </tr>
-                </thead>
-                <tbody>
-
-             
-                  <!-- para exibir botÃƒÂ£o de voltar para o topo -->
-                  <a href="index.jsp"><img class="image-switch" title="Ir para o topo"/></a>  
-                </tbody>                                
-            </table>
-            
-   
-
-   
-              
- 
 
     </section>
     <!-- /.content -->
@@ -159,7 +119,7 @@
       <a href="mailto:ti@escariz.com.br" target="_parent">Suporte</a>
     </div>
     <!-- Default to the left -->
-    <strong>Copyright &copy; 2021 <a href="index.jsp">Escariz</a>.</strong> All rights reserved.
+    <strong>Copyright &copy; 2025 <a href="index.jsp">HUL-UFS</a>.</strong> All rights reserved.
   </footer>
 </div>
 <!-- ./wrapper -->
