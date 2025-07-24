@@ -121,6 +121,27 @@ public class ConverteDate {
 		return data.substring(6,10) + "-" + data.substring(3, 5) + "-"
 				+ data.substring(0, 2);
 	}
+	
+	/**
+	 * Converte uma String no formato "dd/MM/yyyy" para "yyyyMMdd".
+	 * @param data Data a ser convertida
+	 * @return Data no formato yyyyMMdd
+	 */
+	
+	public static String convertData2(String data) {
+		return data.substring(6,10) + data.substring(3, 5) + data.substring(0, 2);
+	}
+	
+	
+	/**
+	 * Converte uma String no formato "yyyyMMdd" para "dd/MM/yyyy".
+	 * @param data Data a ser convertida
+	 * @return Data no formato dd/MM/yyyy
+	 */
+	
+	public static String convertData3(String data) {
+		return  data.substring(0, 2) + data.substring(3, 5) + data.substring(6,10);
+	}
 
 	/**
 	 * Converte um objeto Date para uma String no formato qualquer.

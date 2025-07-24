@@ -1,20 +1,25 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <%@include file="header.jsp"%>
 <%@include file="menu.jsp"%>
-<%@include file="perfil.jsp"%>
+
 
 <%@ page import="util.Utilitaria" %>
 <%@ page import="util.ConverteDate" %>
+<%@ page import="dao.ExtratoPacienteDAO" %>
+<%@ page import="model.ExtratoPaciente" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Iterator" %>
+<%@include file="iniConexao.jsp"%>
 
 <head>
 <meta http-equiv="refresh" content="300">
 </head>
 
 <%
-//String dataInicial = request.getParameter("dataInicial");
-//String dataFinal = request.getParameter("dataFinal");
+String dataInicial = request.getParameter("dataInicial");
+String dataFinal = request.getParameter("dataFinal");
+System.out.println(dataInicial);
+System.out.println(dataFinal);
 %>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -34,12 +39,15 @@
       </ol>
     </section>
 <br>
+ 
 <br>
+   
+  
     <!-- Main content -->
     <section class="content"> 
     
     	<div class="container logo text-center col-sm-12">
-        	<img src="assets/imagens/t3.jpg" alt="logo HUL-UFS" />
+        	<p class="fa fa-dashboard"><strong>Extrato Paciente</strong></p>
       	</div>
     
     <div class="container table-responsive" >
@@ -61,140 +69,115 @@
 		</div>
 	</div> 
 	
-<% //if(dataInicial != null && dataFinal != null){ %>	    
-      <div class="container table-responsive" >
-      </div>
-              
-        <div class="row ano_vigente">
-          <div class="col-sm-12">
+<% if(dataInicial != null && dataFinal != null){ %>	    
+
+          
 <%
-double somatotal = 0;
-//VendasPeriodoDAO daoVendasPeriodo = new VendasPeriodoDAO(conn);
-//String dataAtual = daoVendasPeriodo.dataAtual();
-//String clausula =  " AND SL1.L1_EMISSAO BETWEEN '"+ConverteDate.convertData2(dataInicial)+"' AND '"+ConverteDate.convertData2(dataFinal)+"'"+
-//				   " GROUP BY SL1.L1_FILIAL "+
-///				   " ORDER BY SL1.L1_FILIAL ";
-//List list;
-//list = daoVendasPeriodo.listarVendasPeriodo(clausula);
+int cont = 0;
+ExtratoPacienteDAO daoExtratoPacienteDAO = new ExtratoPacienteDAO(conn);
+List list;
+list = daoExtratoPacienteDAO.getExtratoPacienteDAO(dataInicial+" 00:00:00", dataFinal+" 00:00:00");
 
-//if(list != null){
-
+if(list != null){
 %>
-            <p class="title font4" align="center">
-              <%="Movimentação dos Caixas: " %>               
-            </p>           
-            <br>
-                  <%--for ( Iterator it = list.iterator(); it.hasNext(); ) {
-                		
- //               	  VendasPeriodo vendasPeriodo = (VendasPeriodo) it.next();
-                		
-                --%>
-                    
-                            
-                 
- 
-                  <div class="col-md-4 col-sm-6 col-xs-12">
-                  <div class="info-box">
-                    <span class="info-box-icon bg-aqua"><i class="fa fa-shopping-cart"></i></span>
+	 <table id="mainTable" class="table table-bordered table-striped " >
+     <thead>
+         <tr>
+         <th style="width: 15%;">Nome</th>
+         <th style="width: 5%;">Nascimento</th>
+         <th style="width: 5%;">Prontuário</th>
+         <th style="width: 9%;">Nome Especialidade</th>
+         <th style="width: 15%;">Unidade Funcional</th>
+         <th style="width: 15%;">Tipo Movimentação Internação</th>
+         <th style="width: 5%;">Internação</th>
+         <th style="width: 5%;">Lançamento</th>
+         <th style="width: 5%;">Alta Médica</th>
+         </tr>
+     </thead>
+       <tbody>
+    <%for ( Iterator it = list.iterator(); it.hasNext(); ) {                		
+    	ExtratoPaciente daoListExtratoPaciente = (ExtratoPaciente) it.next();  
+      		cont++;
+      %>
+      <tr>
+ 				<!--mostra na tabela o produto encontrado-->
+ 				<td scope="row">
+                    <%=daoListExtratoPaciente.getNome()%>
+                </td>   
+                <td scope="row">
+                   <%if(daoListExtratoPaciente.getDtNascimento()!= null){ %>
+      				<%=ConverteDate.YMDToDMY(daoListExtratoPaciente.getDtNascimento())%>
+               <%}else{%>
+      	           <%=" SEM REGISTRO " %>
+                <%}%>
+                </td>
+                
+                <td scope="row">
+                   <%=daoListExtratoPaciente.getProntuario()%>
+                </td>
+                <td scope="row">
+                   <%=daoListExtratoPaciente.getNomeEspecialidade()%>
+                </td>
+                  <td scope="row">
+                   <%=daoListExtratoPaciente.getUnidadeFuncional()%>
+                </td>
+                 <td scope="row">
+                   <%=daoListExtratoPaciente.getTpMovimentoInternacao()%>
+                </td>
+                 <td scope="row">
+                   <%if(daoListExtratoPaciente.getDtInternacao()!= null){ %>
+      				<%=ConverteDate.YMDToDMY(daoListExtratoPaciente.getDtInternacao())%>
+               <%}else{%>
+      	           <%=" SEM REGISTRO " %>
+                <%}%>
+                </td>
+                 <td scope="row">
+                <%if(daoListExtratoPaciente.getDtLancamento() != null){ %>
+      				<%=ConverteDate.YMDToDMY(daoListExtratoPaciente.getDtLancamento())%>
+               <%}else{%>
+      	           <%=" SEM REGISTRO " %>
+                <%}%>
+                </td>
+                <%if(daoListExtratoPaciente.getDtAltaMedica() != null){ %>
+                <td scope="row" bgcolor="green">
+      				<%= ConverteDate.YMDToDMY(daoListExtratoPaciente.getDtAltaMedica()) %>
+      			</td>	
+               <%}else{%>
+      	           <td scope="row" bgcolor="red">
+      				<%=" SEM REGISTRO " %>
+      			</td>	
+                <%}%>
+                
+             
+                </td>
+ 	 </tr>
+ 	 <%} %>
+<%}else if(list.isEmpty()) { %>
+<div class="container table-responsive col-sm-12" >          
+	         <div class="row ano_vigente">
+	           <div class="col-sm-12">
+	             <h3>
+	               <center><%="SEM MOVIMENTAÇÃO NO PERÍODO"%>  </center>
+	             </h3>
+	           </div>
+	         </div>
+	        </div>
 
-                    <div class="info-box-content">
+<%
+	}
+ }
+%>   
 
-                      <span class="info-box-text">
-                       <%--vendasPeriodo.getLojaDesc(vendasPeriodo.getFilial()) --%>
-                      </span>
-                      <span class="info-box-number">
-                       <%--Utilitaria.formatarDinheiro(vendasPeriodo.getValorVendas()).toString() --%>
-                      </span>
 
-                    </div>
-                    <!-- /.info-box-content -->
-                  </div>
-                  <!-- /.info-box -->
-                </div>
-                <%
-                //omatotal +=vendasPeriodo.getValorVendas();
-                %>
-
-           <%//} %>
-               
-
-          <div class="col-xs-12">
-            <p class="title2 font5" align="center">
-              <%--Utilitaria.formatarDinheiro(somatotal).toString()--%>
-
-            </p>
-          </div>
-        </div>
-
-        <%      
-    	//	}else {        
-        %>
-       
-        
-          <div class="alert alert-error" >
-          <strong>
-          <center><%= "Nenhuma venda foi encontrada na data: "%> </center>
-          </strong>
-          </div>
-          <% %>
-<% %>
-    </section>
-    <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
-
-  <!-- Main Footer -->
-  <footer class="main-footer">
-    <!-- To the right -->
-    <div class="pull-right hidden-xs">
-      <a href="mailto:sgpti.hul@ebserh.gov.br" target="_parent">Hul-UFS</a>
-    </div>
-    <!-- Default to the left -->
-    <strong>Copyright &copy; 2025 <a href="#">HUL-UFS</a>.</strong> All rights reserved.
-  </footer>
-</div>
-<!-- ./wrapper -->
-
-<!-- REQUIRED JS SCRIPTS -->
-
- jQuery 2.2.0 
-   <script type="text/javascript">
+ <script type="text/javascript">
   $('#data1').mask('99/99/9999');
   $('#data2').mask('99/99/9999');
 </script>
 
-<script>
-$(function() {
-    $("#data2").datepicker({
-        dateFormat: 'dd/mm/yy',
-        dayNames: ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'],
-        dayNamesMin: ['D','S','T','Q','Q','S','S','D'],
-        dayNamesShort: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],
-        monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
-        monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-    });
-    
-    $("#data1").datepicker({
-        dateFormat: 'dd/mm/yy',
-        dayNames: ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'],
-        dayNamesMin: ['D','S','T','Q','Q','S','S','D'],
-        dayNamesShort: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],
-        monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
-        monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-    });
-});
-</script>
-
-
-
-				
-
-
-  <script src="plugins/jQuery/jQuery-2.2.0.min.js"></script> 
+<script src="plugins/jQuery/jQuery-2.2.0.min.js"></script> 
 <!-- Bootstrap 3.3.5 -->
 <script src="bootstrap2/js/bootstrap.min.js"></script>
 <!-- AdminLTE App -->
 <script src="dist/js/app.min.js"></script>
-
 </body>
 </html>
