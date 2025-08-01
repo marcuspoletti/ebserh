@@ -78,11 +78,31 @@ ExtratoPacienteDAO daoExtratoPacienteDAO = new ExtratoPacienteDAO(conn);
 List list;
 list = daoExtratoPacienteDAO.getExtratoPacienteDAO(dataInicial+" 00:00:00", dataFinal+" 00:00:00");
 
+int gridSize = 100;
+String rowNumStr = request.getParameter("rowNum");
+int rowNum = (rowNumStr == null ? 0: Integer.parseInt(rowNumStr));
+if (rowNum < 0) rowNum = 0;
+boolean hasNext = false;
+int rowCount = list.size();
+int rowLast = 0;
+if (rowCount > 0) {
+  if (rowCount > gridSize) {
+    rowLast = rowNum+gridSize+1; 
+    if (rowLast >= rowCount && rowCount > 0) rowLast = rowCount;
+    if (rowNum > rowLast) rowNum = 0;
+    list = list.subList(rowNum, rowLast);
+  }
+  hasNext = true;
+}
+
+
+
 if(list != null){
 %>
 	 <table id="mainTable" class="table table-bordered table-striped " >
      <thead>
          <tr>
+         <th style="width: 1%;">&nbsp;</th>
          <th style="width: 15%;">Nome</th>
          <th style="width: 5%;">Nascimento</th>
          <th style="width: 5%;">Prontuário</th>
@@ -101,6 +121,9 @@ if(list != null){
       %>
       <tr>
  				<!--mostra na tabela o produto encontrado-->
+ 				<td scope="row">
+                    <%=rowNum+cont%>
+                </td> 
  				<td scope="row">
                     <%=daoListExtratoPaciente.getNome()%>
                 </td>   
@@ -152,6 +175,10 @@ if(list != null){
                 </td>
  	 </tr>
  	 <%} %>
+ </table>
+ 	 
+ 	 
+ 	 
 <%}else if(list.isEmpty()) { %>
 <div class="container table-responsive col-sm-12" >          
 	         <div class="row ano_vigente">
@@ -165,6 +192,27 @@ if(list != null){
 
 <%
 	}
+%>
+
+	 <br >
+<%  if (rowNum != 0 || hasNext) { %>
+        <center>
+<%      if (rowNum != 0) { %>
+<a class="link" href="extratoPaciente.jsp?rowNum=<%=0%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Primeira</a>&nbsp&nbsp
+|&nbsp&nbsp<a class="link" href="extratoPaciente.jsp?rowNum=<%=rowNum-gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">< Anterior</a>&nbsp&nbsp
+<%      } else { %>
+Primeira&nbsp&nbsp|&nbsp&nbsp< Anterior&nbsp
+<%      } %>
+<%      if (hasNext) { %>
+|&nbsp&nbsp<a class="link" href="extratoPaciente.jsp?rowNum=<%=rowNum+gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Próxima ></a>&nbsp&nbsp
+|&nbsp&nbsp<a class="link" href="extratoPaciente.jsp?rowNum=<%=rowCount-gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Última</a>
+<%      } else { %>
+|&nbsp&nbsp Próxima >&nbsp&nbsp|&nbsp&nbspÚltima
+<%      } %>
+        </center>
+<%  } %>
+
+<%
  }
 %>   
 
