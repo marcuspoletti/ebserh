@@ -34,7 +34,7 @@
             </a>
             <ul class="treeview-menu">	
             	<li><a href="extratoPaciente.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Extrato do Paciente</span></a></li> 
-        		<li><a href="vendasPeriodo.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Vendas por Periodo</span></a></li>
+        		<li><a href="atendimentoAmbulatorial.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Atendimentos Ambulatoriais</span></a></li>
         		<li><a href="historicoPreco.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Historico de Preço</span></a></li>
         		<li><a href="movimentacaoPDVTipo.jsp"><i class="glyphicon glyphicon-hdd"></i> <span>Vendas Por Tipo</span></a></li>
             </ul>

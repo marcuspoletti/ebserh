@@ -5,8 +5,8 @@
 
 <%@ page import="util.Utilitaria" %>
 <%@ page import="util.ConverteDate" %>
-<%@ page import="dao.ExtratoPacienteDAO" %>
-<%@ page import="model.ExtratoPaciente" %>
+<%@ page import="dao.AtendimentoAmbulatorialDAO" %>
+<%@ page import="model.AtendimentoAmbulatorial" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Iterator" %>
 <%@include file="iniConexao.jsp"%>
@@ -18,8 +18,10 @@
 <%
 String dataInicial = request.getParameter("dataInicial");
 String dataFinal = request.getParameter("dataFinal");
-System.out.println(dataInicial);
-System.out.println(dataFinal);
+dataInicial += " 00:00:00";
+dataFinal += " 00:00:00";
+System.out.println("INICIAL---->"+dataInicial);
+System.out.println("FINAL------>"+dataFinal);
 %>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -35,7 +37,7 @@ System.out.println(dataFinal);
     <section class="content-header">
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i>Nível</a></li>
-        <li class="active">Extrato de Pacientes</li>
+        <li class="active">Atendimentos Ambulatoriais</li>
       </ol>
     </section>
 <br>
@@ -47,12 +49,12 @@ System.out.println(dataFinal);
     <section class="content"> 
     
     	<div class="container logo text-center col-sm-12">
-        	<p class="fa fa-dashboard"><strong>Extrato Paciente</strong></p>
+        	<p class="fa fa-dashboard"><strong>Atendimentos Ambulatoriais</strong></p>
       	</div>
     
     <div class="container table-responsive" >
 		<div class="container text-center col-md-offset-5 col-sm-2">
-			<form name="frmBusca" method="post" action="extratoPaciente.jsp?" >
+			<form name="frmBusca" method="post" action="atendimentoAmbulatorial.jsp?" >
 			
 				<label for="frmBusca">Data Inicial</label>
 					<input type="text" id="data1" maxlength="10" name="dataInicial" autofocus class="form-transferencia text-center" placeholder="08/12/2011" required/>
@@ -74,9 +76,9 @@ System.out.println(dataFinal);
           
 <%
 int cont = 0;
-ExtratoPacienteDAO daoExtratoPacienteDAO = new ExtratoPacienteDAO(conn);
+AtendimentoAmbulatorialDAO daoAtendimentoAmbulatorialDAO = new AtendimentoAmbulatorialDAO(conn);
 List list;
-list = daoExtratoPacienteDAO.getExtratoPacienteDAO(dataInicial+" 00:00:00", dataFinal+" 23:59:59");
+list = daoAtendimentoAmbulatorialDAO.getAtendimentoAmbulatorialDAO(dataInicial, dataFinal);
 
 int gridSize = 100;
 String rowNumStr = request.getParameter("rowNum");
@@ -103,20 +105,23 @@ if(list != null){
      <thead>
          <tr>
          <th style="width: 1%;">&nbsp;</th>
-         <th style="width: 15%;">Nome</th>
-         <th style="width: 5%;">Nascimento</th>
+         <th style="width: 15%;">Paciente</th>
          <th style="width: 5%;">Prontuário</th>
-         <th style="width: 9%;">Nome Especialidade</th>
-         <th style="width: 15%;">Unidade Funcional</th>
-         <th style="width: 15%;">Tipo Movimentação Internação</th>
-         <th style="width: 5%;">Internação</th>
-         <th style="width: 5%;">Lançamento</th>
-         <th style="width: 5%;">Alta Médica</th>
+         <th style="width: 5%;">Cód. Paciente</th>
+         <th style="width: 5%;">Sexo</th>
+         <th style="width: 5%;">Nascimento</th>
+         <th style="width: 5%;">Consulta</th>
+         <th style="width: 5%;">Especialidade</th>
+         <th style="width: 5%;">Marcação Med.</th>
+         <th style="width: 5%;">Início Con. Médica</th>
+         <th style="width: 5%;">Fim Con. Médica</th>
+         <th style="width: 5%;">Tempo Espera</th>
+         <th style="width: 5%;">Tempo Atendimento</th>
          </tr>
      </thead>
        <tbody>
     <%for ( Iterator it = list.iterator(); it.hasNext(); ) {                		
-    	ExtratoPaciente daoListExtratoPaciente = (ExtratoPaciente) it.next();  
+    	AtendimentoAmbulatorial daoListAtendimentoAmbulatorial = (AtendimentoAmbulatorial) it.next();  
       		cont++;
       %>
       <tr>
@@ -125,54 +130,61 @@ if(list != null){
                     <%=rowNum+cont%>
                 </td> 
  				<td scope="row">
-                    <%=daoListExtratoPaciente.getNome()%>
+                    <%=daoListAtendimentoAmbulatorial.getPaciente()%>
                 </td>   
                 <td scope="row">
-                   <%if(daoListExtratoPaciente.getDtNascimento()!= null){ %>
-      				<%=ConverteDate.YMDToDMY(daoListExtratoPaciente.getDtNascimento())%>
+                   <%if(daoListAtendimentoAmbulatorial.getPacProntuario()!= null){ %>
+      				<%=daoListAtendimentoAmbulatorial.getPacProntuario()%>
                <%}else{%>
       	           <%=" SEM REGISTRO " %>
                 <%}%>
                 </td>
                 
                 <td scope="row">
-                   <%=daoListExtratoPaciente.getProntuario()%>
+                   <%=daoListAtendimentoAmbulatorial.getCodPaciente()%>
                 </td>
                 <td scope="row">
-                   <%=daoListExtratoPaciente.getNomeEspecialidade()%>
+                   <%=daoListAtendimentoAmbulatorial.getSexo()%>
                 </td>
                   <td scope="row">
-                   <%=daoListExtratoPaciente.getUnidadeFuncional()%>
+                   <%=daoListAtendimentoAmbulatorial.getDtNascimento()%>
                 </td>
                  <td scope="row">
-                   <%=daoListExtratoPaciente.getTpMovimentoInternacao()%>
+                   <%=daoListAtendimentoAmbulatorial.getNumConsulta()%>
                 </td>
                  <td scope="row">
-                   <%if(daoListExtratoPaciente.getDtInternacao()!= null){ %>
-      				<%=ConverteDate.YMDToDMY(daoListExtratoPaciente.getDtInternacao())%>
+                   <%if(daoListAtendimentoAmbulatorial.getSiglaEsp()!= null){ %>
+      				<%=daoListAtendimentoAmbulatorial.getSiglaEsp()%>
                <%}else{%>
       	           <%=" SEM REGISTRO " %>
                 <%}%>
                 </td>
                  <td scope="row">
-                <%if(daoListExtratoPaciente.getDtLancamento() != null){ %>
-      				<%=ConverteDate.YMDToDMY(daoListExtratoPaciente.getDtLancamento())%>
+                <%if(daoListAtendimentoAmbulatorial != null){ %>
+      				<%=daoListAtendimentoAmbulatorial.getMarcacaoMedica()%>
                <%}else{%>
       	           <%=" SEM REGISTRO " %>
                 <%}%>
                 </td>
-                <%if(daoListExtratoPaciente.getDtAltaMedica() != null){ %>
-                <td scope="row" bgcolor="green">
-      				<%= ConverteDate.YMDToDMY(daoListExtratoPaciente.getDtAltaMedica()) %>
+                <%if(daoListAtendimentoAmbulatorial.getIniConMed() != null){ %>
+                <td scope="row">
+      				<%= daoListAtendimentoAmbulatorial.getIniConMed() %>
       			</td>	
                <%}else{%>
       	           <td scope="row" bgcolor="red">
       				<%=" SEM REGISTRO " %>
       			</td>	
                 <%}%>
+                <td scope="row">
+      				<%= daoListAtendimentoAmbulatorial.getFimConMed() %>
+      			</td>
+      			<td scope="row">
+      				<%=daoListAtendimentoAmbulatorial.getTempoEspera() %>
+      			</td>
+             	<td scope="row">
+      				<%=daoListAtendimentoAmbulatorial.getTempoAtendimento() %>
+      			</td>
                 
-             
-                </td>
  	 </tr>
  	 <%} %>
  </table>
@@ -198,14 +210,14 @@ if(list != null){
 <%  if (rowNum != 0 || hasNext) { %>
         <center>
 <%      if (rowNum != 0) { %>
-<a class="link" href="extratoPaciente.jsp?rowNum=<%=0%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Primeira</a>&nbsp&nbsp
-|&nbsp&nbsp<a class="link" href="extratoPaciente.jsp?rowNum=<%=rowNum-gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">< Anterior</a>&nbsp&nbsp
+<a class="link" href="atendimentoAmbulatorial.jsp?rowNum=<%=0%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Primeira</a>&nbsp&nbsp
+|&nbsp&nbsp<a class="link" href="atendimentoAmbulatorial.jsp?rowNum=<%=rowNum-gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">< Anterior</a>&nbsp&nbsp
 <%      } else { %>
 Primeira&nbsp&nbsp|&nbsp&nbsp< Anterior&nbsp
 <%      } %>
 <%      if (hasNext) { %>
-|&nbsp&nbsp<a class="link" href="extratoPaciente.jsp?rowNum=<%=rowNum+gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Próxima ></a>&nbsp&nbsp
-|&nbsp&nbsp<a class="link" href="extratoPaciente.jsp?rowNum=<%=rowCount-gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Última</a>
+|&nbsp&nbsp<a class="link" href="atendimentoAmbulatorial.jsp?rowNum=<%=rowNum+gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Próxima ></a>&nbsp&nbsp
+|&nbsp&nbsp<a class="link" href="atendimentoAmbulatorial.jsp?rowNum=<%=rowCount-gridSize%>&dataInicial=<%=dataInicial%>&dataFinal=<%=dataFinal%>">Última</a>
 <%      } else { %>
 |&nbsp&nbsp Próxima >&nbsp&nbsp|&nbsp&nbspÚltima
 <%      } %>
